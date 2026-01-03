@@ -49,7 +49,7 @@ export default function Home() {
     const options = {
       root: null,
       rootMargin: '-100px 0px -60% 0px',
-      threshold: 0
+      threshold: 0,
     };
 
     observerRef.current = new IntersectionObserver((entries) => {
@@ -85,10 +85,10 @@ export default function Home() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading menu...</p>
+      <div className='min-h-screen bg-white flex items-center justify-center'>
+        <div className='text-center'>
+          <div className='animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto mb-4'></div>
+          <p className='text-gray-600'>Loading menu...</p>
         </div>
       </div>
     );
@@ -96,13 +96,10 @@ export default function Home() {
 
   if (error || !menuData) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-red-600 mb-4">{error || 'Failed to load menu'}</p>
-          <button
-            onClick={() => window.location.reload()}
-            className="bg-[#ffc338] px-6 py-2 rounded-lg font-medium"
-          >
+      <div className='min-h-screen bg-white flex items-center justify-center'>
+        <div className='text-center'>
+          <p className='text-red-600 mb-4'>{error || 'Failed to load menu'}</p>
+          <button onClick={() => window.location.reload()} className='bg-[#ffc338] px-6 py-2 rounded-lg font-medium'>
             Retry
           </button>
         </div>
@@ -111,58 +108,38 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className='min-h-screen bg-white'>
       {/* Sidebar Navigation */}
-      <Sidebar
-        categories={productsByCategory}
-        activeCategory={activeCategory}
-        onCategoryClick={setActiveCategory}
-      />
+      <Sidebar categories={productsByCategory} activeCategory={activeCategory} onCategoryClick={setActiveCategory} />
 
       {/* Main Content Area */}
-      <div className="lg:ml-40">
+      <div className='lg:ml-40'>
         {/* Header - part of main content flow */}
         <Header />
 
         {/* Mobile Restaurant Info - shows below header on mobile */}
-        <div className="lg:hidden">
+        <div className='lg:hidden'>
           <MobileRestaurantInfo />
         </div>
 
         {/* Mobile Category Bar - shows below mobile restaurant info */}
-        <MobileCategoryBar
-          categories={productsByCategory}
-          activeCategory={activeCategory}
-          onCategoryClick={setActiveCategory}
-        />
+        <MobileCategoryBar categories={productsByCategory} activeCategory={activeCategory} onCategoryClick={setActiveCategory} />
 
         {/* Main Content - Single Scroll with All Products */}
-        <main className="px-4 md:px-6 lg:px-8 py-6 md:py-8 pb-24 lg:pb-8" role="main">
+        <main className='px-4 md:px-6 lg:px-8 py-6 md:py-8 pb-24 lg:pb-8' role='main'>
           {productsByCategory.map((category) => (
-            <section
-              key={category.id}
-              id={`category-${category.id}`}
-              className="mb-16 scroll-mt-16 lg:scroll-mt-24"
-              aria-labelledby={`heading-${category.id}`}
-            >
+            <section key={category.id} id={`category-${category.id}`} className='mb-16 scroll-mt-16 lg:scroll-mt-24' aria-labelledby={`heading-${category.id}`}>
               {/* Category Header */}
-              <div className="mb-6 md:mb-8 flex justify-center">
-                <h2 
-                  id={`heading-${category.id}`}
-                  className="text-2xl md:text-3xl font-bold text-gray-900 text-center"
-                >
+              <div className='mb-6 md:mb-8 flex justify-center'>
+                <h2 id={`heading-${category.id}`} className='text-2xl md:text-3xl font-bold text-gray-900 text-center'>
                   {category.name}
                 </h2>
               </div>
 
               {/* Products Grid */}
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 md:gap-4 lg:gap-6" role="list" aria-label={`${category.name} products`}>
+              <div className='grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 md:gap-4 lg:gap-6' role='list' aria-label={`${category.name} products`}>
                 {category.products.map((product) => (
-                  <ProductCard
-                    key={product.id}
-                    product={product}
-                    onClick={() => handleProductClick(product)}
-                  />
+                  <ProductCard key={product.id} product={product} onClick={() => handleProductClick(product)} />
                 ))}
               </div>
             </section>
@@ -171,11 +148,7 @@ export default function Home() {
       </div>
 
       {/* Product Detail Modal */}
-      <ProductModal
-        product={selectedProduct}
-        isOpen={isModalOpen}
-        onClose={handleCloseModal}
-      />
+      <ProductModal product={selectedProduct} isOpen={isModalOpen} onClose={handleCloseModal} />
 
       {/* Bottom Bar with Cart */}
       <BottomBar />
