@@ -1,0 +1,61 @@
+'use client';
+
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+
+interface FormFieldProps {
+  id: string;
+  label: string;
+  type?: string;
+  placeholder?: string;
+  value: string;
+  onChange: (value: string) => void;
+  error?: string;
+  required?: boolean;
+  disabled?: boolean;
+  helperText?: string;
+}
+
+export default function FormField({
+  id,
+  label,
+  type = 'text',
+  placeholder,
+  value,
+  onChange,
+  error,
+  required = false,
+  disabled = false,
+  helperText,
+}: FormFieldProps) {
+  return (
+    <div className="space-y-2">
+      <Label htmlFor={id}>
+        {label}
+        {required && <span className="text-red-500 ml-1">*</span>}
+      </Label>
+      <Input
+        id={id}
+        type={type}
+        placeholder={placeholder}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className={error ? 'border-red-500' : ''}
+        disabled={disabled}
+        aria-invalid={!!error}
+        aria-describedby={error ? `${id}-error` : helperText ? `${id}-helper` : undefined}
+      />
+      {error && (
+        <p id={`${id}-error`} className="text-sm text-red-500" role="alert">
+          {error}
+        </p>
+      )}
+      {helperText && !error && (
+        <p id={`${id}-helper`} className="text-xs text-gray-500">
+          {helperText}
+        </p>
+      )}
+    </div>
+  );
+}
+
