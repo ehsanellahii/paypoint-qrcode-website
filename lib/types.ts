@@ -1,6 +1,6 @@
 /**
  * API Data Types
- * 
+ *
  * These types match the byonesix API response structure.
  * Update these types if your backend API uses a different structure.
  */
@@ -180,3 +180,23 @@ export interface RestaurantInfo {
   mapsUrl: string;
 }
 
+export interface IStoreInfo {
+  brandName: string;
+  storeName: string;
+  address: string;
+  street: string;
+  houseNumber: string;
+  postalCode: string;
+  city: string;
+  phone: string;
+  email: string;
+  logo: string | null;
+  timings: {
+    tuesday: { open: string; close: string };
+    wednesday: { open: string; close: string };
+    thursday: { open: string; close: string };
+    friday: { open: string; close: string };
+    saturday: { open: string; close: string };
+    sunday: { open: string; close: string };
+  } | null;
+}

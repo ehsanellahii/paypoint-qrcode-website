@@ -1,18 +1,19 @@
 'use client';
 
 import Image from 'next/image';
+import { IStoreInfo } from '~/lib/types';
 
-export default function Footer() {
+export default function Footer({ storeInfo }: { storeInfo?: IStoreInfo }) {
   return (
     <footer className='bg-gray-100 rounded-lg py-8 p-2 lg:-mb-10 m-4 lg:ml-42 lg:mr-4 text-sm'>
       <div className='container mx-auto px-4'>
         {/* Top Section */}
         <div className='flex flex-col md:flex-row justify-between items-center md:items-start pb-4 mb-4 border-b border-gray-300'>
           {/* Business Name - Left */}
-          <div className='font-bold text-gray-800 mb-2 md:mb-0'>DIAZO</div>
+          <div className='font-bold text-gray-800 mb-2 md:mb-0'>{storeInfo?.brandName}</div>
 
           {/* Contact Information - Right */}
-          <div className='text-gray-700 text-center md:text-right'>Email: info@diazo-pizza.de</div>
+          <div className='text-gray-700 text-center md:text-right'>Email: {storeInfo?.email}</div>
         </div>
 
         {/* Bottom Section */}

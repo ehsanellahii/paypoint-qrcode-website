@@ -16,8 +16,8 @@ const STORAGE_KEY = 'app-language';
 
 export function LanguageProvider({ children }: { children: ReactNode }) {
   const [language, setLanguageState] = useState<Language>(() => {
-    const savedLang = storage.get<Language>(STORAGE_KEY, 'en');
-    return (savedLang === 'en' || savedLang === 'de' || savedLang === 'nl' || savedLang === 'fr') ? savedLang : 'en';
+    const savedLang = storage.get<Language>(STORAGE_KEY, 'de');
+    return savedLang === 'en' || savedLang === 'de' ? savedLang : 'de';
   });
 
   const setLanguage = (lang: Language) => {
@@ -31,11 +31,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
     t: translations[language],
   };
 
-  return (
-    <LanguageContext.Provider value={value}>
-      {children}
-    </LanguageContext.Provider>
-  );
+  return <LanguageContext.Provider value={value}>{children}</LanguageContext.Provider>;
 }
 
 export function useLanguage() {
@@ -45,4 +41,3 @@ export function useLanguage() {
   }
   return context;
 }
-

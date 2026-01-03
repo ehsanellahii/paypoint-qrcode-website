@@ -1,160 +1,45 @@
-'use client';
+import React from 'react';
+import HomeScreen from '../components/HomeScreen';
 
-import { useState, useEffect, useRef } from 'react';
-import Header from '@/components/Header';
-import Sidebar from '@/components/Sidebar';
-import MobileRestaurantInfo from '@/components/MobileRestaurantInfo';
-import MobileCategoryBar from '@/components/MobileCategoryBar';
-import ProductCard from '@/components/ProductCard';
-import ProductModal from '@/components/ProductModal';
-import BottomBar from '@/components/BottomBar';
-import Footer from '@/components/Footer';
-import { SiteData, Product } from '@/lib/types';
-import { fetchMenuData, getCategories } from '@/lib/api';
-
-export default function Home() {
-  const [menuData, setMenuData] = useState<SiteData | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [activeCategory, setActiveCategory] = useState('');
-  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const observerRef = useRef<IntersectionObserver | null>(null);
-
-  useEffect(() => {
-    async function loadMenu() {
-      try {
-        setLoading(true);
-        const data = await fetchMenuData();
-        setMenuData(data);
-        const categories = getCategories(data);
-        if (categories.length > 0) {
-          setActiveCategory(categories[0].id);
-        }
-      } catch (err) {
-        setError('Failed to load menu data');
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    }
-    loadMenu();
-  }, []);
-
-  const productsByCategory = menuData ? getCategories(menuData) : [];
-
-  useEffect(() => {
-    if (!menuData) return;
-
-    const options = {
-      root: null,
-      rootMargin: '-100px 0px -60% 0px',
-      threshold: 0,
-    };
-
-    observerRef.current = new IntersectionObserver((entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          const categoryId = entry.target.id.replace('category-', '');
-          setActiveCategory(categoryId);
-        }
-      });
-    }, options);
-
-    const categoryElements = document.querySelectorAll('[id^="category-"]');
-    categoryElements.forEach((el) => {
-      observerRef.current?.observe(el);
-    });
-
-    return () => {
-      observerRef.current?.disconnect();
-    };
-  }, [menuData]);
-
-  const handleProductClick = (product: Product) => {
-    if (product.in_stock || product.automatic_in_stock) {
-      setSelectedProduct(product);
-      setIsModalOpen(true);
-    }
-  };
-
-  const handleCloseModal = () => {
-    setIsModalOpen(false);
-    setTimeout(() => setSelectedProduct(null), 300);
-  };
-
-  if (loading) {
-    return (
-      <div className='min-h-screen bg-white flex items-center justify-center'>
-        <div className='text-center'>
-          <div className='animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto mb-4'></div>
-          <p className='text-gray-600'>Loading menu...</p>
-        </div>
-      </div>
-    );
+const API_BASE_URL = 'http://localhost:4000/integration';
+const API_HEADERS = {
+  'accept': 'application/json',
+  'content-type': 'application/json',
+};
+// fetch the data of store using slug
+const getStoreData = async (slug: string) => {
+  // Placeholder for actual data fetching logic
+  // api.paypointpos.de/integrations/slug/{slug}
+  const response = await fetch(`${API_BASE_URL}/slugs/${slug}`, {
+    headers: API_HEADERS,
+    next: { revalidate: 60 * 60 * 24 },
+  });
+  if (!response.ok) {
+    throw new Error('Failed to fetch store data');
   }
+  const data = await response.json();
+  console.log('Store Data:', data?.data);
+  return {
+    brandName: data?.data?.brandName,
+    storeName: data?.data?.store_name,
+    address: data?.data?.address,
+    street: data?.data?.street,
+    houseNumber: data?.data?.houseNumber,
+    postalCode: data?.data?.postalCode,
+    city: data?.data?.place,
+    phone: data?.data?.phone,
+    email: data?.data?.emailAddress,
+    logo: `https://paypoint-web-storage.s3.eu-central-1.amazonaws.com/menu/${data?.data?.logoFileName}` || null,
+    timings: data?.data?.timings || null,
+  };
+};
 
-  if (error || !menuData) {
-    return (
-      <div className='min-h-screen bg-white flex items-center justify-center'>
-        <div className='text-center'>
-          <p className='text-red-600 mb-4'>{error || 'Failed to load menu'}</p>
-          <button onClick={() => window.location.reload()} className='bg-[#ffc338] px-6 py-2 rounded-lg font-medium'>
-            Retry
-          </button>
-        </div>
-      </div>
-    );
-  }
+const page = async ({ params }: { params: Promise<{ slug: string }> }) => {
+  const { slug } = await params;
+  console.log('Slug:', slug);
+  const storeInfo = await getStoreData(slug);
+  console.log('Store Info:', storeInfo);
+  return <HomeScreen storeInfo={storeInfo} />;
+};
 
-  return (
-    <div className='min-h-screen bg-white'>
-      {/* Sidebar Navigation */}
-      <Sidebar categories={productsByCategory} activeCategory={activeCategory} onCategoryClick={setActiveCategory} />
-
-      {/* Main Content Area */}
-      <div className='lg:ml-40'>
-        {/* Header - part of main content flow */}
-        <Header />
-
-        {/* Mobile Restaurant Info - shows below header on mobile */}
-        <div className='lg:hidden'>
-          <MobileRestaurantInfo />
-        </div>
-
-        {/* Mobile Category Bar - shows below mobile restaurant info */}
-        <MobileCategoryBar categories={productsByCategory} activeCategory={activeCategory} onCategoryClick={setActiveCategory} />
-
-        {/* Main Content - Single Scroll with All Products */}
-        <main className='px-4 md:px-6 lg:px-8 py-6 md:py-8 pb-24 lg:pb-8' role='main'>
-          {productsByCategory.map((category) => (
-            <section key={category.id} id={`category-${category.id}`} className='mb-16 scroll-mt-16 lg:scroll-mt-24' aria-labelledby={`heading-${category.id}`}>
-              {/* Category Header */}
-              <div className='mb-6 md:mb-8 flex justify-center'>
-                <h2 id={`heading-${category.id}`} className='text-2xl md:text-3xl font-bold text-gray-900 text-center'>
-                  {category.name}
-                </h2>
-              </div>
-
-              {/* Products Grid */}
-              <div className='grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 md:gap-4 lg:gap-6' role='list' aria-label={`${category.name} products`}>
-                {category.products.map((product) => (
-                  <ProductCard key={product.id} product={product} onClick={() => handleProductClick(product)} />
-                ))}
-              </div>
-            </section>
-          ))}
-        </main>
-      </div>
-
-      {/* Product Detail Modal */}
-      <ProductModal product={selectedProduct} isOpen={isModalOpen} onClose={handleCloseModal} />
-
-      {/* Bottom Bar with Cart */}
-      <BottomBar />
-
-      {/* Footer */}
-      <Footer />
-    </div>
-  );
-}
+export default page;

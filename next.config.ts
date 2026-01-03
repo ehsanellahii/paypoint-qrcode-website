@@ -1,4 +1,4 @@
-import type { NextConfig } from "next";
+import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
   // Placeholder, but make sure to add whatever place you're hosting your images from
@@ -11,6 +11,10 @@ const nextConfig: NextConfig = {
       {
         protocol: 'https',
         hostname: 'gymeyes.ams3.cdn.digitaloceanspaces.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'paypoint-web-storage.s3.eu-central-1.amazonaws.com',
       },
     ],
   },
