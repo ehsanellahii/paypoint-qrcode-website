@@ -1,7 +1,7 @@
 import React from 'react';
 import HomeScreen from '../components/HomeScreen';
 
-const API_BASE_URL = 'http://localhost:4000/integration';
+const API_BASE_URL = 'https://api.paypointpos.de/integration';
 const API_HEADERS = {
   'accept': 'application/json',
   'content-type': 'application/json',
