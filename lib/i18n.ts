@@ -64,13 +64,18 @@ export interface Translations {
   extraBacon: string;
   extraCheese: string;
   extraPickles: string;
+  pickup: string;
+  delivery: string;
+  dineIn: string;
 }
 
 export const translations: Record<Language, Translations> = {
   en: {
     openUntil: 'Open until',
     location: 'Route',
-
+    delivery: 'Delivery',
+    pickup: 'Pickup',
+    dineIn: 'Dine In',
     popular: 'Popular',
     truffleSeason: 'Truffle Season',
     lunchDeals: 'LunchDeals',
@@ -136,7 +141,9 @@ export const translations: Record<Language, Translations> = {
     openUntil: 'Geöffnet bis',
     closed: 'Geschlossen',
     location: 'Standort',
-
+    delivery: 'Lieferung',
+    pickup: 'Abholung',
+    dineIn: 'Vor Ort essen',
     popular: 'Beliebt',
     truffleSeason: 'Trüffelsaison',
     lunchDeals: 'Mittagsangebote',

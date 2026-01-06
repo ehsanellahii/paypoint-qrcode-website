@@ -6,7 +6,7 @@ import Sidebar from '@/components/Sidebar';
 import MobileRestaurantInfo from '@/components/MobileRestaurantInfo';
 import MobileCategoryBar from '@/components/MobileCategoryBar';
 import ProductCard from '@/components/ProductCard';
-import ProductModal from '@/components/ProductModal';
+import ProductModal from '~/components/dialogs/ProductModal';
 import BottomBar from '@/components/BottomBar';
 import Footer from '@/components/Footer';
 import { SiteData, Product, IStoreInfo } from '@/lib/types';

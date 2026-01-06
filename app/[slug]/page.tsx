@@ -32,6 +32,9 @@ const getStoreData = async (slug: string) => {
     email: data?.data?.emailAddress,
     logo: `https://paypoint-web-storage.s3.eu-central-1.amazonaws.com/menu/${data?.data?.logoFileName}` || null,
     timings: data?.data?.timings || null,
+    settings: data?.data?.webShopSettings || null,
+    adminGoogleApiKey: data?.data?.adminGoogleApiKey || '',
+    posGoogleApiKey: data?.data?.posGoogleApiKey || '',
   };
 };
 

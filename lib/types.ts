@@ -199,4 +199,10 @@ export interface IStoreInfo {
     saturday: { open: string; close: string };
     sunday: { open: string; close: string };
   } | null;
+  settings: {
+    paymentMethods: { cash: boolean; ecCardReader: boolean };
+    orderTypes: { dineIn: boolean; takeaway: boolean; delivery: boolean };
+  } | null;
+  adminGoogleApiKey: string;
+  posGoogleApiKey: string;
 }

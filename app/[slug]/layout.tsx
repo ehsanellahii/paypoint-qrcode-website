@@ -3,6 +3,8 @@ import { Inter } from 'next/font/google';
 import '../globals.css';
 import { CartProvider } from '@/lib/cart-context';
 import { LanguageProvider } from '@/lib/language-context';
+import Script from 'next/script';
+import { AddressProvider } from '~/lib/address-context';
 
 const inter = Inter({
   variable: '--font-inter',
@@ -28,8 +30,15 @@ export default function RootLayout({
         <meta name='color-scheme' content='light' />
       </head>
       <body className={`${inter.variable} antialiased`}>
+        <Script
+          id='google-maps'
+          strategy='afterInteractive'
+          src={`https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&libraries=places`}
+        />
         <LanguageProvider>
-          <CartProvider>{children}</CartProvider>
+          <AddressProvider storeKey={'default'}>
+            <CartProvider>{children}</CartProvider>
+          </AddressProvider>
         </LanguageProvider>
       </body>
     </html>
