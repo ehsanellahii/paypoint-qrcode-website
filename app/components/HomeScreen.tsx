@@ -151,7 +151,7 @@ export default function HomeScreen({ storeInfo }: { storeInfo?: IStoreInfo }) {
       <ProductModal product={selectedProduct} isOpen={isModalOpen} onClose={handleCloseModal} />
 
       {/* Bottom Bar with Cart */}
-      <BottomBar />
+      <BottomBar storeInfo={storeInfo} />
 
       {/* Footer */}
       <Footer storeInfo={storeInfo} />
