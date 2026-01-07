@@ -13,7 +13,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: 'Fat Phills The Mall - Order Online',
+  title: 'Order Online',
   description: 'Order delicious burgers, wings, and more from Fat Phills The Mall in Leidschendam',
 };
 

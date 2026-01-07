@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { cache } from 'react';
 import HomeScreen from '../components/HomeScreen';
+import { Metadata } from 'next';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -10,7 +11,7 @@ const API_HEADERS = {
   'content-type': 'application/json',
 };
 // fetch the data of store using slug
-const getStoreData = async (slug: string) => {
+const getStoreData = cache(async (slug: string) => {
   // Placeholder for actual data fetching logic
   // api.paypointpos.de/integrations/slug/{slug}
   const response = await fetch(`${API_BASE_URL}/slugs/${slug}`, {
@@ -38,7 +39,24 @@ const getStoreData = async (slug: string) => {
     adminGoogleApiKey: data?.data?.adminGoogleApiKey || '',
     posGoogleApiKey: data?.data?.posGoogleApiKey || '',
   };
-};
+});
+
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+  const { slug } = await params;
+  const store = await getStoreData(slug);
+
+  return {
+    title: store.brandName ? `${store.brandName} | Online Ordering` : 'Online Ordering',
+
+    description: store.brandName ? `Order online from ${store.brandName}${store.city ? `, ${store.city}` : ''}` : 'Order food online',
+
+    openGraph: {
+      title: store.brandName || 'Online Ordering',
+      description: `Order online from ${store.brandName}`,
+      images: store.logo ? [store.logo] : [],
+    },
+  };
+}
 
 const page = async ({ params }: { params: Promise<{ slug: string }> }) => {
   const { slug } = await params;
