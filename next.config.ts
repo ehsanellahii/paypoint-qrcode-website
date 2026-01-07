@@ -24,7 +24,7 @@ const nextConfig: NextConfig = {
         source: '/:path*',
         headers: [
           // helps prevent old HTML getting stuck on some clients
-          { key: 'Cache-Control', value: 'no-store' },
+          { key: 'Cache-Control', value: 'no-store, must-revalidate' },
         ],
       },
     ];
