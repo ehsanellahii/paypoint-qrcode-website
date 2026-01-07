@@ -51,7 +51,7 @@ export default function Cart({
     <>
       {/* Cart Modal */}
       <Dialog open={isOpen} onOpenChange={handleOpenChange}>
-        <DialogContent className="max-w-5xl w-[calc(100vw-2rem)] h-[calc(100vh-2rem)] max-h-[calc(100vh-2rem)] flex flex-col p-0">
+        <DialogContent className="max-w-5xl w-[calc(100vw-2rem)] h-[calc(100dvh-2rem)] max-h-[calc(100dvh-2rem)] flex flex-col p-0">
           {showCheckout ? (
             /* Checkout Form */
             <CheckoutForm

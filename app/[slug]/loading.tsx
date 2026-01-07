@@ -18,7 +18,7 @@ export default function Loading() {
       {/* Main Layout */}
       <div className="pt-20 md:pt-24 lg:pt-24 flex">
         {/* Desktop Sidebar Skeleton */}
-        <aside className="hidden lg:block fixed left-0 top-24 w-40 h-[calc(100vh-6rem)] overflow-y-auto pb-8">
+        <aside className="hidden lg:block fixed left-0 top-24 w-40 h-[calc(100dvh-6rem)] overflow-y-auto pb-8">
           <nav className="flex flex-col gap-2 p-4">
             {[1, 2, 3, 4, 5, 6].map((i) => (
               <div key={i} className="bg-white rounded-xl p-4 flex flex-col items-center gap-2">
