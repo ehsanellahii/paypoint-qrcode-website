@@ -119,7 +119,7 @@ export default function HomeScreen({ storeInfo }: { storeInfo?: IStoreInfo }) {
 
         {/* Mobile Restaurant Info - shows below header on mobile */}
         <div className='lg:hidden'>
-          <MobileRestaurantInfo />
+          <MobileRestaurantInfo storeInfo={storeInfo} />
         </div>
 
         {/* Mobile Category Bar - shows below mobile restaurant info */}

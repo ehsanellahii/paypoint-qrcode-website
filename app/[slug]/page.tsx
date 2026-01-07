@@ -2,8 +2,8 @@ import React, { cache } from 'react';
 import HomeScreen from '../components/HomeScreen';
 import { Metadata } from 'next';
 
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
+// export const dynamic = 'force-dynamic';
+// export const revalidate = 0;
 
 const API_BASE_URL = 'https://api.paypointpos.de/integration';
 const API_HEADERS = {
