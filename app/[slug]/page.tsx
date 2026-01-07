@@ -1,6 +1,9 @@
 import React from 'react';
 import HomeScreen from '../components/HomeScreen';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 const API_BASE_URL = 'https://api.paypointpos.de/integration';
 const API_HEADERS = {
   'accept': 'application/json',
@@ -12,7 +15,6 @@ const getStoreData = async (slug: string) => {
   // api.paypointpos.de/integrations/slug/{slug}
   const response = await fetch(`${API_BASE_URL}/slugs/${slug}`, {
     headers: API_HEADERS,
-    // next: { revalidate: 60 * 60 * 24 },
     cache: 'no-store',
   });
   if (!response.ok) {
