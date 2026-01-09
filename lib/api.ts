@@ -42,7 +42,7 @@ export const fetchMenuData = async (adminId?: string, storeId?: string) => {
     'x-paypoint-store_id': storeId,
   };
   try {
-    const response = await fetch(`http://localhost:4000/integration/menu`, {
+    const response = await fetch(`https://api.paypointpos.de/integration/menu`, {
       headers: API_HEADERS,
       next: { revalidate: 60 },
     });

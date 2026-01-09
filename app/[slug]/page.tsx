@@ -6,8 +6,8 @@ import { notFound } from 'next/navigation';
 // export const dynamic = 'force-dynamic';
 // export const revalidate = 0;
 
-// const API_BASE_URL = 'https://api.paypointpos.de/integration';
-const API_BASE_URL = 'http://localhost:4000/integration';
+const API_BASE_URL = 'https://api.paypointpos.de/integration';
+// const API_BASE_URL = 'http://localhost:4000/integration';
 const API_HEADERS = {
   'accept': 'application/json',
   'content-type': 'application/json',
