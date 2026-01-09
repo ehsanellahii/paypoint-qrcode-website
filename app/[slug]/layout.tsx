@@ -29,7 +29,7 @@ export default function RootLayout({
         <link rel='icon' href='/logo-dark.svg' media='(prefers-color-scheme: dark)' />
         <meta name='color-scheme' content='light' />
       </head>
-      <body className={`${inter.variable} antialiased`}>
+      <body className={`${inter.variable} antialiased `}>
         <Script
           id='google-maps'
           strategy='afterInteractive'

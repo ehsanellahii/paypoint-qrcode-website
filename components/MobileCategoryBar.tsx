@@ -3,8 +3,8 @@
 import Image from 'next/image';
 import { useRef, useEffect } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { MenuCategory } from '@/lib/types';
 import { useScrollDetection, useSmoothScroll } from '@/hooks/useScrollDetection';
+import { getImageURL, MenuCategory } from '~/lib/utils';
 
 interface MobileCategoryBarProps {
   categories: MenuCategory[];
@@ -78,7 +78,7 @@ export default function MobileCategoryBar({ categories, activeCategory, onCatego
         <div ref={scrollContainerRef} className='flex gap-1 p-2 overflow-x-auto scrollbar-hide touch-pan-x' style={{ WebkitOverflowScrolling: 'touch' }}>
           {categories.map((category) => {
             const isActive = activeCategory === category.id;
-            const categoryImage = category.image || category.products[0]?.image || '';
+            const categoryImage = getImageURL(category.image || (category.products[0]?.images?.length ? category.products[0].images[0] : '') || '');
 
             return (
               <button

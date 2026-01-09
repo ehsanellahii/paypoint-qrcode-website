@@ -1,10 +1,12 @@
-/* eslint-disable react-hooks/set-state-in-effect */
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Dialog } from '@base-ui/react/dialog';
 import { cn } from '~/lib/utils';
 import { useGoogleMaps } from '~/hooks/useGoogleMaps';
+import { useLanguage } from '~/lib/language-context';
 
 type AddressParts = {
   formattedAddress: string;
@@ -28,6 +30,7 @@ type DeliveryAddressModalProps = {
   onClose: () => void;
   onSelect: (address: AddressParts) => void;
   googleApiKey: string;
+  onSuccess?: () => void;
 };
 
 function parseAddress(place: google.maps.places.PlaceResult): AddressParts {
@@ -52,19 +55,19 @@ function parseAddress(place: google.maps.places.PlaceResult): AddressParts {
   };
 }
 
-function validateAddress(a: AddressParts) {
+function validateAddress(a: AddressParts, t: any) {
   const missing: string[] = [];
-  if (!a.streetNumber) missing.push('House / street number');
-  if (!a.route) missing.push('Street name');
-  if (!a.postalCode) missing.push('Postal code');
-
+  if (!a.streetNumber) missing.push(t.houseStreetNumber);
+  if (!a.route) missing.push(t.streetName);
+  if (!a.postalCode) missing.push(t.postalCode);
   return {
     ok: missing.length === 0,
-    message: missing.length === 0 ? '' : `Please select a complete address that includes: ${missing.join(', ')}.`,
+    message: missing.length === 0 ? '' : `${t.pleaseSelectCompleteAddress} ${missing.join(', ')}.`,
   };
 }
 
-export default function DeliveryAddressModal({ open, onClose, onSelect, googleApiKey }: DeliveryAddressModalProps) {
+export default function DeliveryAddressModal({ open, onClose, onSelect, googleApiKey, onSuccess }: DeliveryAddressModalProps) {
+  const { t } = useLanguage();
   const inputRef = useRef<HTMLInputElement | null>(null);
 
   const [query, setQuery] = useState('');
@@ -95,7 +98,7 @@ export default function DeliveryAddressModal({ open, onClose, onSelect, googleAp
     if (!open || !loaded) return;
 
     if (!canUseGoogle) {
-      setTypingError('Google Maps is not loaded. Please try again.');
+      setTypingError(t.googleMapNotLoadedError);
       return;
     }
 
@@ -111,7 +114,7 @@ export default function DeliveryAddressModal({ open, onClose, onSelect, googleAp
     // Lightweight typing hint (while user types)
     // (Real validation happens on selection via place details)
     if (q.length < 6) {
-      setTypingError('Type more details (street, number, postal code) for best results.');
+      setTypingError(t.typeMoreDetailsError);
     } else {
       setTypingError('');
     }
@@ -139,7 +142,8 @@ export default function DeliveryAddressModal({ open, onClose, onSelect, googleAp
     }, 250);
 
     return () => window.clearTimeout(handle);
-  }, [query, open, canUseGoogle]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [query, loaded, open, canUseGoogle]);
 
   const fetchPlaceDetails = (placeId: string) => {
     if (!canUseGoogle) return;
@@ -159,12 +163,12 @@ export default function DeliveryAddressModal({ open, onClose, onSelect, googleAp
       (place, status) => {
         setLoading(false);
         if (status !== google.maps.places.PlacesServiceStatus.OK || !place) {
-          setSelectionError('Could not fetch address details. Please try another suggestion.');
+          setSelectionError(t.couldNotFetchAddressDetails);
           return;
         }
 
         const parsed = parseAddress(place);
-        const v = validateAddress(parsed);
+        const v = validateAddress(parsed, t);
 
         if (!v.ok) {
           setSelectionError(v.message);
@@ -172,6 +176,7 @@ export default function DeliveryAddressModal({ open, onClose, onSelect, googleAp
         }
 
         onSelect(parsed);
+        if (onSuccess) onSuccess();
         onClose();
       }
     );
@@ -204,12 +209,12 @@ export default function DeliveryAddressModal({ open, onClose, onSelect, googleAp
           <Dialog.Viewport className='fixed inset-0 z-50 flex items-center justify-center p-4'>
             <Dialog.Popup className='max-w-2xl w-[calc(100vw-2rem)] bg-white rounded-lg shadow-lg px-4'>
               <div className='py-6 px-5 text-center'>
-                <div className='font-semibold text-lg'>Delivery address</div>
+                <div className='font-semibold text-lg'>{t.deliveryAddress}</div>
                 <div className='mt-2 text-sm text-red-600'>{error}</div>
               </div>
               <div className='border-t border-gray-200 px-5 pb-4 pt-4'>
                 <button onClick={onClose} className='w-full bg-gray-200 py-2 px-3 rounded' type='button'>
-                  Close
+                  {t.close}
                 </button>
               </div>
             </Dialog.Popup>
@@ -227,8 +232,8 @@ export default function DeliveryAddressModal({ open, onClose, onSelect, googleAp
           <Dialog.Viewport className='fixed inset-0 z-50 flex items-center justify-center p-4'>
             <Dialog.Popup className='max-w-2xl w-[calc(100vw-2rem)] bg-white rounded-lg shadow-lg px-4'>
               <div className='py-8 px-5 text-center'>
-                <div className='font-semibold text-lg'>Loading Maps…</div>
-                <div className='mt-2 text-sm text-gray-500'>Please wait</div>
+                <div className='font-semibold text-lg'>{t.loadingMaps}…</div>
+                <div className='mt-2 text-sm text-gray-500'>{t.pleaseWait}</div>
               </div>
             </Dialog.Popup>
           </Dialog.Viewport>
@@ -243,12 +248,12 @@ export default function DeliveryAddressModal({ open, onClose, onSelect, googleAp
         <Dialog.Backdrop className='fixed inset-0 z-50 bg-black/30 data-open:animate-in data-closed:animate-out data-closed:fade-out-0 data-open:fade-in-0' />
         <Dialog.Viewport className='fixed inset-0 z-50 flex items-center justify-center p-4'>
           <Dialog.Popup className='max-w-2xl w-[calc(100vw-2rem)] max-h-[calc(100dvh-2rem)] flex flex-col bg-white rounded-lg shadow-lg p-0 px-4 data-open:animate-in data-closed:animate-out data-closed:fade-out-0 data-open:fade-in-0 data-closed:zoom-out-95 data-open:zoom-in-95'>
-            <Dialog.Title className='sr-only'>Delivery address</Dialog.Title>
+            <Dialog.Title className='sr-only'>{t.deliveryAddress}</Dialog.Title>
 
             {/* Header */}
             <div className='shrink-0 pt-5 px-5'>
-              <h2 className='text-xl font-semibold text-center'>Delivery address</h2>
-              <p className='text-gray-500 text-sm text-center mt-1'>Start typing and choose your address from the list.</p>
+              <h2 className='text-xl font-semibold text-center'>{t.deliveryAddress}</h2>
+              <p className='text-gray-500 text-sm text-center mt-1'>{t.startTypeAndChooseAddress}</p>
             </div>
 
             {/* Body */}
@@ -256,7 +261,7 @@ export default function DeliveryAddressModal({ open, onClose, onSelect, googleAp
               {/* Input */}
               <div className='mt-2'>
                 <label className='sr-only' htmlFor='delivery-address'>
-                  Delivery address
+                  {t.deliveryAddress}
                 </label>
                 <input
                   ref={inputRef}
@@ -264,16 +269,16 @@ export default function DeliveryAddressModal({ open, onClose, onSelect, googleAp
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
                   onKeyDown={onKeyDown}
-                  placeholder='Street + house number + postal code'
+                  placeholder={t.addressSearchPlaceholder}
                   className={cn(
-                    'w-full rounded-lg border px-4 py-3 text-base outline-none',
-                    'border-gray-200 focus:border-[#ffc338] focus:ring-2 focus:ring-[#ffc338]/30'
+                    'w-full rounded-lg border px-4 py-3 text-base outline-none focus:no-ring focus:border-none',
+                    'border-gray-200 focus:border-[#ffc338] focus:ring-0 focus:ring-[#ffc338]/30'
                   )}
                 />
 
                 {/* Typing helper / Loading */}
-                <div className='min-h-[22px] mt-2 text-sm'>
-                  {loading ? <span className='text-gray-500'>Searching…</span> : typingError ? <span className='text-gray-500'>{typingError}</span> : null}
+                <div className='min-h-5.5 mt-2 text-sm'>
+                  {loading ? <span className='text-gray-500'>{t.searching}…</span> : typingError ? <span className='text-gray-500'>{typingError}</span> : null}
                 </div>
 
                 {/* Selection error */}
@@ -302,15 +307,13 @@ export default function DeliveryAddressModal({ open, onClose, onSelect, googleAp
               )}
 
               {/* Empty state */}
-              {!loading && query.trim().length > 0 && predictions.length === 0 && (
-                <div className='mt-3 text-sm text-gray-500'>No suggestions found. Try adding a postal code.</div>
-              )}
+              {!loading && query.trim().length > 0 && predictions.length === 0 && <div className='mt-3 text-sm text-gray-500'>{t.noSuggestionsFoundAddPostalCode}</div>}
             </div>
 
             {/* Footer */}
             <div className='shrink-0 grid grid-cols-1 gap-4 pt-4 border-t border-gray-200 px-5 pb-4'>
               <Dialog.Close className='bg-gray-200 py-2 px-3 rounded' type='button'>
-                Cancel
+                {t.close}
               </Dialog.Close>
             </div>
           </Dialog.Popup>

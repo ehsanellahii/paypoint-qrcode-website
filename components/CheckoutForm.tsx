@@ -140,7 +140,7 @@ export default function CheckoutForm({ onSuccess, onBack }: CheckoutFormProps) {
           productId: item.product.id,
           productName: item.product.name,
           quantity: item.quantity,
-          basePrice: item.product.price,
+          basePrice: item.product.currentPrice,
           customizations: item.customizations,
           notes: item.notes,
         })),

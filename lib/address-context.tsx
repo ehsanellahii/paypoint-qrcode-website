@@ -97,9 +97,9 @@ export function AddressProvider({ children, storeKey }: { children: ReactNode; s
 
     // Helpful default behavior:
     // if user switches away from delivery, clear delivery address (optional)
-    if (t !== 'delivery') {
-      setDeliveryAddressState(null);
-    }
+    // if (t !== 'delivery') {
+    //   setDeliveryAddressState(null);
+    // }
   }, []);
 
   const setDeliveryAddress = useCallback((a: DeliveryAddress | null) => {

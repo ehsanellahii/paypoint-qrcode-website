@@ -78,7 +78,7 @@ export default function Header({ storeInfo }: { storeInfo?: IStoreInfo }) {
   // const [deliveryAddress, setDeliveryAddress] = useState<boolean | null>(null);
   const { orderType, setOrderType, deliveryAddress, setDeliveryAddress } = useAddress();
   const onChooseDelivery = () => {
-    setOrderType('delivery');
+    // setOrderType('delivery');
     setIsDeliveryModalOpen(true);
   };
   // ✅ Auto-fallback if default isn't available
@@ -96,6 +96,7 @@ export default function Header({ storeInfo }: { storeInfo?: IStoreInfo }) {
     if (!available.includes(orderType)) {
       setOrderType(available[0]); // first available becomes selected
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isPickupAvailable, isDeliveryAvailable, isDineInAvailable, orderType]);
 
   return (
@@ -109,7 +110,7 @@ export default function Header({ storeInfo }: { storeInfo?: IStoreInfo }) {
                 t={t}
                 value={orderType}
                 onChange={(v) => {
-                  if (v === 'delivery') {
+                  if (v === 'delivery' && !deliveryAddress) {
                     onChooseDelivery();
                   } else {
                     setOrderType(v);
@@ -125,12 +126,12 @@ export default function Header({ storeInfo }: { storeInfo?: IStoreInfo }) {
             {orderType === 'delivery' && deliveryAddress && (
               <button
                 onClick={() => setIsDeliveryModalOpen(true)}
-                className='mt-2 bg-gray-100 hover:bg-gray-200 transition rounded-full px-4 py-2 text-sm text-left'
+                className=' bg-gray-100 hover:bg-gray-200 transition rounded-full px-4 py-2 text-sm text-left'
                 aria-label='Change delivery address'>
-                <div className='font-medium text-gray-800'>Deliver to</div>
-                <div className='text-gray-600 truncate max-w-[320px]'>
+                <h5 className='font-medium text-gray-800'>{t.deliverTo}</h5>
+                <p className='text-gray-600 truncate max-w-[320px]'>
                   {deliveryAddress.streetNumber} {deliveryAddress.route}, {deliveryAddress.postalCode} {deliveryAddress.locality}
-                </div>
+                </p>
               </button>
             )}
 
@@ -138,10 +139,10 @@ export default function Header({ storeInfo }: { storeInfo?: IStoreInfo }) {
             <div className='bg-gray-200 rounded-full px-4 py-3 flex items-center text-sm mr-2' role='status' aria-label='Store hours'>
               {isOpen ? (
                 <p className='font-medium text-gray-700 whitespace-nowrap'>
-                  {t.openUntil} {ClosingHours}
+                  Online {t.openUntil} {ClosingHours}
                 </p>
               ) : (
-                <p className='font-medium text-red-600 whitespace-nowrap'>{t.closed}</p>
+                <p className='font-medium text-red-600 whitespace-nowrap'>Online {t.closed}</p>
               )}
             </div>
           </div>
@@ -189,6 +190,9 @@ export default function Header({ storeInfo }: { storeInfo?: IStoreInfo }) {
           setIsDeliveryModalOpen(false);
         }}
         googleApiKey={storeInfo?.posGoogleApiKey || ''}
+        onSuccess={() => {
+          if (orderType !== 'delivery') setOrderType('delivery');
+        }}
       />
     </>
   );

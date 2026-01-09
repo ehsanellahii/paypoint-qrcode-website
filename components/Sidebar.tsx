@@ -3,16 +3,16 @@
 import Image from 'next/image';
 import { useRef, useEffect } from 'react';
 import { ChevronUp, ChevronDown } from 'lucide-react';
-import { MenuCategory } from '@/lib/types';
+
 import { useScrollDetection, useSmoothScroll } from '@/hooks/useScrollDetection';
 import { useCart } from '@/lib/cart-context';
+import { getImageURL, MenuCategory } from '~/lib/utils';
 
 interface SidebarProps {
   categories: MenuCategory[];
   activeCategory: string;
   onCategoryClick: (categoryId: string) => void;
   logo?: string;
-  
 }
 
 export default function Sidebar({ categories, activeCategory, onCategoryClick, logo }: SidebarProps) {
@@ -103,7 +103,7 @@ export default function Sidebar({ categories, activeCategory, onCategoryClick, l
           aria-label='Product categories'>
           {categories.map((category) => {
             const isActive = activeCategory === category.id;
-            const categoryImage = category.image || category.products[0]?.image || '';
+            const categoryImage = getImageURL(category.image || (category.products[0]?.images.length ? category.products[0].images[0] : '') || '');
 
             return (
               <button

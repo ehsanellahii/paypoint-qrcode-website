@@ -67,6 +67,25 @@ export interface Translations {
   pickup: string;
   delivery: string;
   dineIn: string;
+  googleMapNotLoadedError: string;
+  typeMoreDetailsError: string;
+  addMoreAddressDetails: string;
+  deliveryAddress: string;
+  loadingMaps: string;
+  pleaseWait: string;
+  startTypeAndChooseAddress: string;
+  searching: string;
+  noSuggestionsFoundAddPostalCode: string;
+  cancel: string;
+  couldNotFetchAddressDetails: string;
+  addressSearchPlaceholder: string;
+  houseStreetNumber: string;
+  streetName: string;
+  postalCode: string;
+  pleaseSelectCompleteAddress: string;
+  deliverTo: string;
+  deliveryCharges: string;
+  weAreNotAvailableInYourArea: string;
 }
 
 export const translations: Record<Language, Translations> = {
@@ -108,7 +127,7 @@ export const translations: Record<Language, Translations> = {
     cash: 'Cash',
     posCardPayment: 'POS Card payment',
 
-    specialInstructions: 'Special Instructions (Optional)',
+    // specialInstructions: 'Special Instructions (Optional)',
     addAnySpecialRequests: 'Add any special requests...',
     addToCart: 'Add to Cart',
 
@@ -136,6 +155,27 @@ export const translations: Record<Language, Translations> = {
     extraBacon: 'Extra Bacon',
     extraCheese: 'Extra Cheese',
     extraPickles: 'Extra Pickles',
+
+    googleMapNotLoadedError: 'Google Maps is not loaded. Please try again.',
+    typeMoreDetailsError: 'Type more details (street, number, postal code) for best results.',
+    addMoreAddressDetails: 'Street + house number + postal code',
+    deliveryAddress: 'Delivery address',
+    loadingMaps: 'Loading Maps…',
+    pleaseWait: 'Please wait',
+    startTypeAndChooseAddress: 'Start typing and choose your address from the list.',
+    searching: 'Searching…',
+    noSuggestionsFoundAddPostalCode: 'No suggestions found. Try adding a postal code.',
+    cancel: 'Cancel',
+    couldNotFetchAddressDetails: 'Could not fetch address details. Please try another suggestion.',
+    addressSearchPlaceholder: 'Street + house number + postal code',
+    pleaseSelectCompleteAddress: 'Please select a complete address that includes:',
+    houseStreetNumber: 'House / street number',
+    streetName: 'Street name',
+    postalCode: 'Postal code',
+    deliverTo: 'Deliver to',
+    deliveryCharges: 'Delivery Charges',
+    weAreNotAvailableInYourArea: 'We are not available in your area.',
+    specialInstructions: 'Special Instructions / Notes (Optional)',
   },
   de: {
     openUntil: 'Geöffnet bis',
@@ -175,7 +215,7 @@ export const translations: Record<Language, Translations> = {
     cash: 'Bargeld',
     posCardPayment: 'POS-Kartenzahlung',
 
-    specialInstructions: 'Spezielle Anweisungen (Optional)',
+    // specialInstructions: 'Spezielle Anweisungen (Optional)',
     addAnySpecialRequests: 'Fügen Sie spezielle Wünsche hinzu...',
     addToCart: 'In den Warenkorb',
 
@@ -203,6 +243,27 @@ export const translations: Record<Language, Translations> = {
     extraBacon: 'Extra Speck',
     extraCheese: 'Extra Käse',
     extraPickles: 'Extra Essiggurken',
+    googleMapNotLoadedError: 'Google Maps ist nicht geladen. Bitte versuchen Sie es erneut.',
+    typeMoreDetailsError: 'Geben Sie mehr Details ein (Straße, Hausnummer, PLZ) für bessere Ergebnisse.',
+    addMoreAddressDetails: 'Straße + Hausnummer + PLZ',
+    deliveryAddress: 'Lieferadresse',
+    loadingMaps: 'Karten werden geladen…',
+    pleaseWait: 'Bitte warten',
+    startTypeAndChooseAddress: 'Beginnen Sie zu tippen und wählen Sie Ihre Adresse aus der Liste.',
+    searching: 'Suche…',
+    noSuggestionsFoundAddPostalCode: 'Keine Vorschläge gefunden. Versuchen Sie, eine PLZ hinzuzufügen.',
+    cancel: 'Abbrechen',
+    couldNotFetchAddressDetails: 'Adressdetails konnten nicht geladen werden. Bitte wählen Sie einen anderen Vorschlag.',
+    addressSearchPlaceholder: 'Straße + Hausnummer + PLZ',
+    pleaseSelectCompleteAddress: 'Bitte wählen Sie eine vollständige Adresse, die Folgendes enthält:',
+    houseStreetNumber: 'Haus- / Straßennummer',
+    streetName: 'Straßenname',
+    postalCode: 'Postleitzahl',
+    deliverTo: 'Liefern an',
+    deliveryCharges: 'Lieferkosten',
+    weAreNotAvailableInYourArea: 'Wir sind in Ihrer Gegend nicht verfügbar.',
+
+    specialInstructions: 'Spezielle Anweisungen / Notizen (Optional)',
   },
 };
 

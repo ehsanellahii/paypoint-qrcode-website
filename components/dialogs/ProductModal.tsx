@@ -2,116 +2,69 @@
 
 import { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
-import { Product, Section } from '@/lib/types';
 import { useCart } from '@/lib/cart-context';
 import { formatPrice } from '@/lib/api';
 import { ChevronUp, ChevronDown } from 'lucide-react';
 import { useScrollDetection, useSmoothScroll } from '@/hooks/useScrollDetection';
 import { Dialog } from '@base-ui/react/dialog';
-import { cn } from '~/lib/utils';
+import { AddOnGroup, getImageURL, MenuProduct } from '~/lib/utils';
+import QuantityControl from '../QuantityControl';
+import { useLanguage } from '~/lib/language-context';
+
+type CartItemCustomization = Record<string, Record<string, number>>; // sectionId -> { optionId -> qty }
 
 interface ProductModalProps {
-  product: Product | null;
+  product: MenuProduct | null;
   isOpen: boolean;
   onClose: () => void;
 }
 
 export default function ProductModal({ product, isOpen, onClose }: ProductModalProps) {
+  const { t } = useLanguage();
   const { addToCart } = useCart();
+
   const [quantity, setQuantity] = useState(1);
-  const [selectedOptions, setSelectedOptions] = useState<{
-    [sectionId: string]: string[];
-  }>({});
+  const [selectedOptions, setSelectedOptions] = useState<CartItemCustomization>({});
   const [notes, setNotes] = useState('');
+
   const scrollRef = useRef<HTMLDivElement>(null);
   const [containerElement, setContainerElement] = useState<HTMLDivElement | null>(null);
   const scroll = useScrollDetection({ current: containerElement }, 'vertical');
   const { scrollBy } = useSmoothScroll({ current: containerElement });
 
-  // Use callback ref to detect when container is mounted
+  // callback ref
   const setScrollRef = (element: HTMLDivElement | null) => {
     scrollRef.current = element;
-    console.log('[ProductModal] Scroll ref callback', { hasElement: !!element, isOpen });
     setContainerElement(element);
   };
 
-  // Debug: Log scroll state changes
-  useEffect(() => {
-    console.log('[ProductModal] Scroll state updated', scroll);
-  }, [scroll]);
-
+  // Reset modal state when opened
   useEffect(() => {
     if (!isOpen || !product) return;
 
-    // Reset state when dialog opens - this is intentional
-    const defaults: { [sectionId: string]: string[] } = {};
-    product.sections.forEach((section) => {
-      const defaultItems = section.items.filter((item) => item.default_selected).map((item) => item.id);
-      if (defaultItems.length > 0 || section.min_quantity > 0) {
-        defaults[section.id] = defaultItems;
-      }
-    });
-
-    // Batch state updates - resetting modal state on open is a valid pattern
     setQuantity(1);
     setNotes('');
-    setSelectedOptions(defaults);
+    setSelectedOptions({});
   }, [isOpen, product]);
 
-  // Trigger scroll detection check when dialog opens and content is rendered
+  // (Keep your existing scroll-check effect as-is if you want)
   useEffect(() => {
-    console.log('[ProductModal] Scroll check effect triggered', { isOpen, hasProduct: !!product });
-    if (!isOpen) {
-      console.log('[ProductModal] Dialog not open, returning');
-      return;
-    }
+    if (!isOpen) return;
 
     const checkScroll = () => {
       const container = containerElement || scrollRef.current;
-      console.log('[ProductModal] checkScroll called', {
-        hasContainer: !!container,
-        containerHeight: container?.clientHeight,
-        containerWidth: container?.clientWidth,
-        scrollHeight: container?.scrollHeight,
-        scrollTop: container?.scrollTop,
-      });
-
-      if (!container) {
-        console.log('[ProductModal] No container in checkScroll');
-        return;
-      }
-
-      // Ensure container has dimensions before checking
-      if (container.clientHeight === 0 || container.clientWidth === 0) {
-        console.log('[ProductModal] Container has no dimensions, skipping');
-        return;
-      }
-
-      console.log('[ProductModal] Dispatching scroll event to trigger re-check');
-      // Trigger scroll event to force re-check
+      if (!container) return;
+      if (container.clientHeight === 0 || container.clientWidth === 0) return;
       container.dispatchEvent(new Event('scroll', { bubbles: true }));
     };
 
-    // Multiple checks with increasing delays to catch all layout phases
     const rafIds: number[] = [];
-
     const scheduleCheck = () => {
-      console.log('[ProductModal] scheduleCheck called');
       const id1 = requestAnimationFrame(() => {
-        console.log('[ProductModal] RAF 1 - First scheduled check');
         checkScroll();
         const id2 = requestAnimationFrame(() => {
-          console.log('[ProductModal] RAF 2 - Second scheduled check');
           checkScroll();
-          const id3 = requestAnimationFrame(() => {
-            console.log('[ProductModal] RAF 3 - Third scheduled check');
-            checkScroll();
-            const id4 = requestAnimationFrame(() => {
-              console.log('[ProductModal] RAF 4 - Fourth scheduled check');
-              checkScroll();
-            });
-            rafIds.push(id4);
-          });
+          const id3 = requestAnimationFrame(() => checkScroll());
           rafIds.push(id3);
         });
         rafIds.push(id2);
@@ -119,152 +72,107 @@ export default function ProductModal({ product, isOpen, onClose }: ProductModalP
       rafIds.push(id1);
     };
 
-    console.log('[ProductModal] Starting scheduled checks');
     scheduleCheck();
-
-    // Check when all images are loaded (they affect scroll height)
-    const checkImages = () => {
-      console.log('[ProductModal] checkImages called');
-      const container = containerElement || scrollRef.current;
-      if (!container) {
-        console.log('[ProductModal] No container in checkImages');
-        return;
-      }
-
-      const images = container.querySelectorAll('img');
-      let loadedCount = 0;
-      const totalImages = images.length;
-
-      console.log('[ProductModal] Image check', { totalImages });
-
-      if (totalImages === 0) {
-        console.log('[ProductModal] No images found, checking scroll after frame');
-        // No images, check scroll after a frame
-        const id1 = requestAnimationFrame(() => {
-          const id2 = requestAnimationFrame(() => {
-            console.log('[ProductModal] No images - triggering checkScroll');
-            checkScroll();
-          });
-          rafIds.push(id2);
-        });
-        rafIds.push(id1);
-        return;
-      }
-
-      const handleImageLoad = () => {
-        loadedCount++;
-        console.log('[ProductModal] Image loaded', { loadedCount, totalImages });
-        if (loadedCount === totalImages) {
-          console.log('[ProductModal] All images loaded, checking scroll');
-          // All images loaded, check scroll multiple times
-          const id1 = requestAnimationFrame(() => {
-            const id2 = requestAnimationFrame(() => {
-              checkScroll();
-              const id3 = requestAnimationFrame(checkScroll);
-              rafIds.push(id3);
-            });
-            rafIds.push(id2);
-          });
-          rafIds.push(id1);
-        }
-      };
-
-      images.forEach((img, index) => {
-        if (img.complete) {
-          console.log(`[ProductModal] Image ${index} already complete`);
-          loadedCount++;
-          if (loadedCount === totalImages) {
-            console.log('[ProductModal] All images already complete, checking scroll');
-            const id1 = requestAnimationFrame(() => {
-              const id2 = requestAnimationFrame(() => {
-                checkScroll();
-                const id3 = requestAnimationFrame(checkScroll);
-                rafIds.push(id3);
-              });
-              rafIds.push(id2);
-            });
-            rafIds.push(id1);
-          }
-        } else {
-          console.log(`[ProductModal] Image ${index} not complete, adding listeners`);
-          img.addEventListener('load', handleImageLoad, { once: true });
-          img.addEventListener('error', handleImageLoad, { once: true });
-        }
-      });
-
-      return () => {
-        images.forEach((img) => {
-          img.removeEventListener('load', handleImageLoad);
-          img.removeEventListener('error', handleImageLoad);
-        });
-      };
-    };
-
-    // Wait a bit for DOM to be ready, then check images
-    console.log('[ProductModal] Scheduling image check');
-    const id1 = requestAnimationFrame(() => {
-      const id2 = requestAnimationFrame(() => {
-        console.log('[ProductModal] Running checkImages');
-        checkImages();
-      });
-      rafIds.push(id2);
-    });
-    rafIds.push(id1);
 
     return () => {
       rafIds.forEach((id) => cancelAnimationFrame(id));
     };
-  }, [isOpen, product, containerElement]);
+  }, [isOpen, containerElement]);
 
   if (!product) return null;
 
-  const handleOptionToggle = (sectionId: string, itemId: string, section: Section) => {
-    setSelectedOptions((prev) => {
-      const current = prev[sectionId] || [];
-      const isSelected = current.includes(itemId);
+  const getGroupTotal = (sectionId: string, map: CartItemCustomization) => {
+    const group = map[sectionId] || {};
+    return Object.values(group).reduce((a, b) => a + b, 0);
+  };
 
-      if (section.type === 'addons' && section.max_quantity === 1) {
-        // Radio behavior - single selection
-        return { ...prev, [sectionId]: [itemId] };
-      } else {
-        // Checkbox behavior - multiple selection
-        if (isSelected) {
-          return { ...prev, [sectionId]: current.filter((id) => id !== itemId) };
-        } else {
-          // Check max constraint
-          if (section.max_quantity > 0 && current.length >= section.max_quantity) {
-            return prev;
-          }
-          return { ...prev, [sectionId]: [...current, itemId] };
+  const getOptionQty = (sectionId: string, optionId: string) => selectedOptions?.[sectionId]?.[optionId] ?? 0;
+
+  const setOptionQty = (section: AddOnGroup, optionId: string, nextQty: number) => {
+    const sectionId = section._id;
+
+    setSelectedOptions((prev) => {
+      const currentGroup = prev[sectionId] || {};
+      const currentQty = currentGroup[optionId] ?? 0;
+
+      nextQty = Math.max(0, Math.floor(nextQty));
+
+      // Single selection (radio-like)
+      if (section.maximumQuantity === 1 && !section.isMultipleSelectionAllowed) {
+        if (nextQty <= 0) {
+          const { [sectionId]: _, ...rest } = prev;
+          return rest;
         }
+        return { ...prev, [sectionId]: { [optionId]: 1 } };
       }
+
+      // Multi quantities with max total enforcement
+      const groupTotal = Object.values(currentGroup).reduce((a, b) => a + b, 0);
+      const delta = nextQty - currentQty;
+      const nextTotal = groupTotal + delta;
+
+      if (section.maximumQuantity > 0 && nextTotal > section.maximumQuantity) {
+        return prev; // reject
+      }
+
+      const nextGroup: Record<string, number> = { ...currentGroup };
+      if (nextQty === 0) delete nextGroup[optionId];
+      else nextGroup[optionId] = nextQty;
+
+      if (Object.keys(nextGroup).length === 0) {
+        const { [sectionId]: _, ...rest } = prev;
+        return rest;
+      }
+
+      return { ...prev, [sectionId]: nextGroup };
     });
   };
 
-  const scrollContent = (direction: 'up' | 'down') => {
-    const amount = direction === 'up' ? -200 : 200;
-    scrollBy(amount, 'vertical');
+  const validateCustomizations = () => {
+    for (const section of product.addOns || []) {
+      const total = getGroupTotal(section._id, selectedOptions);
+
+      const min = section.minimumQuantity ?? 0;
+      const max = section.maximumQuantity ?? 0;
+
+      if (min > 0 && total < min) {
+        return { ok: false, message: `${section.name}: choose at least ${min}` };
+      }
+      if (max > 0 && total > max) {
+        return { ok: false, message: `${section.name}: choose up to ${max}` };
+      }
+    }
+    return { ok: true, message: '' };
   };
 
-  const handleAddToCart = () => {
-    addToCart(product, quantity, selectedOptions, notes);
-    onClose();
+  const scrollContent = (direction: 'up' | 'down') => {
+    scrollBy(direction === 'up' ? -200 : 200, 'vertical');
   };
 
   const calculateTotalPrice = () => {
-    let total = product.price;
+    let total = product.currentPrice;
 
-    product.sections.forEach((section) => {
-      const selected = selectedOptions[section.id] || [];
-      selected.forEach((itemId) => {
-        const item = section.items.find((i) => i.id === itemId);
-        if (item) {
-          total += item.price;
-        }
+    (product.addOns || []).forEach((section) => {
+      const group = selectedOptions[section._id] || {};
+      Object.entries(group).forEach(([optionId, qty]) => {
+        const opt = section.options.find((i) => i._id === optionId);
+        if (opt && qty > 0) total += opt.price * qty;
       });
     });
 
     return total * quantity;
+  };
+
+  const handleAddToCart = () => {
+    const v = validateCustomizations();
+    if (!v.ok) {
+      // Hook your toast here if you want:
+      // ToastPopup(v.message, 'error');
+      return;
+    }
+
+    addToCart(product, quantity, selectedOptions, notes);
+    onClose();
   };
 
   return (
@@ -276,10 +184,7 @@ export default function ProductModal({ product, isOpen, onClose }: ProductModalP
             <Dialog.Title className='sr-only'>{product.name}</Dialog.Title>
 
             {/* Up Arrow */}
-            {(() => {
-              console.log('[ProductModal] Render check - scroll state', scroll);
-              return scroll.canScrollUp;
-            })() && (
+            {scroll.canScrollUp && (
               <button
                 onClick={() => scrollContent('up')}
                 className='absolute top-8 left-1/2 -translate-x-1/2 z-10 rounded-full p-2 shadow-lg mx-4'
@@ -293,120 +198,138 @@ export default function ProductModal({ product, isOpen, onClose }: ProductModalP
             <div ref={setScrollRef} className='grow overflow-y-scroll scrollbar-hide py-4 px-5'>
               {/* Product Image */}
               <div className='relative w-full max-w-md h-96 mx-auto overflow-hidden rounded-lg'>
-                <Image src={product.image} alt={`${product.name} image`} fill className='object-contain' sizes='(max-width: 768px) 100vw, 448px' />
+                <Image
+                  src={product.images?.length ? getImageURL(product.images[0]) : '/'}
+                  alt={`${product.name} image`}
+                  fill
+                  className='object-contain'
+                  sizes='(max-width: 768px) 100vw, 448px'
+                />
               </div>
 
               {/* Product Details */}
               <div className='text-center mt-4'>
                 <h1 className='font-semibold text-2xl'>{product.name}</h1>
-                <div className='text-gray-500 text-xl'>{formatPrice(product.price)}</div>
+                <div className='text-gray-500 text-xl'>{formatPrice(product.currentPrice)}</div>
                 {product.description && <div className='py-4 text-gray-500'>{product.description}</div>}
               </div>
 
               {/* Sections (Customizations) */}
               <div className='flex flex-col items-stretch w-full'>
-                {product.sections && product.sections.length > 0 && (
+                {product.haveCustomizations && product.addOns?.length > 0 && (
                   <>
-                    {product.sections.map((section) => (
-                      <div key={section.id} className='mt-4'>
-                        {/* Section Header */}
-                        <div className='mb-4 flex flex-col items-center justify-center'>
-                          <h2 className='font-semibold my-4 text-center text-lg mb-2'>{section.name}</h2>
-                          {!section.optional && section.min_quantity > 0 && (
-                            <span className='text-gray-500 font-normal text-sm italic'>Required - Choose at least {section.min_quantity}</span>
-                          )}
-                          {section.optional && section.max_quantity > 0 && (
-                            <span className='text-gray-500 font-normal text-sm italic'>Optional - Choose up to {section.max_quantity}</span>
-                          )}
-                        </div>
+                    {product.addOns.map((section) => {
+                      const groupTotal = getGroupTotal(section._id, selectedOptions);
+                      const min = section.minimumQuantity ?? 0;
+                      const max = section.maximumQuantity ?? 0;
 
-                        {/* Options Grid */}
-                        <div className='grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4'>
-                          {section.items.map((item) => {
-                            const displayName = item.real_name || item.name || item.product?.name || item.addon?.name || '';
-                            const itemPrice = item.price;
-                            const itemImage = item.product?.image || item.addon?.image || '';
-                            const isAvailable = item.in_stock;
+                      return (
+                        <div key={section._id} className='mt-4'>
+                          {/* Section Header */}
+                          <div className='mb-4 flex flex-col items-center justify-center'>
+                            <h2 className='font-semibold my-4 text-center text-lg mb-2'>{section.name}</h2>
 
-                            const selected = selectedOptions[section.id] || [];
-                            const isSelected = selected.includes(item.id);
+                            {min > 0 && <span className='text-gray-500 font-normal text-sm italic'>Required — choose at least {min}</span>}
 
-                            const currentCount = selected.length;
-                            const isMaxReached = section.max_quantity > 0 && currentCount >= section.max_quantity && !isSelected;
+                            {max > 0 && (
+                              <span className='text-gray-500 font-normal text-sm italic'>
+                                Choose up to {max} (selected {groupTotal})
+                              </span>
+                            )}
+                          </div>
 
-                            return (
-                              <button
-                                key={item.id}
-                                onClick={() => !isMaxReached && isAvailable && handleOptionToggle(section.id, item.id, section)}
-                                disabled={isMaxReached || !isAvailable}
-                                className={`
-                              rounded cursor-pointer text-center border overflow-hidden select-none flex flex-col
-                              ${isSelected ? 'bg-[#ffc338] border-[#ffc338]' : 'bg-gray-100 border-gray-200'}
-                              ${!isAvailable ? 'opacity-30' : ''}
-                              ${isMaxReached && isAvailable ? 'opacity-50 cursor-not-allowed' : ''}
-                            `}>
-                                {/* Option Image */}
-                                {itemImage && (
-                                  <div className='relative w-full h-48'>
-                                    <Image src={itemImage} alt={`${displayName} image`} fill className='object-contain' sizes='(max-width: 768px) 50vw, 200px' />
-                                  </div>
-                                )}
+                          {/* Options Grid */}
+                          <div className='grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4'>
+                            {section.options.map((item) => {
+                              const displayName = item.name || '';
+                              const itemPrice = item.price;
+                              const itemImage = ''; // if you add images later
+                              const isAvailable = true;
 
-                                {/* Option Details */}
-                                <div className='py-4 px-2 grow flex flex-col items-center justify-center'>
-                                  <span className='font-semibold'>{displayName}</span>
-                                  <div className='text-gray-500 text-center'>{!isAvailable ? 'Out of stock' : itemPrice > 0 ? formatPrice(itemPrice) : ''}</div>
+                              const qty = getOptionQty(section._id, item._id);
+                              const isSelected = qty > 0;
+
+                              const maxReached = max > 0 && groupTotal >= max && qty === 0;
+
+                              // allow increasing up to remaining capacity
+                              const optionMax = max > 0 ? qty + (max - groupTotal) : section.maxMultipleSelection ?? 99;
+
+                              return (
+                                <div
+                                  key={item._id}
+                                  className={`
+                                    rounded text-center border overflow-hidden select-none flex flex-col
+                                    ${isSelected ? 'bg-[#ffc338] border-[#ffc338]' : 'bg-gray-100 border-gray-200'}
+                                    ${!isAvailable ? 'opacity-30' : ''}
+                                  `}>
+                                  {/* click-to-toggle for non-multi-qty mode */}
+                                  {!section.isMultipleSelectionAllowed && (
+                                    <button
+                                      type='button'
+                                      onClick={() => {
+                                        if (!isAvailable) return;
+                                        if (maxReached) return;
+                                        setOptionQty(section, item._id, isSelected ? 0 : 1);
+                                      }}
+                                      className='w-full grow'>
+                                      {itemImage && (
+                                        <div className='relative w-full h-48'>
+                                          <Image src={itemImage} alt={`${displayName} image`} fill className='object-contain' sizes='(max-width: 768px) 50vw, 200px' />
+                                        </div>
+                                      )}
+
+                                      <div className='py-4 px-2 flex flex-col items-center justify-center'>
+                                        <span className='font-semibold'>{displayName}</span>
+                                        <div className='text-gray-500 text-center'>{!isAvailable ? 'Out of stock' : itemPrice > 0 ? formatPrice(itemPrice) : ''}</div>
+                                      </div>
+                                    </button>
+                                  )}
+
+                                  {/* multi-qty mode */}
+                                  {section.isMultipleSelectionAllowed && (
+                                    <>
+                                      <div className='py-4 px-2 grow flex flex-col items-center justify-center'>
+                                        <span className='font-semibold'>{displayName}</span>
+                                        <div className='text-gray-500 text-center'>{!isAvailable ? 'Out of stock' : itemPrice > 0 ? formatPrice(itemPrice) : ''}</div>
+                                      </div>
+
+                                      <div className='flex items-center justify-center py-3'>
+                                        <QuantityControl
+                                          value={qty}
+                                          onChange={(val) => {
+                                            if (!isAvailable) return;
+                                            if (val > qty && max > 0 && groupTotal >= max) return;
+                                            setOptionQty(section, item._id, val);
+                                          }}
+                                          min={0}
+                                          max={optionMax}
+                                          size='md'
+                                          variant='compact'
+                                        />
+                                      </div>
+
+                                      {maxReached && <div className='pb-3 text-xs text-gray-600'>Max reached</div>}
+                                    </>
+                                  )}
                                 </div>
-
-                                {/* Quantity controls (bottom) */}
-                                {isAvailable && (
-                                  <div className='pb-4 flex items-center justify-center gap-2'>
-                                    <button
-                                      type='button'
-                                      // onClick={(e) => dec(e, section.id, item.id)}
-                                      // disabled={qty <= 0}
-                                      className={cn(
-                                        'h-10 w-10 rounded-sm flex items-center justify-center text-2xl font-medium',
-                                        'bg-black/10 hover:bg-black/15 transition'
-                                        // qty <= 0 && 'opacity-40 cursor-not-allowed'
-                                      )}
-                                      aria-label='Decrease quantity'>
-                                      −
-                                    </button>
-
-                                    {/* <span className='min-w-6 text-xl font-semibold text-gray-900 text-center'>{Math.max(qty, 0)}</span> */}
-                                    <span className='min-w-6 text-xl font-semibold text-gray-900 text-center'>0</span>
-
-                                    <button
-                                      type='button'
-                                      // onClick={(e) => inc(e, section.id, item.id)}
-                                      // disabled={isMaxReached}
-                                      className={cn(
-                                        'h-10 w-10 rounded-sm flex items-center justify-center text-2xl font-medium',
-                                        'bg-black/10 hover:bg-black/15 transition',
-                                        isMaxReached && 'opacity-40 cursor-not-allowed'
-                                      )}
-                                      aria-label='Increase quantity'>
-                                      +
-                                    </button>
-                                  </div>
-                                )}
-                              </button>
-                            );
-                          })}
+                              );
+                            })}
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </>
                 )}
+              </div>
+              {/* Notes (optional) */}
+              <div className='mt-6'>
+                <h2 className='font-semibold mt-6 mb-2 text-lg'>{t.specialInstructions}</h2>
+                <textarea className='w-full h-20 p-2 border rounded focus:border-none' value={notes} onChange={(e) => setNotes(e.target.value)} />
               </div>
             </div>
 
             {/* Down Arrow */}
-            {(() => {
-              console.log('[ProductModal] Render check - scroll.canScrollDown', scroll.canScrollDown);
-              return scroll.canScrollDown;
-            })() && (
+            {scroll.canScrollDown && (
               <button
                 onClick={() => scrollContent('down')}
                 className='absolute bottom-24 left-1/2 -translate-x-1/2 z-10 rounded-full p-2 shadow-lg mx-4'
@@ -416,11 +339,12 @@ export default function ProductModal({ product, isOpen, onClose }: ProductModalP
               </button>
             )}
 
-            {/* Footer with buttons */}
+            {/* Footer */}
             <div className='shrink-0 grid grid-cols-2 gap-4 pt-4 border-t border-gray-200 px-5 pb-4'>
               <Dialog.Close className='bg-gray-200 py-2 px-3 rounded' type='button'>
                 Close
               </Dialog.Close>
+
               <button onClick={handleAddToCart} className='bg-[#ffc338] py-2 px-3 rounded font-medium' type='button'>
                 Add ({formatPrice(calculateTotalPrice())})
               </button>

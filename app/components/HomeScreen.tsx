@@ -9,15 +9,16 @@ import ProductCard from '@/components/ProductCard';
 import ProductModal from '~/components/dialogs/ProductModal';
 import BottomBar from '@/components/BottomBar';
 import Footer from '@/components/Footer';
-import { SiteData, Product, IStoreInfo } from '@/lib/types';
+import { IStoreInfo } from '@/lib/types';
 import { fetchMenuData, getCategories } from '@/lib/api';
+import { IMenuData, MenuProduct } from '~/lib/utils';
 
 export default function HomeScreen({ storeInfo }: { storeInfo?: IStoreInfo }) {
-  const [menuData, setMenuData] = useState<SiteData | null>(null);
+  const [menuData, setMenuData] = useState<IMenuData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeCategory, setActiveCategory] = useState('');
-  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [selectedProduct, setSelectedProduct] = useState<MenuProduct | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const observerRef = useRef<IntersectionObserver | null>(null);
 
@@ -25,7 +26,8 @@ export default function HomeScreen({ storeInfo }: { storeInfo?: IStoreInfo }) {
     async function loadMenu() {
       try {
         setLoading(true);
-        const data = await fetchMenuData();
+        const data = await fetchMenuData(storeInfo?.adminId, storeInfo?.storeId);
+        console.log('Fetched Menu Data:', data);
         setMenuData(data);
         const categories = getCategories(data);
         if (categories.length > 0) {
@@ -39,7 +41,7 @@ export default function HomeScreen({ storeInfo }: { storeInfo?: IStoreInfo }) {
       }
     }
     loadMenu();
-  }, []);
+  }, [storeInfo?.adminId, storeInfo?.storeId]);
 
   const productsByCategory = menuData ? getCategories(menuData) : [];
 
@@ -71,11 +73,13 @@ export default function HomeScreen({ storeInfo }: { storeInfo?: IStoreInfo }) {
     };
   }, [menuData]);
 
-  const handleProductClick = (product: Product) => {
-    if (product.in_stock || product.automatic_in_stock) {
-      setSelectedProduct(product);
-      setIsModalOpen(true);
-    }
+  const handleProductClick = (product: MenuProduct) => {
+    // if (product.in_stock || product.automatic_in_stock) {
+    //   setSelectedProduct(product);
+    //   setIsModalOpen(true);
+    // }
+    setSelectedProduct(product);
+    setIsModalOpen(true);
   };
 
   const handleCloseModal = () => {

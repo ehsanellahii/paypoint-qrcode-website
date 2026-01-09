@@ -4,10 +4,11 @@ import { useState } from 'react';
 import Image from 'next/image';
 import { useCart } from '@/lib/cart-context';
 import { useLanguage } from '@/lib/language-context';
-import { formatPrice, isRestaurantClosed } from '@/lib/api';
+import { formatPrice } from '@/lib/api';
 import Cart from './Cart';
 import { IStoreInfo } from '~/lib/types';
 import { isRestaurantOpen } from '~/lib/restaurantTimings';
+import { getImageURL } from '~/lib/utils';
 
 export default function BottomBar({ storeInfo }: { storeInfo?: IStoreInfo }) {
   const { cart, totalItems, totalPrice } = useCart();
@@ -29,7 +30,13 @@ export default function BottomBar({ storeInfo }: { storeInfo?: IStoreInfo }) {
           {cart.map((item) => (
             <div key={item.id} className='inline-flex h-full items-center bg-gray-100 rounded pl-3 pr-5 mr-3'>
               <div className='relative w-14 aspect-square mr-2'>
-                <Image src={item.product.image} alt={`${item.product.name} image`} fill className='object-cover' sizes='56px' />
+                <Image
+                  src={item.product.images?.length ? getImageURL(item.product.images[0]) : ''}
+                  alt={`${item.product.name} image`}
+                  fill
+                  className='object-cover'
+                  sizes='56px'
+                />
                 {item.quantity > 1 && <div className='absolute bottom-0 right-0 bg-[#ffc338] text-black text-xs font-bold rounded-tl px-1'>{item.quantity}</div>}
               </div>
               <h3 className='font-medium'>{item.product.name}</h3>
@@ -47,7 +54,7 @@ export default function BottomBar({ storeInfo }: { storeInfo?: IStoreInfo }) {
         </div>
       </button>
 
-      <Cart isOpen={isCartOpen} onOpenChange={setIsCartOpen} />
+      <Cart isOpen={isCartOpen} onOpenChange={setIsCartOpen} storeInfo={storeInfo} />
     </>
   );
 }

@@ -1,11 +1,13 @@
 import React, { cache } from 'react';
 import HomeScreen from '../components/HomeScreen';
 import { Metadata } from 'next';
+import { notFound } from 'next/navigation';
 
 // export const dynamic = 'force-dynamic';
 // export const revalidate = 0;
 
-const API_BASE_URL = 'https://api.paypointpos.de/integration';
+// const API_BASE_URL = 'https://api.paypointpos.de/integration';
+const API_BASE_URL = 'http://localhost:4000/integration';
 const API_HEADERS = {
   'accept': 'application/json',
   'content-type': 'application/json',
@@ -38,11 +40,15 @@ const getStoreData = cache(async (slug: string) => {
     settings: data?.data?.webShopSettings || null,
     adminGoogleApiKey: data?.data?.adminGoogleApiKey || '',
     posGoogleApiKey: data?.data?.posGoogleApiKey || '',
+    postalRates: data?.data?.postalRates || [],
+    storeId: data?.data?._id || '',
+    adminId: data?.data?.adminId || '',
   };
 });
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
+  if (BLOCKED.has(slug)) notFound();
   const store = await getStoreData(slug);
 
   return {
@@ -58,9 +64,12 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   };
 }
 
+const BLOCKED = new Set(['favicon.ico', 'robots.txt', 'sitemap.xml']);
+
 const page = async ({ params }: { params: Promise<{ slug: string }> }) => {
-  const { slug } = await params;
-  console.log('Slug:', slug);
+  const paramsResult = await params;
+  const { slug } = paramsResult;
+  if (BLOCKED.has(slug)) notFound();
   const storeInfo = await getStoreData(slug);
   console.log('Store Info:', storeInfo);
   return <HomeScreen storeInfo={storeInfo} />;
