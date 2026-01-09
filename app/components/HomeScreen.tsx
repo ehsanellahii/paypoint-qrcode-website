@@ -34,6 +34,7 @@ export default function HomeScreen({ storeInfo }: { storeInfo?: IStoreInfo }) {
           setActiveCategory(categories[0].id);
         }
       } catch (err: any) {
+        console.log('Error fetching menu data:', err);
         setError(err?.message ?? 'Failed to load menu data');
         console.error(err);
       } finally {
