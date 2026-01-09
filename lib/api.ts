@@ -38,6 +38,7 @@ export const fetchMenuData = async (adminId?: string, storeId?: string) => {
   const API_HEADERS = {
     'accept': 'application/json',
     'content-type': 'application/json',
+    "custom-header": "custom-value",
     'x-paypoint-tenant_id': adminId,
     'x-paypoint-store_id': storeId,
   };

@@ -33,8 +33,8 @@ export default function HomeScreen({ storeInfo }: { storeInfo?: IStoreInfo }) {
         if (categories.length > 0) {
           setActiveCategory(categories[0].id);
         }
-      } catch (err) {
-        setError('Failed to load menu data');
+      } catch (err: any) {
+        setError(err?.message ?? 'Failed to load menu data');
         console.error(err);
       } finally {
         setLoading(false);
