@@ -38,9 +38,8 @@ export const fetchMenuData = async (adminId?: string, storeId?: string) => {
   const API_HEADERS = {
     'accept': 'application/json',
     'content-type': 'application/json',
-    "custom-header": "custom-value",
-    'x-paypoint-tenant_id': adminId,
-    'x-paypoint-store_id': storeId,
+    'x-paypoint-tenant-id': adminId,
+    'x-paypoint-store-id': storeId,
   };
   try {
     const response = await fetch(`https://api.paypointpos.de/integration/menu`, {
@@ -49,7 +48,10 @@ export const fetchMenuData = async (adminId?: string, storeId?: string) => {
     });
 
     if (!response.ok) {
-      throw new Error(`Failed to fetch menu data: ${response.status}`);
+      // get the message from the response body
+      const errorData = await response.json();
+      console.error('Error response data:', errorData);
+      throw new Error(errorData.message ?? `Failed to fetch menu data: ${response.status}`);
     }
 
     const data: IMenuData = await response.json();
