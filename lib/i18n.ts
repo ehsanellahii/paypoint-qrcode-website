@@ -86,6 +86,12 @@ export interface Translations {
   deliverTo: string;
   deliveryCharges: string;
   weAreNotAvailableInYourArea: string;
+  minimumOrderAmountIs: string;
+  requiredChooseAtleast: string;
+  chooseUpTo: string;
+  maxReached: string;
+  add: string;
+  selected: string;
 }
 
 export const translations: Record<Language, Translations> = {
@@ -176,6 +182,12 @@ export const translations: Record<Language, Translations> = {
     deliveryCharges: 'Delivery Charges',
     weAreNotAvailableInYourArea: 'We are not available in your area.',
     specialInstructions: 'Special Instructions / Notes (Optional)',
+    minimumOrderAmountIs: 'Minimum order amount is',
+    requiredChooseAtleast: 'Required: Choose at least',
+    chooseUpTo: 'Choose up to',
+    maxReached: 'Max reached',
+    add: 'Add',
+    selected: 'selected',
   },
   de: {
     openUntil: 'Geöffnet bis',
@@ -264,6 +276,12 @@ export const translations: Record<Language, Translations> = {
     weAreNotAvailableInYourArea: 'Wir sind in Ihrer Gegend nicht verfügbar.',
 
     specialInstructions: 'Spezielle Anweisungen / Notizen (Optional)',
+    minimumOrderAmountIs: 'Mindestbestellwert ist',
+    requiredChooseAtleast: 'Erforderlich: Wählen Sie mindestens',
+    chooseUpTo: 'Wählen Sie bis zu',
+    maxReached: 'Maximal erreicht',
+    add: 'Hinzufügen',
+    selected: 'ausgewählt',
   },
 };
 

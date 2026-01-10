@@ -7,7 +7,7 @@ import { formatPrice } from '@/lib/api';
 import { ChevronUp, ChevronDown } from 'lucide-react';
 import { useScrollDetection, useSmoothScroll } from '@/hooks/useScrollDetection';
 import { Dialog } from '@base-ui/react/dialog';
-import { AddOnGroup, getImageURL, MenuProduct } from '~/lib/utils';
+import { AddOnGroup, cn, getImageURL, MenuProduct } from '~/lib/utils';
 import QuantityControl from '../QuantityControl';
 import { useLanguage } from '~/lib/language-context';
 
@@ -32,6 +32,9 @@ export default function ProductModal({ product, isOpen, onClose }: ProductModalP
   const scroll = useScrollDetection({ current: containerElement }, 'vertical');
   const { scrollBy } = useSmoothScroll({ current: containerElement });
 
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const sectionRefs = useRef<Record<string, HTMLDivElement | null>>({});
+
   // callback ref
   const setScrollRef = (element: HTMLDivElement | null) => {
     scrollRef.current = element;
@@ -45,6 +48,7 @@ export default function ProductModal({ product, isOpen, onClose }: ProductModalP
     setQuantity(1);
     setNotes('');
     setSelectedOptions({});
+    setErrors({});
   }, [isOpen, product]);
 
   // (Keep your existing scroll-check effect as-is if you want)
@@ -93,20 +97,24 @@ export default function ProductModal({ product, isOpen, onClose }: ProductModalP
 
     setSelectedOptions((prev) => {
       const currentGroup = prev[sectionId] || {};
-      const currentQty = currentGroup[optionId] ?? 0;
-
       nextQty = Math.max(0, Math.floor(nextQty));
 
-      // Single selection (radio-like)
-      if (section.maximumQuantity === 1 && !section.isMultipleSelectionAllowed) {
+      // ✅ Single-choice (radio-like): if multiple selection is NOT allowed,
+      // always replace the selection with the clicked option.
+      if (!section.isMultipleSelectionAllowed) {
+        // turning off (unselect)
         if (nextQty <= 0) {
           const { [sectionId]: _, ...rest } = prev;
           return rest;
         }
+
+        // turning on (select) -> replace whatever was selected before
         return { ...prev, [sectionId]: { [optionId]: 1 } };
       }
 
-      // Multi quantities with max total enforcement
+      // ✅ Multi-qty mode (your existing logic)
+      const currentQty = currentGroup[optionId] ?? 0;
+
       const groupTotal = Object.values(currentGroup).reduce((a, b) => a + b, 0);
       const delta = nextQty - currentQty;
       const nextTotal = groupTotal + delta;
@@ -126,9 +134,19 @@ export default function ProductModal({ product, isOpen, onClose }: ProductModalP
 
       return { ...prev, [sectionId]: nextGroup };
     });
+
+    // clear error for that section (your existing part)
+    setErrors((prev) => {
+      if (!prev[sectionId]) return prev;
+      const copy = { ...prev };
+      delete copy[sectionId];
+      return copy;
+    });
   };
 
   const validateCustomizations = () => {
+    const nextErrors: Record<string, string> = {};
+
     for (const section of product.addOns || []) {
       const total = getGroupTotal(section._id, selectedOptions);
 
@@ -136,13 +154,15 @@ export default function ProductModal({ product, isOpen, onClose }: ProductModalP
       const max = section.maximumQuantity ?? 0;
 
       if (min > 0 && total < min) {
-        return { ok: false, message: `${section.name}: choose at least ${min}` };
-      }
-      if (max > 0 && total > max) {
-        return { ok: false, message: `${section.name}: choose up to ${max}` };
+        nextErrors[section._id] = `${section.name}: choose at least ${min}`;
+      } else if (max > 0 && total > max) {
+        nextErrors[section._id] = `${section.name}: choose up to ${max}`;
       }
     }
-    return { ok: true, message: '' };
+
+    const firstInvalidSectionId = Object.keys(nextErrors)[0] || null;
+
+    return { ok: firstInvalidSectionId === null, errors: nextErrors, firstInvalidSectionId };
   };
 
   const scrollContent = (direction: 'up' | 'down') => {
@@ -162,15 +182,31 @@ export default function ProductModal({ product, isOpen, onClose }: ProductModalP
 
     return total * quantity;
   };
+  const scrollToSection = (sectionId: string) => {
+    const container = containerElement || scrollRef.current;
+    const el = sectionRefs.current[sectionId];
+    if (!container || !el) return;
+
+    // Scroll within the modal container (not window)
+    const top = el.offsetTop - 24; // small padding
+    container.scrollTo({ top, behavior: 'smooth' });
+  };
 
   const handleAddToCart = () => {
     const v = validateCustomizations();
+
     if (!v.ok) {
-      // Hook your toast here if you want:
-      // ToastPopup(v.message, 'error');
+      setErrors(v.errors);
+
+      if (v.firstInvalidSectionId) {
+        // make sure DOM has the red text before scrolling (nice UX)
+        requestAnimationFrame(() => scrollToSection(v.firstInvalidSectionId!));
+      }
+
       return;
     }
 
+    setErrors({});
     addToCart(product, quantity, selectedOptions, notes);
     onClose();
   };
@@ -224,16 +260,25 @@ export default function ProductModal({ product, isOpen, onClose }: ProductModalP
                       const max = section.maximumQuantity ?? 0;
 
                       return (
-                        <div key={section._id} className='mt-4'>
+                        <div
+                          key={section._id}
+                          className='mt-4'
+                          ref={(el) => {
+                            sectionRefs.current[section._id] = el;
+                          }}>
                           {/* Section Header */}
                           <div className='mb-4 flex flex-col items-center justify-center'>
                             <h2 className='font-semibold my-4 text-center text-lg mb-2'>{section.name}</h2>
 
-                            {min > 0 && <span className='text-gray-500 font-normal text-sm italic'>Required — choose at least {min}</span>}
+                            {min > 0 && (
+                              <span className={cn('text-gray-500 font-normal text-sm italic', errors[section._id] ? 'text-red-600' : 'text-gray-500')}>
+                                {t.requiredChooseAtleast} {min}
+                              </span>
+                            )}
 
                             {max > 0 && (
                               <span className='text-gray-500 font-normal text-sm italic'>
-                                Choose up to {max} (selected {groupTotal})
+                                {t.chooseUpTo} {max} ({t.selected} {groupTotal})
                               </span>
                             )}
                           </div>
@@ -249,7 +294,7 @@ export default function ProductModal({ product, isOpen, onClose }: ProductModalP
                               const qty = getOptionQty(section._id, item._id);
                               const isSelected = qty > 0;
 
-                              const maxReached = max > 0 && groupTotal >= max && qty === 0;
+                              const maxReached = section.isMultipleSelectionAllowed && max > 0 && groupTotal >= max && qty === 0;
 
                               // allow increasing up to remaining capacity
                               const optionMax = max > 0 ? qty + (max - groupTotal) : section.maxMultipleSelection ?? 99;
@@ -308,7 +353,7 @@ export default function ProductModal({ product, isOpen, onClose }: ProductModalP
                                         />
                                       </div>
 
-                                      {maxReached && <div className='pb-3 text-xs text-gray-600'>Max reached</div>}
+                                      {maxReached && <div className='pb-3 text-xs text-gray-600'>{t.maxReached}</div>}
                                     </>
                                   )}
                                 </div>
@@ -342,11 +387,11 @@ export default function ProductModal({ product, isOpen, onClose }: ProductModalP
             {/* Footer */}
             <div className='shrink-0 grid grid-cols-2 gap-4 pt-4 border-t border-gray-200 px-5 pb-4'>
               <Dialog.Close className='bg-gray-200 py-2 px-3 rounded' type='button'>
-                Close
+                {t.close}
               </Dialog.Close>
 
               <button onClick={handleAddToCart} className='bg-[#ffc338] py-2 px-3 rounded font-medium' type='button'>
-                Add ({formatPrice(calculateTotalPrice())})
+                {t.add} ({formatPrice(calculateTotalPrice())})
               </button>
             </div>
           </Dialog.Popup>

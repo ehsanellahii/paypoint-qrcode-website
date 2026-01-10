@@ -8,7 +8,7 @@ import { useLanguage } from '@/lib/language-context';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import CheckoutForm from './CheckoutForm';
 import { IStoreInfo } from '~/lib/types';
-import { cn, getDeliveryChargesFromPostalCode, getImageURL, isDeliveryAvailableForPostalCode } from '~/lib/utils';
+import { cn, getImageURL, getPostalRateInfo } from '~/lib/utils';
 import { useAddress } from '~/lib/address-context';
 
 interface CartProps {
@@ -19,6 +19,7 @@ interface CartProps {
 
 export default function Cart({ isOpen: controlledIsOpen, onOpenChange, storeInfo }: CartProps = {}) {
   const { cart, updateQuantity, totalPrice } = useCart();
+  const { orderType } = useAddress();
   const { deliveryAddress } = useAddress();
   const { t } = useLanguage();
 
@@ -27,11 +28,11 @@ export default function Cart({ isOpen: controlledIsOpen, onOpenChange, storeInfo
 
   const isOpen = controlledIsOpen ?? internalIsOpen;
   const setIsOpen = onOpenChange ?? setInternalIsOpen;
+  const postalRateInfo = getPostalRateInfo(Number(deliveryAddress?.postalCode || 0), storeInfo?.postalRates || []);
+  const isDeliveryAvailable = postalRateInfo.isAvailable;
 
-  const isDeliveryAvailable = isDeliveryAvailableForPostalCode(Number(deliveryAddress?.postalCode || 0), storeInfo?.postalRates || []);
-
-  const deliveryCharges = getDeliveryChargesFromPostalCode(Number(deliveryAddress?.postalCode || 0), storeInfo?.postalRates || []);
-
+  const deliveryCharges = postalRateInfo.deliveryCharges;
+  const minimumOrderAmount = postalRateInfo.minimumOrderAmount;
   const handleCheckoutSuccess = () => {
     setShowCheckout(false);
     setIsOpen(false);
@@ -50,7 +51,7 @@ export default function Cart({ isOpen: controlledIsOpen, onOpenChange, storeInfo
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <DialogContent className='max-w-5xl w-[calc(100vw-2rem)] h-[calc(100dvh-2rem)] max-h-[calc(100dvh-2rem)] flex flex-col p-0'>
         {showCheckout ? (
-          <CheckoutForm onSuccess={handleCheckoutSuccess} onBack={handleBackToCart} />
+          <CheckoutForm onSuccess={handleCheckoutSuccess} onBack={handleBackToCart} storeInfo={storeInfo} />
         ) : (
           <>
             <DialogHeader className='p-6 pb-0 border-b-0'>
@@ -129,14 +130,15 @@ export default function Cart({ isOpen: controlledIsOpen, onOpenChange, storeInfo
 
             {/* FOOTER */}
             <div className='border-t border-gray-300 px-6 py-4 space-y-3 bg-white'>
-              <div className='flex justify-between font-bold'>
-                <span>{t.deliveryCharges}</span>
-                <span>{deliveryCharges != null && isDeliveryAvailable ? apiFormatPrice(deliveryCharges) : t.notAvailable}</span>
-              </div>
-
+              {orderType === 'pickup' && (
+                <div className='flex justify-between font-bold'>
+                  <span>{t.deliveryCharges}</span>
+                  <span>{deliveryCharges != null && isDeliveryAvailable ? apiFormatPrice(deliveryCharges) : t.notAvailable}</span>
+                </div>
+              )}
               <div className='flex justify-between font-bold'>
                 <span>{t.totalIncludingVAT}</span>
-                <span>{deliveryCharges != null && isDeliveryAvailable ? apiFormatPrice(totalPrice + deliveryCharges) : apiFormatPrice(totalPrice)}</span>
+                <span>{deliveryCharges != null && isDeliveryAvailable ? apiFormatPrice(totalPrice + (orderType  === "pickup" ? deliveryCharges : 0)) : apiFormatPrice(totalPrice)}</span>
               </div>
 
               <div className='grid grid-cols-2 gap-3'>
@@ -148,6 +150,10 @@ export default function Cart({ isOpen: controlledIsOpen, onOpenChange, storeInfo
                   onClick={() => {
                     if (!isDeliveryAvailable) {
                       alert(t.weAreNotAvailableInYourArea);
+                      return;
+                    }
+                    if (minimumOrderAmount != null && totalPrice < minimumOrderAmount) {
+                      alert(t.minimumOrderAmountIs + ' ' + apiFormatPrice(minimumOrderAmount));
                       return;
                     }
                     setShowCheckout(true);

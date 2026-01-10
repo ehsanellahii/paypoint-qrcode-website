@@ -57,6 +57,46 @@ export const getDeliveryChargesFromPostalCode = (postalCode: number, postalRates
   return rate ? rate.deliveryCharges : null;
 };
 
+export const getMinimumOrderAmountFromPostalCode = (postalCode: number, postalRates: IStoreInfo['postalRates']) => {
+  if (!postalRates || postalRates.length === 0) return null;
+  const rate = postalRates.find((rate) => rate.postalCode === postalCode);
+  return rate ? rate.minimumOrderAmount : null;
+};
+
+// Make one combination of isDeliveryAvailableForPostalCode,getDeliveryChargesFromPostalCode and getMinimumOrderAmountFromPostalCode
+export const getPostalRateInfo = (
+  postalCode: number,
+  postalRates: IStoreInfo['postalRates']
+): {
+  isAvailable: boolean;
+  deliveryCharges: number | null;
+  minimumOrderAmount: number | null;
+} => {
+  if (!postalRates || postalRates.length === 0) {
+    return {
+      isAvailable: false,
+      deliveryCharges: null,
+      minimumOrderAmount: null,
+    };
+  }
+
+  const rate = postalRates.find((rate) => rate.postalCode === postalCode);
+
+  if (rate) {
+    return {
+      isAvailable: true,
+      deliveryCharges: rate.deliveryCharges,
+      minimumOrderAmount: rate.minimumOrderAmount,
+    };
+  } else {
+    return {
+      isAvailable: false,
+      deliveryCharges: null,
+      minimumOrderAmount: null,
+    };
+  }
+};
+
 // ✅ Generic helpers
 export type MongoId = string;
 

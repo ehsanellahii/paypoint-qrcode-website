@@ -1,40 +1,11 @@
 import { RestaurantInfo } from './types';
 import { IMenuData, MenuCategory, MenuProduct } from './utils';
 
-// Hack to get data straight from the original site
-const API_BASE_URL = 'https://api.byonesix.com/api/v2';
-const API_HEADERS = {
-  'accept': 'application/json',
-  'accept-language': 'en-US,en;q=0.9',
-  'content-type': 'application/json',
-  'x-gymeyes-location-id': '2663286490888410897',
-  'x-gymeyes-setup-id': '2668345815931557019',
-  'x-gymeyes-token': '1D97BCC8-4B8A-4A8D-989D-152452674AD4',
-};
-
-// export async function fetchMenuData(): Promise<SiteData> {
-//   try {
-//     const response = await fetch(`${API_BASE_URL}/menu`, {
-//       headers: API_HEADERS,
-//       next: { revalidate: 60 },
-//     });
-
-//     if (!response.ok) {
-//       throw new Error(`Failed to fetch menu data: ${response.status}`);
-//     }
-
-//     const data: SiteData = await response.json();
-//     return data;
-//   } catch (error) {
-//     console.error('Error fetching menu data:', error);
-//     throw error;
-//   }
-// }
-
 export const fetchMenuData = async (adminId?: string, storeId?: string) => {
   if (!adminId || !storeId) {
     throw new Error('Admin ID and Store ID are required to fetch menu data.');
   }
+  const API_URL = `https://api.paypointpos.de/integration/menu`;
   const API_HEADERS = {
     'accept': 'application/json',
     'content-type': 'application/json',
@@ -42,7 +13,7 @@ export const fetchMenuData = async (adminId?: string, storeId?: string) => {
     'x-paypoint-store-id': storeId,
   };
   try {
-    const response = await fetch(`https://api.paypointpos.de/integration/menu`, {
+    const response = await fetch(API_URL, {
       headers: API_HEADERS,
       next: { revalidate: 60 },
     });
@@ -89,11 +60,6 @@ export function getProductsByCategory(siteData: IMenuData, categoryId: string): 
 export function formatPrice(price: number): string {
   return `€${price.toFixed(2).replace('.', ',')}`;
 }
-
-/**
- * Update this with your restaurant's information.
- * This data should ideally come from your backend/CMS.
- */
 export const restaurantInfo: RestaurantInfo = {
   name: 'Fat Phills The Mall',
   logo: '/og-logo.png',
@@ -110,29 +76,6 @@ export function getDisplayName(item: { name: string; translations: Array<{ name:
   return translation?.name || item.name;
 }
 
-export function isProductAvailable(product: MenuProduct): boolean {
-  // if (!product.in_stock && !product.automatic_in_stock) {
-  //   return false;
-  // }
-
-  // if (product.available_start && product.available_end) {
-  //   const now = new Date();
-  //   const currentTime = now.getHours() * 100 + now.getMinutes();
-
-  //   const [startHour, startMin] = product.available_start.split(':').map(Number);
-  //   const [endHour, endMin] = product.available_end.split(':').map(Number);
-
-  //   const startTime = startHour * 100 + startMin;
-  //   const endTime = endHour * 100 + endMin;
-
-  //   if (currentTime < startTime || currentTime > endTime) {
-  //     return false;
-  //   }
-  // }
-
-  return true;
-}
-
 export function isRestaurantClosed(): boolean {
   const now = new Date();
   const currentTime = now.getHours() * 100 + now.getMinutes();
@@ -142,3 +85,56 @@ export function isRestaurantClosed(): boolean {
 
   return currentTime >= closeTime;
 }
+
+// Hack to get data straight from the original site
+// const API_BASE_URL = 'https://api.byonesix.com/api/v2';
+// const API_HEADERS = {
+//   'accept': 'application/json',
+//   'accept-language': 'en-US,en;q=0.9',
+//   'content-type': 'application/json',
+//   'x-gymeyes-location-id': '2663286490888410897',
+//   'x-gymeyes-setup-id': '2668345815931557019',
+//   'x-gymeyes-token': '1D97BCC8-4B8A-4A8D-989D-152452674AD4',
+// };
+
+// export async function fetchMenuData(): Promise<SiteData> {
+//   try {
+//     const response = await fetch(`${API_BASE_URL}/menu`, {
+//       headers: API_HEADERS,
+//       next: { revalidate: 60 },
+//     });
+
+//     if (!response.ok) {
+//       throw new Error(`Failed to fetch menu data: ${response.status}`);
+//     }
+
+//     const data: SiteData = await response.json();
+//     return data;
+//   } catch (error) {
+//     console.error('Error fetching menu data:', error);
+//     throw error;
+//   }
+// }
+
+// export function isProductAvailable(product: MenuProduct): boolean {
+// if (!product.in_stock && !product.automatic_in_stock) {
+//   return false;
+// }
+
+// if (product.available_start && product.available_end) {
+//   const now = new Date();
+//   const currentTime = now.getHours() * 100 + now.getMinutes();
+
+//   const [startHour, startMin] = product.available_start.split(':').map(Number);
+//   const [endHour, endMin] = product.available_end.split(':').map(Number);
+
+//   const startTime = startHour * 100 + startMin;
+//   const endTime = endHour * 100 + endMin;
+
+//   if (currentTime < startTime || currentTime > endTime) {
+//     return false;
+//   }
+// }
+
+//   return true;
+// }
