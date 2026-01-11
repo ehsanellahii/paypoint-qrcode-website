@@ -130,7 +130,7 @@ export default function Cart({ isOpen: controlledIsOpen, onOpenChange, storeInfo
 
             {/* FOOTER */}
             <div className='border-t border-gray-300 px-6 py-4 space-y-3 bg-white'>
-              {orderType === 'pickup' && (
+              {orderType === 'delivery' && (
                 <div className='flex justify-between font-bold'>
                   <span>{t.deliveryCharges}</span>
                   <span>{deliveryCharges != null && isDeliveryAvailable ? apiFormatPrice(deliveryCharges) : t.notAvailable}</span>
@@ -138,7 +138,11 @@ export default function Cart({ isOpen: controlledIsOpen, onOpenChange, storeInfo
               )}
               <div className='flex justify-between font-bold'>
                 <span>{t.totalIncludingVAT}</span>
-                <span>{deliveryCharges != null && isDeliveryAvailable ? apiFormatPrice(totalPrice + (orderType  === "pickup" ? deliveryCharges : 0)) : apiFormatPrice(totalPrice)}</span>
+                <span>
+                  {deliveryCharges != null && isDeliveryAvailable
+                    ? apiFormatPrice(totalPrice + (orderType === 'pickup' ? deliveryCharges : 0))
+                    : apiFormatPrice(totalPrice)}
+                </span>
               </div>
 
               <div className='grid grid-cols-2 gap-3'>
@@ -148,7 +152,7 @@ export default function Cart({ isOpen: controlledIsOpen, onOpenChange, storeInfo
 
                 <button
                   onClick={() => {
-                    if (!isDeliveryAvailable) {
+                    if (!isDeliveryAvailable && orderType === 'delivery') {
                       alert(t.weAreNotAvailableInYourArea);
                       return;
                     }
@@ -158,7 +162,7 @@ export default function Cart({ isOpen: controlledIsOpen, onOpenChange, storeInfo
                     }
                     setShowCheckout(true);
                   }}
-                  className={cn('py-3 px-4 rounded bg-[#ffc338] font-medium', !isDeliveryAvailable && 'opacity-50 cursor-not-allowed')}>
+                  className={cn('py-3 px-4 rounded bg-[#ffc338] font-medium', !isDeliveryAvailable && orderType === 'delivery' && 'opacity-50 cursor-not-allowed')}>
                   {t.next}
                 </button>
               </div>
