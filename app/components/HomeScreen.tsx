@@ -13,6 +13,7 @@ import Footer from '@/components/Footer';
 import { IStoreInfo } from '@/lib/types';
 import { fetchMenuData, getCategories } from '@/lib/api';
 import { IMenuData, MenuProduct } from '~/lib/utils';
+import LoadingSkeleton from './LoadingSkeleton';
 
 export default function HomeScreen({ storeInfo }: { storeInfo?: IStoreInfo }) {
   const [menuData, setMenuData] = useState<IMenuData | null>(null);
@@ -90,14 +91,7 @@ export default function HomeScreen({ storeInfo }: { storeInfo?: IStoreInfo }) {
   };
 
   if (loading) {
-    return (
-      <div className='min-h-screen bg-white flex items-center justify-center'>
-        <div className='text-center'>
-          <div className='animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto mb-4'></div>
-          <p className='text-gray-600'>Loading menu...</p>
-        </div>
-      </div>
-    );
+    return <LoadingSkeleton />;
   }
 
   if (error || !menuData) {

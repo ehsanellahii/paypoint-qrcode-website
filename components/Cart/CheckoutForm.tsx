@@ -9,6 +9,8 @@ import { DialogHeader, DialogTitle } from '../ui/dialog';
 import { IStoreInfo } from '~/lib/types';
 import PaymentMethodForm from './PaymentMethodForm';
 import { useAddress } from '~/lib/address-context';
+import TextareaField from '../TextAreaField';
+import { generateTimeSlots } from '~/lib/generateTimeSlotsWithinHours';
 
 interface CheckoutFormProps {
   onSuccess: () => void;
@@ -20,7 +22,8 @@ interface CheckoutFormData {
   customerName: string;
   email: string;
   phoneNumber: string;
-  pickupTime: string;
+  deliveryNotes: string;
+  pickupTime: string; // keep name to avoid more refactors (this is now "scheduledTime")
 }
 
 const STORAGE_KEY = 'persisted';
@@ -28,11 +31,23 @@ const STORAGE_KEY = 'persisted';
 export default function CheckoutForm({ onSuccess, onBack, storeInfo }: CheckoutFormProps) {
   const { cart, totalPrice, clearCart, totalItems } = useCart();
   const { deliveryAddress, orderType } = useAddress();
-  const postalRateInfo = getPostalRateInfo(Number(deliveryAddress?.postalCode || 0), storeInfo?.postalRates || []);
-  const deliveryAmount = postalRateInfo.deliveryCharges;
-  const deliveryCharges = orderType === 'pickup' ? deliveryAmount ?? 0 : 0;
-  const deliveryTime = postalRateInfo?.deliveryTime || 0;
   const { t } = useLanguage();
+
+  // ---- orderType helpers (normalize if needed)
+  const normalizedOrderType = orderType === 'dineIn' ? 'dine-in' : orderType; // if your app uses "dineIn"
+  const isDelivery = normalizedOrderType === 'delivery';
+  const isPickup = normalizedOrderType === 'pickup';
+  const isDineIn = normalizedOrderType === 'dine-in';
+
+  const postalRateInfo = getPostalRateInfo(Number(deliveryAddress?.postalCode || 0), storeInfo?.postalRates || []);
+
+  const deliveryAmount = postalRateInfo.deliveryCharges;
+
+  // ✅ Fix: charge delivery fee ONLY for delivery
+  const deliveryCharges = isDelivery ? deliveryAmount ?? 0 : 0;
+
+  const deliveryTime = postalRateInfo?.deliveryTime || 0;
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<Partial<CheckoutFormData>>({});
   const [step, setStep] = useState<'details' | 'payment'>('details');
@@ -40,44 +55,52 @@ export default function CheckoutForm({ onSuccess, onBack, storeInfo }: CheckoutF
     customerName: '',
     email: '',
     phoneNumber: '',
-    pickupTime: 'asap',
+    deliveryNotes: '',
+    pickupTime: 'asap', // now used as scheduled time for delivery/pickup
   });
 
-  const generateTimeSlots = () => {
-    const slots = [t.asapTime];
-    const now = new Date();
-    const startHour = now.getHours();
-    const startMinute = now.getMinutes();
+  // Generic time slots (same list, label changes)
+  // const generateTimeSlots = () => {
+  //   const slots = [t.asapTime];
+  //   const now = new Date();
+  //   const startHour = now.getHours();
+  //   const startMinute = now.getMinutes();
 
-    let currentMinute = Math.ceil(startMinute / 15) * 15;
-    let currentHour = startHour;
+  //   let currentMinute = Math.ceil(startMinute / 15) * 15;
+  //   let currentHour = startHour;
 
-    if (currentMinute >= 60) {
-      currentMinute = 0;
-      currentHour += 1;
-    }
+  //   if (currentMinute >= 60) {
+  //     currentMinute = 0;
+  //     currentHour += 1;
+  //   }
 
-    for (let i = 0; i < 16; i++) {
-      const hour = currentHour + Math.floor((currentMinute + i * 15) / 60);
-      const minute = (currentMinute + i * 15) % 60;
+  //   for (let i = 0; i < 16; i++) {
+  //     const hour = currentHour + Math.floor((currentMinute + i * 15) / 60);
+  //     const minute = (currentMinute + i * 15) % 60;
 
-      if (hour < 23) {
-        const timeStr = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
-        slots.push(timeStr);
-      }
-    }
+  //     if (hour < 23) {
+  //       const timeStr = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
+  //       slots.push(timeStr);
+  //     }
+  //   }
 
-    return slots;
-  };
+  //   return slots;
+  // };
 
-  const timeSlots = generateTimeSlots();
+  // const timeSlots = generateTimeSlots();
 
   useEffect(() => {
     const savedInfo = storage.get<{
       customerName: string;
       email: string;
       phoneNumber: string;
-    }>(STORAGE_KEY, { customerName: '', email: '', phoneNumber: '' });
+      deliveryNotes: string;
+    }>(STORAGE_KEY, {
+      customerName: '',
+      email: '',
+      phoneNumber: '',
+      deliveryNotes: '',
+    });
 
     setFormData((prev) => ({
       ...prev,
@@ -85,12 +108,21 @@ export default function CheckoutForm({ onSuccess, onBack, storeInfo }: CheckoutF
     }));
   }, []);
 
+  // Optional: if switching to dine-in, wipe these fields (prevents old values being sent)
+  useEffect(() => {
+    if (isDineIn) {
+      setFormData((prev) => ({
+        ...prev,
+        deliveryNotes: '',
+        pickupTime: 'asap',
+      }));
+    }
+  }, [isDineIn]);
+
   const validateForm = (): boolean => {
     const newErrors: Partial<CheckoutFormData> = {};
 
-    if (!formData.customerName.trim()) {
-      newErrors.customerName = t.nameRequired;
-    }
+    if (!formData.customerName.trim()) newErrors.customerName = t.nameRequired;
 
     if (!formData.email.trim()) {
       newErrors.email = t.emailRequired;
@@ -109,9 +141,7 @@ export default function CheckoutForm({ onSuccess, onBack, storeInfo }: CheckoutF
   };
 
   const handleNextStep = () => {
-    if (validateForm()) {
-      setStep('payment');
-    }
+    if (validateForm()) setStep('payment');
   };
 
   const handleSubmit = async (paymentMethod: string) => {
@@ -123,17 +153,12 @@ export default function CheckoutForm({ onSuccess, onBack, storeInfo }: CheckoutF
     setIsSubmitting(true);
 
     try {
-      /**
-       * Update this API endpoint to point to your backend order submission endpoint.
-       * The orderData object contains all necessary order information.
-       */
       const apiUrl = `https://api.paypointpos.de/integration/order`;
 
-      // Prepare order data
       const orderData = {
         adminId: storeInfo?.adminId || '',
         storeId: storeInfo?.storeId || '',
-        orderType: orderType,
+        orderType: normalizedOrderType,
         paymentMethod: paymentMethod === 'card' ? 'ec-card reader' : 'cash',
         customerDetails: {
           name: formData.customerName,
@@ -150,10 +175,13 @@ export default function CheckoutForm({ onSuccess, onBack, storeInfo }: CheckoutF
             latitude: deliveryAddress?.lat || 0,
             longitude: deliveryAddress?.lng || 0,
           },
-          deliveryNotes: '',
+          // ✅ For dine-in, do not send notes
+          deliveryNotes: isDineIn ? '' : formData.deliveryNotes,
         },
 
-        pickupTime: formData.pickupTime,
+        // ✅ Generic scheduled time: only meaningful for delivery/pickup
+        pickupTime: isDineIn ? 'asap' : formData.pickupTime,
+
         items: formatCartItemsForOrder(cart),
 
         totalOrderPrice: totalPrice + (deliveryCharges ?? 0),
@@ -168,20 +196,11 @@ export default function CheckoutForm({ onSuccess, onBack, storeInfo }: CheckoutF
         discountAmount: 0,
         isVoucherApplied: false,
         vouchers: [],
-        //  bookedTable: {
-        //   table: pageRef.current.selectedTableNumber
-        //     ? Number(pageRef.current.selectedTableNumber)
-        //     : '',
-        //   area: pageRef.current.selectedAreaNumber
-        //     ? pageRef.current.selectedAreaNumber
-        //     : '',
       };
 
       const response = await fetch(apiUrl, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(orderData),
       });
 
@@ -201,7 +220,6 @@ export default function CheckoutForm({ onSuccess, onBack, storeInfo }: CheckoutF
 
       clearCart();
       onSuccess();
-
       console.log('Order submitted successfully:', result);
     } catch (error) {
       console.error('Error submitting order:', error);
@@ -213,29 +231,34 @@ export default function CheckoutForm({ onSuccess, onBack, storeInfo }: CheckoutF
 
   const handleInputChange = (field: keyof CheckoutFormData, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
-    // Clear error when user starts typing
-    if (errors[field]) {
-      setErrors((prev) => ({ ...prev, [field]: undefined }));
-    }
+    if (errors[field]) setErrors((prev) => ({ ...prev, [field]: undefined }));
   };
 
-  console.log('Rendering CheckoutForm ', step);
-  console.log('Cart', cart);
+  // ✅ Dynamic label for scheduled time
+  const scheduledLabel = isDelivery ? t.deliveryTime ?? 'Delivery time' : t.pickupTime ?? 'Pickup time';
+
+  // ✅ show/hide rules
+  const showDeliveryNotes = isDelivery; // only delivery
+  const showScheduledTime = !isDineIn && (isDelivery || isPickup);
+
+  const timeSlots = generateTimeSlots({
+    weeklyHours: storeInfo?.timings, // <-- put your dynamic weekly hours object here
+    intervalMinutes: 15,
+    maxSlots: 16,
+    asapLabel: t.asapTime,
+    minLeadMinutes: isDelivery ? deliveryTime + 60 : 60, // delivery: deliveryTime + 1 hour, pickup: 1 hour
+  });
 
   return (
     <>
       <DialogHeader className='p-6 pb-0 border-b-0'>
         <DialogTitle className='text-3xl border-b py-8 border-gray-300 font-bold text-center'>{step === 'details' ? t.enterDetails : t.paymentMethod}</DialogTitle>
       </DialogHeader>
+
       {step === 'payment' ? (
         <PaymentMethodForm
-          onBack={() => {
-            setStep('details');
-          }}
-          onSuccess={(paymentMethod) => {
-            // setPaymentMethod(paymentMethod);
-            handleSubmit(paymentMethod!);
-          }}
+          onBack={() => setStep('details')}
+          onSuccess={(paymentMethod) => handleSubmit(paymentMethod!)}
           deliveryCharges={deliveryCharges}
           isSubmitting={isSubmitting}
         />
@@ -282,23 +305,38 @@ export default function CheckoutForm({ onSuccess, onBack, storeInfo }: CheckoutF
                   disabled={isSubmitting}
                 />
 
-                <div>
-                  <label htmlFor='pickupTime' className='block font-semibold mb-2'>
-                    {t.pickupTime}
-                  </label>
-                  <select
-                    id='pickupTime'
-                    value={formData.pickupTime}
-                    onChange={(e) => handleInputChange('pickupTime', e.target.value)}
-                    className='w-full px-4 py-3 rounded-lg border-2 border-gray-200 bg-white focus:border-[#ffc338] focus:outline-none transition-colors'
-                    disabled={isSubmitting}>
-                    {timeSlots.map((slot, index) => (
-                      <option key={index} value={index === 0 ? 'asap' : slot}>
-                        {index === 0 ? t.asapTime : slot}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+                {/* ✅ Delivery notes only for delivery */}
+                {showDeliveryNotes && (
+                  <TextareaField
+                    id='deliveryNotes'
+                    label={t.deliveryNotes}
+                    placeholder={t.enterDeliveryNotes}
+                    value={formData.deliveryNotes}
+                    onChange={(value) => handleInputChange('deliveryNotes', value)}
+                    disabled={isSubmitting}
+                  />
+                )}
+
+                {/* ✅ Scheduled time for pickup/delivery only */}
+                {showScheduledTime && (
+                  <div>
+                    <label htmlFor='pickupTime' className='block font-semibold mb-2'>
+                      {scheduledLabel}
+                    </label>
+                    <select
+                      id='pickupTime'
+                      value={formData.pickupTime}
+                      onChange={(e) => handleInputChange('pickupTime', e.target.value)}
+                      className='w-full px-4 py-3 rounded-lg border-2 border-gray-200 bg-white focus:border-[#ffc338] focus:outline-none transition-colors'
+                      disabled={isSubmitting}>
+                      {timeSlots.map((slot, index) => (
+                        <option key={index} value={index === 0 ? 'asap' : slot}>
+                          {index === 0 ? t.asapTime : slot}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
               </div>
             </div>
           </div>

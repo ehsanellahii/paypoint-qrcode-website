@@ -92,6 +92,9 @@ export interface Translations {
   maxReached: string;
   add: string;
   selected: string;
+  deliveryNotes: string;
+  enterDeliveryNotes: string;
+  deliveryTime: string;
 }
 
 export const translations: Record<Language, Translations> = {
@@ -188,6 +191,9 @@ export const translations: Record<Language, Translations> = {
     maxReached: 'Max reached',
     add: 'Add',
     selected: 'selected',
+    deliveryNotes: 'Delivery Notes',
+    enterDeliveryNotes: 'Enter delivery notes...',
+    deliveryTime: 'Delivery Time',
   },
   de: {
     openUntil: 'Geöffnet bis',
@@ -282,6 +288,9 @@ export const translations: Record<Language, Translations> = {
     maxReached: 'Maximal erreicht',
     add: 'Hinzufügen',
     selected: 'ausgewählt',
+    deliveryNotes: 'Lieferhinweise',
+    enterDeliveryNotes: 'Lieferhinweise eingeben...',
+    deliveryTime: 'Lieferzeit',
   },
 };
 
