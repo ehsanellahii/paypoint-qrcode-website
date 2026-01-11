@@ -1,7 +1,7 @@
 import { cache } from 'react';
 import { IMenuData, MenuCategory, MenuProduct } from './utils';
 
-const API_BASE_URL = process.env.API_BASE_URL ?? process.env.NEXT_PUBLIC_API_URL;
+const API_BASE_URL = "https://api.paypointpos.de/integration";
 const API_HEADERS: {
   'accept': string;
   'content-type': string;

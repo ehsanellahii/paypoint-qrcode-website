@@ -127,7 +127,7 @@ export default function CheckoutForm({ onSuccess, onBack, storeInfo }: CheckoutF
        * Update this API endpoint to point to your backend order submission endpoint.
        * The orderData object contains all necessary order information.
        */
-      const apiUrl = `${process.env.NEXT_PUBLIC_API_URL}/order`;
+      const apiUrl = `https://api.paypointpos.de/integration/order`;
 
       // Prepare order data
       const orderData = {
