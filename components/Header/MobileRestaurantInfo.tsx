@@ -6,6 +6,7 @@ import LanguageSwitcher from './LanguageSwitcher';
 import { IStoreInfo } from '~/lib/types';
 import { useLanguage } from '~/lib/language-context';
 import { getTodayTimings, isRestaurantOpen } from '~/lib/restaurantTimings';
+import OrderTypeAndAddressControl from './OrderTypeAndAddressControl';
 
 export default function MobileRestaurantInfo({ storeInfo }: { storeInfo?: IStoreInfo }) {
   const { t } = useLanguage();
@@ -15,20 +16,21 @@ export default function MobileRestaurantInfo({ storeInfo }: { storeInfo?: IStore
     <div className='lg:hidden bg-white' role='banner' aria-label='Restaurant information'>
       <div className='px-4 pb-6 pt-5'>
         {/* Logo */}
-        <div className='flex justify-center mb-4'>
-          <div className='relative w-32 h-48'>
-            <Image src={storeInfo?.logo || restaurantInfo.logo} alt={storeInfo?.brandName || 'Restaurant Logo'} fill className='object-contain' sizes='140px' />
+        <div className='flex flex-col items-center'>
+          <div className='flex justify-center'>
+            <div className='relative w-20 h-32 md:w-32 md:h-48'>
+              <Image src={storeInfo?.logo || restaurantInfo.logo} alt={storeInfo?.brandName || 'Restaurant Logo'} fill className='object-contain' sizes='140px' />
+            </div>
           </div>
+          {/* Restaurant Name */}
+          <h1 className='text-lg md:text-2xl font-bold text-center text-gray-900 '>{storeInfo?.brandName || restaurantInfo.name}</h1>
         </div>
-
-        {/* Restaurant Name */}
-        <h1 className='text-2xl font-bold text-center text-gray-900 mb-2'>{storeInfo?.brandName || restaurantInfo.name}</h1>
 
         {/* Address */}
         <p className='text-sm text-center text-gray-600 mb-3'>{storeInfo?.address || restaurantInfo.address}</p>
 
         {/* Flag */}
-        <div className='flex justify-center mb-3'>
+        <div className='flex justify-center'>
           <div className='bg-gray-100 rounded-full px-4 py-2'>
             <LanguageSwitcher />
           </div>
@@ -44,6 +46,7 @@ export default function MobileRestaurantInfo({ storeInfo }: { storeInfo?: IStore
             <p className='font-medium text-red-600 whitespace-nowrap'>{t.closed}</p>
           )}
         </div>
+        <OrderTypeAndAddressControl storeInfo={storeInfo} />
       </div>
     </div>
   );

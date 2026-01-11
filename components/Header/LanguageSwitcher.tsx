@@ -6,14 +6,14 @@ import { Language } from '@/lib/i18n';
 
 const flags = {
   de: (
-    <svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 513 342' className='w-10 h-7 rounded'>
+    <svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 513 342' className='w-7 md:w-10 h-7 rounded'>
       <path fill='#D80027' d='M0 0h513v342H0z' />
       <path d='M0 0h513v114H0z' />
       <path fill='#FFDA44' d='M0 228h513v114H0z' />
     </svg>
   ),
   en: (
-    <svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 513 342' className='w-10 h-7 rounded'>
+    <svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 513 342' className='w-7 md:w-10 h-7 rounded'>
       <g fill='#FFF'>
         <path d='M0 0h513v341.3H0V0z' />
         <path d='M311.7 230 513 341.3v-31.5L369.3 230h-57.6zM200.3 111.3 0 0v31.5l143.7 79.8h56.6z' />
@@ -67,7 +67,7 @@ export default function LanguageSwitcher() {
       {/* Language Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className='flex items-center justify-center px-1 py-2 md:px-4 md:py-3 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors'
+        className='flex items-center justify-center md:px-4 md:py-3 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors'
         aria-label={`Current language: ${languageLabels[language]}. Click to change language`}
         aria-expanded={isOpen}
         aria-haspopup='true'>
@@ -76,7 +76,7 @@ export default function LanguageSwitcher() {
 
       {/* Dropdown */}
       {isOpen && (
-        <div className='absolute top-full right-0 mt-2 bg-white rounded-xl shadow-lg border border-gray-200 py-2 z-50' role='menu' aria-label='Language options'>
+        <div className='absolute top-full -left-3 md:right-0  mt-2 bg-white rounded-xl shadow-lg border border-gray-200 py-2 z-50' role='menu' aria-label='Language options'>
           {Object.entries(flags).map(([lang, flag]) => (
             <button
               key={lang}

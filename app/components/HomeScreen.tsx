@@ -2,9 +2,9 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import Header from '@/components/Header';
+import Header from '~/components/Header/Header';
 import Sidebar from '@/components/Sidebar';
-import MobileRestaurantInfo from '@/components/MobileRestaurantInfo';
+import MobileRestaurantInfo from '~/components/Header/MobileRestaurantInfo';
 import MobileCategoryBar from '@/components/MobileCategoryBar';
 import ProductCard from '@/components/ProductCard';
 import ProductModal from '~/components/dialogs/ProductModal';
