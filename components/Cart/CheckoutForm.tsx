@@ -1,0 +1,320 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+import { useCart } from '@/lib/cart-context';
+import { useLanguage } from '@/lib/language-context';
+import { formatCartItemsForOrder, getPostalRateInfo, storage } from '@/lib/utils';
+import FormField from '@/components/FormField';
+import { DialogHeader, DialogTitle } from '../ui/dialog';
+import { IStoreInfo } from '~/lib/types';
+import PaymentMethodForm from './PaymentMethodForm';
+import { useAddress } from '~/lib/address-context';
+
+interface CheckoutFormProps {
+  onSuccess: () => void;
+  onBack?: () => void;
+  storeInfo?: IStoreInfo;
+}
+
+interface CheckoutFormData {
+  customerName: string;
+  email: string;
+  phoneNumber: string;
+  pickupTime: string;
+}
+
+const STORAGE_KEY = 'persisted';
+
+export default function CheckoutForm({ onSuccess, onBack, storeInfo }: CheckoutFormProps) {
+  const { cart, totalPrice, clearCart, totalItems } = useCart();
+  const { deliveryAddress, orderType } = useAddress();
+  const postalRateInfo = getPostalRateInfo(Number(deliveryAddress?.postalCode || 0), storeInfo?.postalRates || []);
+  const deliveryAmount = postalRateInfo.deliveryCharges;
+  const deliveryCharges = orderType === 'pickup' ? deliveryAmount ?? 0 : 0;
+  const deliveryTime = postalRateInfo?.deliveryTime || 0;
+  const { t } = useLanguage();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errors, setErrors] = useState<Partial<CheckoutFormData>>({});
+  const [step, setStep] = useState<'details' | 'payment'>('details');
+  const [formData, setFormData] = useState<CheckoutFormData>({
+    customerName: '',
+    email: '',
+    phoneNumber: '',
+    pickupTime: 'asap',
+  });
+
+  const generateTimeSlots = () => {
+    const slots = [t.asapTime];
+    const now = new Date();
+    const startHour = now.getHours();
+    const startMinute = now.getMinutes();
+
+    let currentMinute = Math.ceil(startMinute / 15) * 15;
+    let currentHour = startHour;
+
+    if (currentMinute >= 60) {
+      currentMinute = 0;
+      currentHour += 1;
+    }
+
+    for (let i = 0; i < 16; i++) {
+      const hour = currentHour + Math.floor((currentMinute + i * 15) / 60);
+      const minute = (currentMinute + i * 15) % 60;
+
+      if (hour < 23) {
+        const timeStr = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
+        slots.push(timeStr);
+      }
+    }
+
+    return slots;
+  };
+
+  const timeSlots = generateTimeSlots();
+
+  useEffect(() => {
+    const savedInfo = storage.get<{
+      customerName: string;
+      email: string;
+      phoneNumber: string;
+    }>(STORAGE_KEY, { customerName: '', email: '', phoneNumber: '' });
+
+    setFormData((prev) => ({
+      ...prev,
+      ...savedInfo,
+    }));
+  }, []);
+
+  const validateForm = (): boolean => {
+    const newErrors: Partial<CheckoutFormData> = {};
+
+    if (!formData.customerName.trim()) {
+      newErrors.customerName = t.nameRequired;
+    }
+
+    if (!formData.email.trim()) {
+      newErrors.email = t.emailRequired;
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      newErrors.email = t.invalidEmail;
+    }
+
+    if (!formData.phoneNumber.trim()) {
+      newErrors.phoneNumber = t.phoneRequired;
+    } else if (!/^[\d\s\+\-\(\)]+$/.test(formData.phoneNumber)) {
+      newErrors.phoneNumber = t.invalidPhone;
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleNextStep = () => {
+    if (validateForm()) {
+      setStep('payment');
+    }
+  };
+
+  const handleSubmit = async (paymentMethod: string) => {
+    if (!paymentMethod) {
+      alert('Please select a payment method');
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      /**
+       * Update this API endpoint to point to your backend order submission endpoint.
+       * The orderData object contains all necessary order information.
+       */
+      const apiUrl = `${process.env.NEXT_PUBLIC_API_URL}/order`;
+
+      // Prepare order data
+      const orderData = {
+        adminId: storeInfo?.adminId || '',
+        storeId: storeInfo?.storeId || '',
+        orderType: orderType,
+        paymentMethod: paymentMethod === 'card' ? 'ec-card reader' : 'cash',
+        customerDetails: {
+          name: formData.customerName,
+          email: formData.email,
+          phoneNumber: formData.phoneNumber,
+        },
+        addressDetails: {
+          street: deliveryAddress?.streetNumber || '',
+          houseNumber: deliveryAddress?.route || '',
+          postalCode: deliveryAddress?.postalCode || '',
+          city: deliveryAddress?.locality || '',
+          address: deliveryAddress?.formattedAddress || '',
+          coordinates: {
+            latitude: deliveryAddress?.lat || 0,
+            longitude: deliveryAddress?.lng || 0,
+          },
+          deliveryNotes: '',
+        },
+
+        pickupTime: formData.pickupTime,
+        items: formatCartItemsForOrder(cart),
+
+        totalOrderPrice: totalPrice + (deliveryCharges ?? 0),
+        totalItems: totalItems,
+        totalItemsPrice: totalPrice,
+        deliveryCharges: deliveryCharges,
+        deliveryTime: deliveryTime,
+        orderSource: 'web',
+        platform: 'WebShop',
+
+        isDiscounted: false,
+        discountAmount: 0,
+        isVoucherApplied: false,
+        vouchers: [],
+        //  bookedTable: {
+        //   table: pageRef.current.selectedTableNumber
+        //     ? Number(pageRef.current.selectedTableNumber)
+        //     : '',
+        //   area: pageRef.current.selectedAreaNumber
+        //     ? pageRef.current.selectedAreaNumber
+        //     : '',
+      };
+
+      const response = await fetch(apiUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(orderData),
+      });
+
+      if (!response.ok) {
+        const errorRes = await response.json();
+        console.error('Order submission error:', errorRes);
+        throw new Error(errorRes.message || 'Failed to submit order');
+      }
+
+      const result = await response.json();
+
+      storage.set(STORAGE_KEY, {
+        customerName: formData.customerName,
+        email: formData.email,
+        phoneNumber: formData.phoneNumber,
+      });
+
+      clearCart();
+      onSuccess();
+
+      console.log('Order submitted successfully:', result);
+    } catch (error) {
+      console.error('Error submitting order:', error);
+      alert(error instanceof Error ? error.message : 'An unknown error occurred while submitting your order.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleInputChange = (field: keyof CheckoutFormData, value: string) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
+    // Clear error when user starts typing
+    if (errors[field]) {
+      setErrors((prev) => ({ ...prev, [field]: undefined }));
+    }
+  };
+
+  console.log('Rendering CheckoutForm ', step);
+  console.log('Cart', cart);
+
+  return (
+    <>
+      <DialogHeader className='p-6 pb-0 border-b-0'>
+        <DialogTitle className='text-3xl border-b py-8 border-gray-300 font-bold text-center'>{step === 'details' ? t.enterDetails : t.paymentMethod}</DialogTitle>
+      </DialogHeader>
+      {step === 'payment' ? (
+        <PaymentMethodForm
+          onBack={() => {
+            setStep('details');
+          }}
+          onSuccess={(paymentMethod) => {
+            // setPaymentMethod(paymentMethod);
+            handleSubmit(paymentMethod!);
+          }}
+          deliveryCharges={deliveryCharges}
+          isSubmitting={isSubmitting}
+        />
+      ) : (
+        <div className='flex flex-col h-full'>
+          <div className='flex-1 overflow-y-auto px-6 py-4'>
+            <div className='bg-gray-100 rounded-lg p-6'>
+              <h2 className='text-xl font-bold mb-6'>{t.yourData}</h2>
+
+              <div className='space-y-4'>
+                <FormField
+                  id='customerName'
+                  label={t.name}
+                  type='text'
+                  placeholder=''
+                  value={formData.customerName}
+                  onChange={(value) => handleInputChange('customerName', value)}
+                  error={errors.customerName}
+                  required
+                  disabled={isSubmitting}
+                />
+
+                <FormField
+                  id='email'
+                  label={t.email}
+                  type='email'
+                  placeholder=''
+                  value={formData.email}
+                  onChange={(value) => handleInputChange('email', value)}
+                  error={errors.email}
+                  required
+                  disabled={isSubmitting}
+                />
+
+                <FormField
+                  id='phoneNumber'
+                  label={t.phoneNumber}
+                  type='tel'
+                  placeholder=''
+                  value={formData.phoneNumber}
+                  onChange={(value) => handleInputChange('phoneNumber', value)}
+                  error={errors.phoneNumber}
+                  required
+                  disabled={isSubmitting}
+                />
+
+                <div>
+                  <label htmlFor='pickupTime' className='block font-semibold mb-2'>
+                    {t.pickupTime}
+                  </label>
+                  <select
+                    id='pickupTime'
+                    value={formData.pickupTime}
+                    onChange={(e) => handleInputChange('pickupTime', e.target.value)}
+                    className='w-full px-4 py-3 rounded-lg border-2 border-gray-200 bg-white focus:border-[#ffc338] focus:outline-none transition-colors'
+                    disabled={isSubmitting}>
+                    {timeSlots.map((slot, index) => (
+                      <option key={index} value={index === 0 ? 'asap' : slot}>
+                        {index === 0 ? t.asapTime : slot}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className='border-t border-gray-300 px-6 py-4 space-y-3 bg-white'>
+            <div className='grid grid-cols-2 gap-3'>
+              <button type='button' onClick={onBack} className='py-3 px-4 rounded bg-gray-200 text-black font-medium hover:bg-gray-300 transition-colors'>
+                {t.back}
+              </button>
+              <button type='button' onClick={handleNextStep} className='py-3 px-4 rounded bg-[#ffc338] text-black font-medium hover:bg-[#f0b72f] transition-colors'>
+                {t.next}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  );
+}

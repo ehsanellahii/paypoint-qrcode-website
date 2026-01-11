@@ -1,14 +1,6 @@
 'use client';
 
-import {
-  createContext,
-  useContext,
-  useState,
-  useCallback,
-  ReactNode,
-  useEffect,
-  startTransition,
-} from 'react';
+import { createContext, useContext, useState, useCallback, ReactNode, useEffect, startTransition } from 'react';
 import { MenuProduct } from './utils';
 
 /**
@@ -27,12 +19,7 @@ export interface CartItem {
 
 interface CartContextType {
   cart: CartItem[];
-  addToCart: (
-    product: MenuProduct,
-    quantity: number,
-    customizations: CartItemCustomization,
-    notes?: string
-  ) => void;
+  addToCart: (product: MenuProduct, quantity: number, customizations: CartItemCustomization, notes?: string) => void;
   removeFromCart: (itemId: string) => void;
   updateQuantity: (itemId: string, quantity: number) => void;
   clearCart: () => void;
@@ -105,43 +92,31 @@ export function CartProvider({ children }: { children: ReactNode }) {
     if (isHydrated) saveCart(cart);
   }, [cart, isHydrated]);
 
-  const addToCart = useCallback(
-    (
-      product: MenuProduct,
-      quantity: number,
-      customizations: CartItemCustomization,
-      notes?: string
-    ) => {
-      const safeQty = Math.max(1, Math.floor(quantity || 1));
+  const addToCart = useCallback((product: MenuProduct, quantity: number, customizations: CartItemCustomization, notes?: string) => {
+    const safeQty = Math.max(1, Math.floor(quantity || 1));
 
-      const normalizedKey = stableStringifyCustomizations(customizations || {});
-      const itemId = `${product.id}-${normalizedKey}`;
+    const normalizedKey = stableStringifyCustomizations(customizations || {});
+    const itemId = `${product.id}-${normalizedKey}`;
 
-      setCart((prevCart) => {
-        const existingItem = prevCart.find((item) => item.id === itemId);
+    setCart((prevCart) => {
+      const existingItem = prevCart.find((item) => item.id === itemId);
 
-        if (existingItem) {
-          return prevCart.map((item) =>
-            item.id === itemId
-              ? { ...item, quantity: item.quantity + safeQty }
-              : item
-          );
-        }
+      if (existingItem) {
+        return prevCart.map((item) => (item.id === itemId ? { ...item, quantity: item.quantity + safeQty } : item));
+      }
 
-        return [
-          ...prevCart,
-          {
-            id: itemId,
-            product,
-            quantity: safeQty,
-            customizations: customizations || {},
-            notes,
-          },
-        ];
-      });
-    },
-    []
-  );
+      return [
+        ...prevCart,
+        {
+          id: itemId,
+          product,
+          quantity: safeQty,
+          customizations: customizations || {},
+          notes,
+        },
+      ];
+    });
+  }, []);
 
   const removeFromCart = useCallback((itemId: string) => {
     setCart((prevCart) => prevCart.filter((item) => item.id !== itemId));
@@ -154,11 +129,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
         removeFromCart(itemId);
         return;
       }
-      setCart((prevCart) =>
-        prevCart.map((item) =>
-          item.id === itemId ? { ...item, quantity: safeQty } : item
-        )
-      );
+      setCart((prevCart) => prevCart.map((item) => (item.id === itemId ? { ...item, quantity: safeQty } : item)));
     },
     [removeFromCart]
   );
@@ -202,8 +173,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
         clearCart,
         totalItems,
         totalPrice,
-      }}
-    >
+      }}>
       {children}
     </CartContext.Provider>
   );

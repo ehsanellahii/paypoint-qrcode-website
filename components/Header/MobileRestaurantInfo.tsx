@@ -1,7 +1,6 @@
 'use client';
 
 import Image from 'next/image';
-import { restaurantInfo } from '@/lib/api';
 import LanguageSwitcher from './LanguageSwitcher';
 import { IStoreInfo } from '~/lib/types';
 import { useLanguage } from '~/lib/language-context';
@@ -19,16 +18,15 @@ export default function MobileRestaurantInfo({ storeInfo }: { storeInfo?: IStore
         <div className='flex flex-col items-center'>
           <div className='flex justify-center'>
             <div className='relative w-20 h-32 md:w-32 md:h-48'>
-              <Image src={storeInfo?.logo || restaurantInfo.logo} alt={storeInfo?.brandName || 'Restaurant Logo'} fill className='object-contain' sizes='140px' />
+              <Image src={storeInfo?.logo || ''} alt={storeInfo?.brandName || 'Restaurant Logo'} fill className='object-contain' sizes='140px' />
             </div>
           </div>
           {/* Restaurant Name */}
-          <h1 className='text-lg md:text-2xl font-bold text-center text-gray-900 '>{storeInfo?.brandName || restaurantInfo.name}</h1>
+          <h1 className='text-lg md:text-2xl font-bold text-center text-gray-900 '>{storeInfo?.brandName || ''}</h1>
         </div>
 
         {/* Address */}
-        <p className='text-sm text-center text-gray-600 mb-3'>{storeInfo?.address || restaurantInfo.address}</p>
-
+        <p className='text-sm text-center text-gray-600 mb-3'>{storeInfo?.address || ''}</p>
         {/* Flag */}
         <div className='flex justify-center'>
           <div className='bg-gray-100 rounded-full px-4 py-2'>

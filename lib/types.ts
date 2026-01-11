@@ -164,21 +164,21 @@ export interface Translation {
 //   featured_checkout: MenuCategory[];
 // }
 
-export interface Availability {
-  day: 'monday' | 'tuesday' | 'wednesday' | 'thursday' | 'friday' | 'saturday' | 'sunday';
-  available: boolean | string;
-}
+// export interface Availability {
+//   day: 'monday' | 'tuesday' | 'wednesday' | 'thursday' | 'friday' | 'saturday' | 'sunday';
+//   available: boolean | string;
+// }
 
-export interface RestaurantInfo {
-  name: string;
-  logo: string;
-  address: string;
-  city: string;
-  postalCode: string;
-  openUntil: string;
-  flag: string;
-  mapsUrl: string;
-}
+// export interface RestaurantInfo {
+//   name: string;
+//   logo: string;
+//   address: string;
+//   city: string;
+//   postalCode: string;
+//   openUntil: string;
+//   flag: string;
+//   mapsUrl: string;
+// }
 
 export interface IStoreInfo {
   brandName: string;

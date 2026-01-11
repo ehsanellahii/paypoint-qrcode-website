@@ -8,7 +8,7 @@ import MobileRestaurantInfo from '~/components/Header/MobileRestaurantInfo';
 import MobileCategoryBar from '@/components/MobileCategoryBar';
 import ProductCard from '@/components/ProductCard';
 import ProductModal from '~/components/dialogs/ProductModal';
-import BottomBar from '@/components/BottomBar';
+import BottomBar from '~/components/Cart/BottomBar';
 import Footer from '@/components/Footer';
 import { IStoreInfo } from '@/lib/types';
 import { fetchMenuData, getCategories } from '@/lib/api';

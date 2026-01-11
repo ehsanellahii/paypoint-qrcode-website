@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { type ClassValue, clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { IStoreInfo } from './types';
@@ -71,12 +72,14 @@ export const getPostalRateInfo = (
   isAvailable: boolean;
   deliveryCharges: number | null;
   minimumOrderAmount: number | null;
+  deliveryTime: number | null;
 } => {
   if (!postalRates || postalRates.length === 0) {
     return {
       isAvailable: false,
       deliveryCharges: null,
       minimumOrderAmount: null,
+      deliveryTime: null,
     };
   }
 
@@ -87,12 +90,14 @@ export const getPostalRateInfo = (
       isAvailable: true,
       deliveryCharges: rate.deliveryCharges,
       minimumOrderAmount: rate.minimumOrderAmount,
+      deliveryTime: rate.deliveryTime,
     };
   } else {
     return {
       isAvailable: false,
       deliveryCharges: null,
       minimumOrderAmount: null,
+      deliveryTime: null,
     };
   }
 };
@@ -168,3 +173,72 @@ export const getImageURL = (imageKey: string): string => {
   if (!imageKey) return '';
   return 'https://paypoint-web-storage.s3.eu-central-1.amazonaws.com/menu/' + imageKey;
 };
+
+
+type FormattedAddOn = {
+  id: string;
+  name: string;
+  quantity: number;
+  price: number;
+};
+
+export function formatCartItemsForOrder(cart: any[]) {
+  return cart.map((item) => {
+    const { product, quantity, customizations, notes } = item;
+
+    const addOns: FormattedAddOn[] = [];
+
+    let addOnsTotal = 0;
+
+    // Loop through customization groups
+    Object.entries(customizations || {}).forEach(
+      ([groupId, optionsMap]: any) => {
+        const group = product.addOns.find(
+          (g: any) => g._id === groupId
+        );
+
+        if (!group) return;
+
+        Object.entries(optionsMap).forEach(
+          ([optionId, optionQty]: any) => {
+            const option = group.options.find(
+              (o: any) => o._id === optionId
+            );
+
+            if (!option) return;
+
+            addOns.push({
+              id: option._id,
+              name: option.name,
+              quantity: optionQty,
+              price: Number(option.price),
+            });
+
+            addOnsTotal += option.price * optionQty;
+          }
+        );
+      }
+    );
+
+    const basePrice = product.currentPrice * quantity;
+    const totalPrice = Number(
+      (basePrice + addOnsTotal).toFixed(2)
+    );
+
+    return {
+      id: product._id,
+      uid: product._id,
+      name: product.name,
+      quantity,
+      currentPrice: product.currentPrice,
+      originalPrice: product.originalPrice,
+      discount: product.discount ?? 0,
+      discountType: product.discountType ?? 'fixed',
+      totalPrice,
+      addOns,
+      images: product.images ?? [],
+      image: product.images?.[0] ?? '',
+      note: notes || '',
+    };
+  });
+}
