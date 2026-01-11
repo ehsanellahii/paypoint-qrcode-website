@@ -130,7 +130,7 @@ export default function Cart({ isOpen: controlledIsOpen, onOpenChange, storeInfo
 
             {/* FOOTER */}
             <div className='border-t border-gray-300 px-6 py-4 space-y-3 bg-white'>
-              {orderType === 'delivery' && (
+              {orderType === 'delivery' && !storeInfo?.tableInfo?.token && (
                 <div className='flex justify-between font-bold'>
                   <span>{t.deliveryCharges}</span>
                   <span>{deliveryCharges != null && isDeliveryAvailable ? apiFormatPrice(deliveryCharges) : t.notAvailable}</span>
@@ -140,7 +140,7 @@ export default function Cart({ isOpen: controlledIsOpen, onOpenChange, storeInfo
                 <span>{t.totalIncludingVAT}</span>
                 <span>
                   {deliveryCharges != null && isDeliveryAvailable
-                    ? apiFormatPrice(totalPrice + (orderType === 'pickup' ? deliveryCharges : 0))
+                    ? apiFormatPrice(totalPrice + (orderType === 'delivery' ? deliveryCharges : 0))
                     : apiFormatPrice(totalPrice)}
                 </span>
               </div>

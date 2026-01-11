@@ -7,10 +7,17 @@ import { getStoreData } from '~/lib/api';
 // export const dynamic = 'force-dynamic';
 // export const revalidate = 0;
 
-export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ slug: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}): Promise<Metadata> {
   const { slug } = await params;
+  const { t: token } = await searchParams;
   if (BLOCKED.has(slug)) notFound();
-  const store = await getStoreData(slug);
+  const store = await getStoreData(slug, token as string);
 
   return {
     title: store.brandName ? `${store.brandName} | Online Ordering` : 'Online Ordering',
@@ -25,11 +32,12 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 
 const BLOCKED = new Set(['favicon.ico', 'robots.txt', 'sitemap.xml']);
 
-const page = async ({ params }: { params: Promise<{ slug: string }> }) => {
+const page = async ({ params, searchParams }: { params: Promise<{ slug: string }>; searchParams: Promise<Record<string, string | string[] | undefined>> }) => {
   const paramsResult = await params;
   const { slug } = paramsResult;
   if (BLOCKED.has(slug)) notFound();
-  const storeInfo = await getStoreData(slug);
+  const { t: token } = await searchParams;
+  const storeInfo = await getStoreData(slug, token as string);
   console.log('Formatted Store Info:', storeInfo);
   return <HomeScreen storeInfo={storeInfo} />;
 };

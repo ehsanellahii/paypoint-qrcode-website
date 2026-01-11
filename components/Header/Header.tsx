@@ -17,7 +17,7 @@ export default function Header({ storeInfo }: { storeInfo?: IStoreInfo }) {
         <div className='flex items-center lg:px-6 py-3 lg:py-4'>
           {/* Left section */}
           <div className='flex grow items-center'>
-            <OrderTypeAndAddressControl storeInfo={storeInfo} />
+            {!storeInfo?.tableInfo?.token && <OrderTypeAndAddressControl storeInfo={storeInfo} />}
 
             {/* Store hours badge */}
             <div className='bg-gray-200 rounded-full px-4 py-3 flex items-center text-sm mr-2' role='status' aria-label='Store hours'>

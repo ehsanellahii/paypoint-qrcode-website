@@ -1,7 +1,7 @@
 import { cache } from 'react';
 import { IMenuData, MenuCategory, MenuProduct } from './utils';
 
-const API_BASE_URL = "https://api.paypointpos.de/integration";
+const API_BASE_URL = 'https://api.paypointpos.de/integration';
 const API_HEADERS: {
   'accept': string;
   'content-type': string;
@@ -12,8 +12,10 @@ const API_HEADERS: {
   'content-type': 'application/json',
 };
 
-export const getStoreData = cache(async (slug: string) => {
-  const response = await fetch(`${API_BASE_URL}/slugs/${slug}`, {
+export const getStoreData = cache(async (slug: string, token?: string) => {
+  console.log('Fetching store data for slug:', slug, 'with token:', token);
+  const tokenParam = token ? `?token=${token}` : '';
+  const response = await fetch(`${API_BASE_URL}/slugs/${slug}${tokenParam}`, {
     headers: API_HEADERS,
     cache: 'no-store',
   });
@@ -40,6 +42,13 @@ export const getStoreData = cache(async (slug: string) => {
     postalRates: data?.data?.postalRates || [],
     storeId: data?.data?._id || '',
     adminId: data?.data?.adminId || '',
+    tableInfo: {
+      token: data?.data?.tableInfo?.token || '',
+      areaId: data?.data?.tableInfo?.areaId || '',
+      areaName: data?.data?.tableInfo?.areaName || '',
+      tableId: data?.data?.tableInfo?.tableId || 0,
+      tableNumber: data?.data?.tableInfo?.tableNumber || 0,
+    },
   };
 });
 

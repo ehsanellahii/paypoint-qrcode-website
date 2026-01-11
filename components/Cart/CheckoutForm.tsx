@@ -39,9 +39,10 @@ export default function CheckoutForm({ onSuccess, onBack, storeInfo }: CheckoutF
 
   // ---- orderType helpers (normalize if needed)
   const normalizedOrderType = orderType === 'dineIn' ? 'dine-in' : orderType; // if your app uses "dineIn"
-  const isDelivery = normalizedOrderType === 'delivery';
-  const isPickup = normalizedOrderType === 'pickup';
-  const isDineIn = normalizedOrderType === 'dine-in';
+  const isHaveTableInfo = !!storeInfo?.tableInfo?.token;
+  const isDelivery = !isHaveTableInfo && normalizedOrderType === 'delivery';
+  const isPickup = !isHaveTableInfo && normalizedOrderType === 'pickup';
+  const isDineIn = isHaveTableInfo;
 
   const postalRateInfo = getPostalRateInfo(Number(deliveryAddress?.postalCode || 0), storeInfo?.postalRates || []);
 
@@ -157,12 +158,12 @@ export default function CheckoutForm({ onSuccess, onBack, storeInfo }: CheckoutF
     setIsSubmitting(true);
 
     try {
-      const apiUrl = `https://online.paypointpos.de/integration/order`;
+      const apiUrl = `https://api.paypointpos.de/integration/order`;
 
       const orderData: any = {
         adminId: storeInfo?.adminId || '',
         storeId: storeInfo?.storeId || '',
-        orderType: normalizedOrderType,
+        orderType: isDineIn ? 'dineIn' : normalizedOrderType,
         paymentMethod: paymentMethod === 'card' ? 'ec-card reader' : 'cash',
         customerDetails: {
           name: formData.customerName,
@@ -226,6 +227,12 @@ export default function CheckoutForm({ onSuccess, onBack, storeInfo }: CheckoutF
             startTime: startBerlin.format('HH:mm'), // ✅ UTC ISO
             endTime: endBerlin.format('HH:mm'), // ✅ UTC ISO (+deliveryTime)
           },
+        };
+      }
+      if (isHaveTableInfo) {
+        orderData.bookedTable = {
+          area: storeInfo?.tableInfo?.areaName || '',
+          table: storeInfo?.tableInfo?.tableNumber || 0,
         };
       }
       orderData.isDiscounted = false;

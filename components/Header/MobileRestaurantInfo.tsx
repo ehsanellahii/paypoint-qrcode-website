@@ -44,7 +44,7 @@ export default function MobileRestaurantInfo({ storeInfo }: { storeInfo?: IStore
             <p className='font-medium text-red-600 whitespace-nowrap'>{t.closed}</p>
           )}
         </div>
-        <OrderTypeAndAddressControl storeInfo={storeInfo} />
+        {!storeInfo?.tableInfo?.token && <OrderTypeAndAddressControl storeInfo={storeInfo} />}
       </div>
     </div>
   );

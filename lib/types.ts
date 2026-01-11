@@ -208,4 +208,12 @@ export interface IStoreInfo {
   postalRates: { postalCode: number; deliveryCharges: number; minimumOrderAmount: number; deliveryTime: number; priorityDeliveryTime: number; _id: string }[];
   storeId: string;
   adminId: string;
+  tableInfo: {
+    token: string;
+    areaId: string;
+    areaName: string;
+    tableId: number;
+    tableNumber: number;
+    
+  };
 }
