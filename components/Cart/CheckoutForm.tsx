@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -11,6 +12,9 @@ import PaymentMethodForm from './PaymentMethodForm';
 import { useAddress } from '~/lib/address-context';
 import TextareaField from '../TextAreaField';
 import { generateTimeSlots } from '~/lib/generateTimeSlotsWithinHours';
+import moment from 'moment-timezone';
+
+const TZ = 'Europe/Berlin';
 
 interface CheckoutFormProps {
   onSuccess: () => void;
@@ -153,9 +157,9 @@ export default function CheckoutForm({ onSuccess, onBack, storeInfo }: CheckoutF
     setIsSubmitting(true);
 
     try {
-      const apiUrl = `https://api.paypointpos.de/integration/order`;
+      const apiUrl = `http://localhost:4000/integration/order`;
 
-      const orderData = {
+      const orderData: any = {
         adminId: storeInfo?.adminId || '',
         storeId: storeInfo?.storeId || '',
         orderType: normalizedOrderType,
@@ -179,9 +183,6 @@ export default function CheckoutForm({ onSuccess, onBack, storeInfo }: CheckoutF
           deliveryNotes: isDineIn ? '' : formData.deliveryNotes,
         },
 
-        // ✅ Generic scheduled time: only meaningful for delivery/pickup
-        pickupTime: isDineIn ? 'asap' : formData.pickupTime,
-
         items: formatCartItemsForOrder(cart),
 
         totalOrderPrice: totalPrice + (deliveryCharges ?? 0),
@@ -197,7 +198,39 @@ export default function CheckoutForm({ onSuccess, onBack, storeInfo }: CheckoutF
         isVoucherApplied: false,
         vouchers: [],
       };
+      if (formData.pickupTime && formData.pickupTime !== 'asap') {
+        // Create Berlin datetime for selected time (today)
+        const todayBerlin = moment.tz(TZ).format('YYYY-MM-DD');
 
+        let startBerlin = moment.tz(`${todayBerlin} ${formData.pickupTime}`, 'YYYY-MM-DD HH:mm', TZ);
+        console.log('Initial startBerlin:', startBerlin.format());
+        // IMPORTANT: handle overnight times (e.g. 01:30 when restaurant closes after midnight)
+        // If your opening window is overnight and selected time is "after midnight",
+        // you usually want next-day. Simple rule:
+        // if selected time is earlier than "nowBerlin - 6 hours", push to next day.
+        // (Or do it properly by returning dayOffset from generator; but this works decently.)
+        const nowBerlin = moment.tz(TZ);
+        if (startBerlin.isBefore(nowBerlin.clone().subtract(6, 'hours'))) {
+          startBerlin = startBerlin.add(1, 'day');
+        }
+
+        // Duration: delivery => deliveryTime minutes, pickup => choose a default (15)
+        const durationMins = isDelivery ? deliveryTime : 15;
+
+        const endBerlin = startBerlin.clone().add(durationMins, 'minutes');
+
+        orderData.deliverySchedule = {
+          timezone: TZ,
+          scheduledDate: startBerlin.toDate(), // Berlin date
+          timeSlot: {
+            startTime: startBerlin.format('HH:mm'), // ✅ UTC ISO
+            endTime: endBerlin.format('HH:mm'), // ✅ UTC ISO (+deliveryTime)
+          },
+        };
+      }
+      orderData.isDiscounted = false;
+      orderData.discountAmount = 0;
+      console.log('Submitting order data:', orderData);
       const response = await fetch(apiUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
