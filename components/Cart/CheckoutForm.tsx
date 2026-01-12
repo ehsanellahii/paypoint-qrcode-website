@@ -161,8 +161,8 @@ export default function CheckoutForm({ onSuccess, onBack, storeInfo }: CheckoutF
     setIsSubmitting(true);
 
     try {
-      // const apiUrl = `https://api.paypointpos.de/integration/order`;
-      const apiUrl = `http://localhost:4000/integration/order`;
+      const apiUrl = `https://api.paypointpos.de/integration/order`;
+      // const apiUrl = `http://localhost:4000/integration/order`;
 
       const orderData: any = {
         adminId: storeInfo?.adminId || '',
