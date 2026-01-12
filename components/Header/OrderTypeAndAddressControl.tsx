@@ -37,8 +37,7 @@ function OrderTypeToggle({
 
     return items.filter((x) => x.available);
   }, [t, isPickupAvailable, isDeliveryAvailable, isDineInAvailable]);
-
-  if (options.length <= 1) return null;
+  if (options.length < 1) return null;
 
   return (
     <div className={cn('bg-gray-200 rounded-full flex items-center p-1', className)} role='radiogroup' aria-label='Order type'>

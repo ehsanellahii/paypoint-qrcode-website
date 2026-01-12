@@ -200,6 +200,11 @@ export interface IStoreInfo {
     sunday: { open: string; close: string };
   } | null;
   settings: {
+    logo: string | null;
+    themeColors: {
+      primaryColor: string;
+      selectedTextColor: string;
+    };
     paymentMethods: { cash: boolean; ecCardReader: boolean };
     orderTypes: { dineIn: boolean; takeaway: boolean; delivery: boolean };
   } | null;
@@ -214,6 +219,5 @@ export interface IStoreInfo {
     areaName: string;
     tableId: number;
     tableNumber: number;
-    
   };
 }

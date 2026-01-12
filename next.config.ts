@@ -16,6 +16,10 @@ const nextConfig: NextConfig = {
         protocol: 'https',
         hostname: 'paypoint-web-storage.s3.eu-central-1.amazonaws.com',
       },
+      {
+        protocol: 'https',
+        hostname: 'paypoint-storage.s3.eu-central-1.amazonaws.com',
+      },
     ],
   },
   // async headers() {

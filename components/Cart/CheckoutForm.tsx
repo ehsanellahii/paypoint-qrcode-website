@@ -321,6 +321,7 @@ export default function CheckoutForm({ onSuccess, onBack, storeInfo, onStepChang
           onSuccess={(paymentMethod) => handleSubmit(paymentMethod!)}
           deliveryCharges={deliveryCharges}
           isSubmitting={isSubmitting}
+          storeInfo={storeInfo}
         />
       ) : (
         <div className='flex flex-col h-full'>

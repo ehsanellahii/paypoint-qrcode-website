@@ -110,7 +110,7 @@ export default function HomeScreen({ storeInfo }: { storeInfo?: IStoreInfo }) {
   return (
     <div className='min-h-screen bg-white'>
       {/* Sidebar Navigation */}
-      <Sidebar categories={productsByCategory} activeCategory={activeCategory} onCategoryClick={setActiveCategory} logo={storeInfo?.logo || ''} />
+      <Sidebar categories={productsByCategory} activeCategory={activeCategory} onCategoryClick={setActiveCategory} logo={storeInfo?.settings?.logo || ''} />
 
       {/* Main Content Area */}
       <div className='lg:ml-40'>

@@ -37,7 +37,12 @@ export const getStoreData = cache(async (slug: string, token?: string) => {
     email: data?.data?.emailAddress,
     logo: `https://paypoint-web-storage.s3.eu-central-1.amazonaws.com/menu/${data?.data?.logoFileName}` || null,
     timings: data?.data?.timings || null,
-    settings: data?.data?.webShopSettings || null,
+    settings: data?.data?.webShopSettings
+      ? {
+          ...data?.data?.webShopSettings,
+          logo: data?.data?.webShopSettings?.logo ? `https://paypoint-storage.s3.eu-central-1.amazonaws.com/menu/${data?.data?.webShopSettings?.logo}` : null,
+        }
+      : null,
     adminGoogleApiKey: data?.data?.adminGoogleApiKey || '',
     posGoogleApiKey: data?.data?.posGoogleApiKey || '',
     postalRates: data?.data?.postalRates || [],

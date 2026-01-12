@@ -3,50 +3,57 @@ import { Banknote, CreditCard, Loader2 } from 'lucide-react';
 import { useLanguage } from '@/contexts/language-context';
 import { useCart } from '~/contexts/cart-context';
 import { formatPrice } from '@/lib/api';
+import { IStoreInfo } from '~/lib/types';
 
 const PaymentMethodForm = ({
   onBack,
   onSuccess,
   isSubmitting,
   deliveryCharges,
+  storeInfo,
 }: {
   onBack: () => void;
   onSuccess: (paymentMethod: 'cash' | 'card' | null) => void;
   isSubmitting: boolean;
   deliveryCharges: number;
+  storeInfo?: IStoreInfo;
 }) => {
   const { t } = useLanguage();
   const { totalPrice } = useCart();
 
   const [paymentMethod, setPaymentMethod] = React.useState<'cash' | 'card' | null>(null);
-
+  const isCashAvailable = storeInfo?.settings?.paymentMethods?.cash;
+  const isCardAvailable = storeInfo?.settings?.paymentMethods?.ecCardReader;
   return (
     <div className='flex flex-col h-full'>
       <div className='flex-1 overflow-y-auto px-6 py-8'>
         <div className='grid grid-cols-1 md:grid-cols-2 gap-4 max-w-2xl mx-auto'>
-          <button
-            type='button'
-            onClick={() => setPaymentMethod('cash')}
-            className={`p-8 rounded-lg border-2 flex flex-col items-center justify-center gap-4 font-bold text-xl transition-all ${
-              paymentMethod === 'cash' ? 'bg-[#ffc338] border-[#ffc338] text-black' : 'bg-white border-gray-200 text-gray-900 hover:border-gray-300'
-            }`}>
-            <div className={`w-16 h-16 rounded-full flex items-center justify-center ${paymentMethod === 'cash' ? 'bg-white/20' : 'bg-gray-100'}`}>
-              <Banknote className='w-8 h-8' />
-            </div>
-            {t.cash}
-          </button>
-
-          <button
-            type='button'
-            onClick={() => setPaymentMethod('card')}
-            className={`p-8 rounded-lg border-2 flex flex-col items-center justify-center gap-4 font-bold text-xl transition-all ${
-              paymentMethod === 'card' ? 'bg-[#ffc338] border-[#ffc338] text-black' : 'bg-white border-gray-200 text-gray-900 hover:border-gray-300'
-            }`}>
-            <div className={`w-16 h-16 rounded-full flex items-center justify-center ${paymentMethod === 'card' ? 'bg-white/20' : 'bg-gray-100'}`}>
-              <CreditCard className='w-8 h-8' />
-            </div>
-            {t.posCardPayment}
-          </button>
+          {isCashAvailable && (
+            <button
+              type='button'
+              onClick={() => setPaymentMethod('cash')}
+              className={`p-8 rounded-lg border-2 flex flex-col items-center justify-center gap-4 font-bold text-xl transition-all ${
+                paymentMethod === 'cash' ? 'bg-[#ffc338] border-[#ffc338] text-black' : 'bg-white border-gray-200 text-gray-900 hover:border-gray-300'
+              }`}>
+              <div className={`w-16 h-16 rounded-full flex items-center justify-center ${paymentMethod === 'cash' ? 'bg-white/20' : 'bg-gray-100'}`}>
+                <Banknote className='w-8 h-8' />
+              </div>
+              {t.cash}
+            </button>
+          )}
+          {isCardAvailable && (
+            <button
+              type='button'
+              onClick={() => setPaymentMethod('card')}
+              className={`p-8 rounded-lg border-2 flex flex-col items-center justify-center gap-4 font-bold text-xl transition-all ${
+                paymentMethod === 'card' ? 'bg-[#ffc338] border-[#ffc338] text-black' : 'bg-white border-gray-200 text-gray-900 hover:border-gray-300'
+              }`}>
+              <div className={`w-16 h-16 rounded-full flex items-center justify-center ${paymentMethod === 'card' ? 'bg-white/20' : 'bg-gray-100'}`}>
+                <CreditCard className='w-8 h-8' />
+              </div>
+              {t.posCardPayment}
+            </button>
+          )}
         </div>
       </div>
 

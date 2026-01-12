@@ -18,7 +18,7 @@ export default function MobileRestaurantInfo({ storeInfo }: { storeInfo?: IStore
         <div className='flex flex-col items-center'>
           <div className='flex justify-center'>
             <div className='relative w-20 h-32 md:w-32 md:h-48'>
-              <Image src={storeInfo?.logo || ''} alt={storeInfo?.brandName || 'Restaurant Logo'} fill className='object-contain' sizes='140px' />
+              <Image src={storeInfo?.settings?.logo || ''} alt={storeInfo?.brandName || 'Restaurant Logo'} fill className='object-contain' sizes='140px' />
             </div>
           </div>
           {/* Restaurant Name */}
