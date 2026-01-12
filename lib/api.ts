@@ -1,7 +1,7 @@
 import { cache } from 'react';
 import { IMenuData, MenuCategory, MenuProduct } from './utils';
 
-export const API_BASE_URL = 'https://api.paypointpos.de/integration';
+export const API_BASE_URL = process.env.NODE_ENV === 'production' ? 'https://api.paypointpos.de/integration' : 'http://localhost:4000/integration';
 // export const API_BASE_URL = 'http://localhost:4000/integration';
 const API_HEADERS: {
   'accept': string;
