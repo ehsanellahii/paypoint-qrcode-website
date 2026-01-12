@@ -14,6 +14,7 @@ import TextareaField from '../TextAreaField';
 import { generateTimeSlots } from '~/lib/generateTimeSlotsWithinHours';
 import moment from 'moment-timezone';
 import OrderSuccess from './OrderSuccess';
+import { API_BASE_URL } from '~/lib/api';
 
 const TZ = 'Europe/Berlin';
 
@@ -161,8 +162,7 @@ export default function CheckoutForm({ onSuccess, onBack, storeInfo }: CheckoutF
     setIsSubmitting(true);
 
     try {
-      const apiUrl = `https://api.paypointpos.de/integration/order`;
-      // const apiUrl = `http://localhost:4000/integration/order`;
+      const apiUrl = `${API_BASE_URL}/order`;
 
       const orderData: any = {
         adminId: storeInfo?.adminId || '',
@@ -174,19 +174,6 @@ export default function CheckoutForm({ onSuccess, onBack, storeInfo }: CheckoutF
           email: formData.email,
           phoneNumber: formData.phoneNumber,
         },
-        addressDetails: {
-          street: deliveryAddress?.streetNumber || '',
-          houseNumber: deliveryAddress?.route || '',
-          postalCode: deliveryAddress?.postalCode || '',
-          city: deliveryAddress?.locality || '',
-          address: deliveryAddress?.formattedAddress || '',
-          coordinates: {
-            latitude: deliveryAddress?.lat || 0,
-            longitude: deliveryAddress?.lng || 0,
-          },
-          // ✅ For dine-in, do not send notes
-          deliveryNotes: isDineIn ? '' : formData.deliveryNotes,
-        },
 
         items: formatCartItemsForOrder(cart),
 
@@ -197,12 +184,21 @@ export default function CheckoutForm({ onSuccess, onBack, storeInfo }: CheckoutF
         deliveryTime: deliveryTime,
         orderSource: 'web',
         platform: 'WebShop',
-
-        isDiscounted: false,
-        discountAmount: 0,
-        isVoucherApplied: false,
-        vouchers: [],
       };
+      if (orderData.orderType === 'delivery') {
+        orderData.addressDetails = {
+          street: deliveryAddress?.streetNumber || '',
+          houseNumber: deliveryAddress?.route || '',
+          postalCode: deliveryAddress?.postalCode || '',
+          city: deliveryAddress?.locality || '',
+          address: deliveryAddress?.formattedAddress || '',
+          coordinates: {
+            latitude: deliveryAddress?.lat || 0,
+            longitude: deliveryAddress?.lng || 0,
+          },
+          deliveryNotes: formData.deliveryNotes,
+        };
+      }
       if (formData.pickupTime && formData.pickupTime !== 'asap') {
         // Create Berlin datetime for selected time (today)
         const todayBerlin = moment.tz(TZ).format('YYYY-MM-DD');
@@ -241,6 +237,8 @@ export default function CheckoutForm({ onSuccess, onBack, storeInfo }: CheckoutF
       }
       orderData.isDiscounted = false;
       orderData.discountAmount = 0;
+      orderData.isVoucherApplied = false;
+      orderData.vouchers = [];
       console.log('Submitting order data:', orderData);
       const response = await fetch(apiUrl, {
         method: 'POST',
