@@ -233,6 +233,7 @@ export default function CheckoutForm({ onSuccess, onBack, storeInfo }: CheckoutF
         orderData.bookedTable = {
           area: storeInfo?.tableInfo?.areaName || '',
           table: storeInfo?.tableInfo?.tableNumber || 0,
+          tableToken: storeInfo?.tableInfo?.token || '',
         };
       }
       orderData.isDiscounted = false;
