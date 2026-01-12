@@ -2,14 +2,14 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useCart } from '@/lib/cart-context';
-import { useLanguage } from '@/lib/language-context';
+import { useCart } from '~/contexts/cart-context';
+import { useLanguage } from '@/contexts/language-context';
 import { formatCartItemsForOrder, getPostalRateInfo, storage } from '@/lib/utils';
 import FormField from '@/components/FormField';
 import { DialogHeader, DialogTitle } from '../ui/dialog';
 import { IStoreInfo } from '~/lib/types';
 import PaymentMethodForm from './PaymentMethodForm';
-import { useAddress } from '~/lib/address-context';
+import { useAddress } from '~/contexts/address-context';
 import TextareaField from '../TextAreaField';
 import { generateTimeSlots } from '~/lib/generateTimeSlotsWithinHours';
 import moment from 'moment-timezone';

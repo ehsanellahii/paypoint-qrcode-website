@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useEffect, useMemo, useState } from 'react';
-import { useAddress } from '~/lib/address-context';
+import { useAddress } from '~/contexts/address-context';
 import { IStoreInfo } from '~/lib/types';
 import { cn } from '~/lib/utils';
 import DeliveryAddressModal from '../dialogs/DeliveryAddressModal';
-import { useLanguage } from '~/lib/language-context';
+import { useLanguage } from '~/contexts/language-context';
 
 type OrderType = 'pickup' | 'delivery' | 'dineIn';
 

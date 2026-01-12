@@ -2,14 +2,14 @@
 
 import { useState } from 'react';
 import Image from 'next/image';
-import { useCart } from '@/lib/cart-context';
+import { useCart } from '~/contexts/cart-context';
 import { formatPrice as apiFormatPrice } from '@/lib/api';
-import { useLanguage } from '@/lib/language-context';
+import { useLanguage } from '@/contexts/language-context';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import CheckoutForm from './CheckoutForm';
 import { IStoreInfo } from '~/lib/types';
 import { cn, getImageURL, getPostalRateInfo } from '~/lib/utils';
-import { useAddress } from '~/lib/address-context';
+import { useAddress } from '~/contexts/address-context';
 
 interface CartProps {
   isOpen?: boolean;

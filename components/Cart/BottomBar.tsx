@@ -2,8 +2,8 @@
 
 import { useState } from 'react';
 import Image from 'next/image';
-import { useCart } from '@/lib/cart-context';
-import { useLanguage } from '@/lib/language-context';
+import { useCart } from '~/contexts/cart-context';
+import { useLanguage } from '@/contexts/language-context';
 import { formatPrice } from '@/lib/api';
 import Cart from './Cart';
 import { IStoreInfo } from '~/lib/types';

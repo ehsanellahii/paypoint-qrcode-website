@@ -1,6 +1,6 @@
 'use client';
 
-import { useLanguage } from '@/lib/language-context';
+import { useLanguage } from '@/contexts/language-context';
 import LanguageSwitcher from '~/components/Header/LanguageSwitcher';
 import { IStoreInfo } from '~/lib/types';
 import { getTodayTimings, isRestaurantOpen } from '~/lib/restaurantTimings';

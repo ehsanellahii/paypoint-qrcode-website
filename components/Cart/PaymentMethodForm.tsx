@@ -1,7 +1,7 @@
 import React from 'react';
 import { Banknote, CreditCard, Loader2 } from 'lucide-react';
-import { useLanguage } from '@/lib/language-context';
-import { useCart } from '@/lib/cart-context';
+import { useLanguage } from '@/contexts/language-context';
+import { useCart } from '~/contexts/cart-context';
 import { formatPrice } from '@/lib/api';
 
 const PaymentMethodForm = ({

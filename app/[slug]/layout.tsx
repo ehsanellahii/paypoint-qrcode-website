@@ -1,10 +1,10 @@
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import '../globals.css';
-import { CartProvider } from '@/lib/cart-context';
-import { LanguageProvider } from '@/lib/language-context';
+import { CartProvider } from '~/contexts/cart-context';
+import { LanguageProvider } from '@/contexts/language-context';
 import Script from 'next/script';
-import { AddressProvider } from '~/lib/address-context';
+import { AddressProvider } from '~/contexts/address-context';
 
 const inter = Inter({
   variable: '--font-inter',

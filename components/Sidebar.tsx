@@ -5,7 +5,7 @@ import { useRef, useEffect } from 'react';
 import { ChevronUp, ChevronDown } from 'lucide-react';
 
 import { useScrollDetection, useSmoothScroll } from '@/hooks/useScrollDetection';
-import { useCart } from '@/lib/cart-context';
+import { useCart } from '~/contexts/cart-context';
 import { getImageURL, MenuCategory } from '~/lib/utils';
 
 interface SidebarProps {

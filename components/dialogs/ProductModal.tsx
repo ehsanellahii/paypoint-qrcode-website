@@ -2,14 +2,14 @@
 
 import { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
-import { useCart } from '@/lib/cart-context';
+import { useCart } from '~/contexts/cart-context';
 import { formatPrice } from '@/lib/api';
 import { ChevronUp, ChevronDown } from 'lucide-react';
 import { useScrollDetection, useSmoothScroll } from '@/hooks/useScrollDetection';
 import { Dialog } from '@base-ui/react/dialog';
 import { AddOnGroup, cn, getImageURL, MenuProduct } from '~/lib/utils';
 import QuantityControl from '../QuantityControl';
-import { useLanguage } from '~/lib/language-context';
+import { useLanguage } from '~/contexts/language-context';
 
 type CartItemCustomization = Record<string, Record<string, number>>; // sectionId -> { optionId -> qty }
 

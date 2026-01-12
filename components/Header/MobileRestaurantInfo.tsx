@@ -3,7 +3,7 @@
 import Image from 'next/image';
 import LanguageSwitcher from './LanguageSwitcher';
 import { IStoreInfo } from '~/lib/types';
-import { useLanguage } from '~/lib/language-context';
+import { useLanguage } from '~/contexts/language-context';
 import { getTodayTimings, isRestaurantOpen } from '~/lib/restaurantTimings';
 import OrderTypeAndAddressControl from './OrderTypeAndAddressControl';
 

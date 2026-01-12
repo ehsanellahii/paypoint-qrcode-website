@@ -6,7 +6,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Dialog } from '@base-ui/react/dialog';
 import { cn } from '~/lib/utils';
 import { useGoogleMaps } from '~/hooks/useGoogleMaps';
-import { useLanguage } from '~/lib/language-context';
+import { useLanguage } from '~/contexts/language-context';
 
 type AddressParts = {
   formattedAddress: string;

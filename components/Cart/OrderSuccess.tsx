@@ -1,6 +1,6 @@
 /* eslint-disable react-hooks/set-state-in-effect */
 import React, { useEffect, useState } from 'react';
-import { useLanguage } from '~/lib/language-context';
+import { useLanguage } from '~/contexts/language-context';
 
 const OrderSuccess = ({ lastOrderId, onSuccess, step }: { lastOrderId: string; onSuccess: () => void; step: 'success' | 'details' | 'payment' }) => {
   const { t } = useLanguage();

@@ -1,7 +1,7 @@
 'use client';
 
 import { createContext, useContext, useState, useCallback, ReactNode, useEffect, startTransition } from 'react';
-import { MenuProduct } from './utils';
+import { MenuProduct } from '../lib/utils';
 
 /**
  * Add-on quantities:
