@@ -18,11 +18,12 @@ interface CartProps {
 }
 
 export default function Cart({ isOpen: controlledIsOpen, onOpenChange, storeInfo }: CartProps = {}) {
-  const { cart, updateQuantity, totalPrice } = useCart();
+  const { cart, updateQuantity, totalPrice, clearCart } = useCart();
   const { orderType } = useAddress();
   const { deliveryAddress } = useAddress();
   const { t } = useLanguage();
 
+  const [checkoutStep, setCheckoutStep] = useState<'details' | 'payment' | 'success'>('details');
   const [internalIsOpen, setInternalIsOpen] = useState(false);
   const [showCheckout, setShowCheckout] = useState(false);
 
@@ -44,6 +45,9 @@ export default function Cart({ isOpen: controlledIsOpen, onOpenChange, storeInfo
 
   const handleOpenChange = (open: boolean) => {
     setIsOpen(open);
+    if (!open && checkoutStep === 'success') {
+      clearCart();
+    }
     if (!open) setShowCheckout(false);
   };
 
@@ -51,7 +55,7 @@ export default function Cart({ isOpen: controlledIsOpen, onOpenChange, storeInfo
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <DialogContent className='max-w-5xl w-[calc(100vw-2rem)] h-[calc(100dvh-2rem)] max-h-[calc(100dvh-2rem)] flex flex-col p-0'>
         {showCheckout ? (
-          <CheckoutForm onSuccess={handleCheckoutSuccess} onBack={handleBackToCart} storeInfo={storeInfo} />
+          <CheckoutForm onSuccess={handleCheckoutSuccess} onBack={handleBackToCart} storeInfo={storeInfo} onStepChange={setCheckoutStep} />
         ) : (
           <>
             <DialogHeader className='p-6 pb-0 border-b-0'>

@@ -22,6 +22,7 @@ interface CheckoutFormProps {
   onSuccess: () => void;
   onBack?: () => void;
   storeInfo?: IStoreInfo;
+  onStepChange?: (s: 'details' | 'payment' | 'success') => void;
 }
 
 interface CheckoutFormData {
@@ -34,7 +35,7 @@ interface CheckoutFormData {
 
 const STORAGE_KEY = 'persisted';
 
-export default function CheckoutForm({ onSuccess, onBack, storeInfo }: CheckoutFormProps) {
+export default function CheckoutForm({ onSuccess, onBack, storeInfo, onStepChange }: CheckoutFormProps) {
   const { cart, totalPrice, clearCart, totalItems } = useCart();
   const { deliveryAddress, orderType } = useAddress();
   const { t } = useLanguage();
@@ -116,6 +117,10 @@ export default function CheckoutForm({ onSuccess, onBack, storeInfo }: CheckoutF
       ...savedInfo,
     }));
   }, []);
+
+  useEffect(() => {
+    onStepChange?.(step);
+  }, [step, onStepChange]);
 
   // Optional: if switching to dine-in, wipe these fields (prevents old values being sent)
   useEffect(() => {
