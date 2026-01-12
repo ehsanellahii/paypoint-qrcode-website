@@ -13,6 +13,7 @@ import { useAddress } from '~/lib/address-context';
 import TextareaField from '../TextAreaField';
 import { generateTimeSlots } from '~/lib/generateTimeSlotsWithinHours';
 import moment from 'moment-timezone';
+import OrderSuccess from './OrderSuccess';
 
 const TZ = 'Europe/Berlin';
 
@@ -53,9 +54,11 @@ export default function CheckoutForm({ onSuccess, onBack, storeInfo }: CheckoutF
 
   const deliveryTime = postalRateInfo?.deliveryTime || 0;
 
+  const [orderId, setOrderId] = useState<string | null>(null);
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<Partial<CheckoutFormData>>({});
-  const [step, setStep] = useState<'details' | 'payment'>('details');
+  const [step, setStep] = useState<'details' | 'payment' | 'success'>('details');
   const [formData, setFormData] = useState<CheckoutFormData>({
     customerName: '',
     email: '',
@@ -158,7 +161,8 @@ export default function CheckoutForm({ onSuccess, onBack, storeInfo }: CheckoutF
     setIsSubmitting(true);
 
     try {
-      const apiUrl = `https://api.paypointpos.de/integration/order`;
+      // const apiUrl = `https://api.paypointpos.de/integration/order`;
+      const apiUrl = `http://localhost:4000/integration/order`;
 
       const orderData: any = {
         adminId: storeInfo?.adminId || '',
@@ -257,9 +261,11 @@ export default function CheckoutForm({ onSuccess, onBack, storeInfo }: CheckoutF
         email: formData.email,
         phoneNumber: formData.phoneNumber,
       });
+      console.log('Order submission result:', result);
 
-      clearCart();
-      onSuccess();
+      setStep('success');
+      setOrderId(result?.data?.collectionCode);
+      // onSuccess();
       console.log('Order submitted successfully:', result);
     } catch (error) {
       console.error('Error submitting order:', error);
@@ -268,7 +274,6 @@ export default function CheckoutForm({ onSuccess, onBack, storeInfo }: CheckoutF
       setIsSubmitting(false);
     }
   };
-
   const handleInputChange = (field: keyof CheckoutFormData, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
     if (errors[field]) setErrors((prev) => ({ ...prev, [field]: undefined }));
@@ -291,11 +296,22 @@ export default function CheckoutForm({ onSuccess, onBack, storeInfo }: CheckoutF
 
   return (
     <>
-      <DialogHeader className='p-6 pb-0 border-b-0'>
-        <DialogTitle className='text-3xl border-b py-8 border-gray-300 font-bold text-center'>{step === 'details' ? t.enterDetails : t.paymentMethod}</DialogTitle>
-      </DialogHeader>
+      {step != 'success' && (
+        <DialogHeader className='p-6 pb-0 border-b-0'>
+          <DialogTitle className='text-3xl border-b py-8 border-gray-300 font-bold text-center'>{step === 'details' ? t.enterDetails : t.paymentMethod}</DialogTitle>
+        </DialogHeader>
+      )}
 
-      {step === 'payment' ? (
+      {step === 'success' ? (
+        <OrderSuccess
+          lastOrderId={orderId as string}
+          onSuccess={() => {
+            clearCart();
+            onSuccess();
+          }}
+          step={step}
+        />
+      ) : step === 'payment' ? (
         <PaymentMethodForm
           onBack={() => setStep('details')}
           onSuccess={(paymentMethod) => handleSubmit(paymentMethod!)}

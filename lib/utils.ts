@@ -51,8 +51,6 @@ export const isDeliveryAvailableForPostalCode = (postalCode: number, postalRates
 };
 
 export const getDeliveryChargesFromPostalCode = (postalCode: number, postalRates: IStoreInfo['postalRates']) => {
-  console.log('Getting delivery charges for postal code:', postalCode);
-  console.log('Available postal rates:', postalRates);
   if (!postalRates || postalRates.length === 0) return null;
   const rate = postalRates.find((rate) => rate.postalCode === postalCode);
   return rate ? rate.deliveryCharges : null;

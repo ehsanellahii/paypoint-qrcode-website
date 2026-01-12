@@ -95,6 +95,10 @@ export interface Translations {
   deliveryNotes: string;
   enterDeliveryNotes: string;
   deliveryTime: string;
+  orderPlacedSuccessfully: string;
+  orderId: string;
+  redirectingIn: string;
+  continue: string;
 }
 
 export const translations: Record<Language, Translations> = {
@@ -194,6 +198,11 @@ export const translations: Record<Language, Translations> = {
     deliveryNotes: 'Delivery Notes',
     enterDeliveryNotes: 'Enter delivery notes...',
     deliveryTime: 'Delivery Time',
+
+    orderPlacedSuccessfully: 'Order placed successfully 🎉',
+    orderId: 'Order ID',
+    redirectingIn: 'Redirecting in',
+    continue: 'Continue now',
   },
   de: {
     openUntil: 'Geöffnet bis',
@@ -291,6 +300,11 @@ export const translations: Record<Language, Translations> = {
     deliveryNotes: 'Lieferhinweise',
     enterDeliveryNotes: 'Lieferhinweise eingeben...',
     deliveryTime: 'Lieferzeit',
+
+    orderPlacedSuccessfully: 'Bestellung erfolgreich aufgegeben 🎉',
+    orderId: 'Bestellnummer',
+    redirectingIn: 'Weiterleitung in',
+    continue: 'Jetzt fortfahren',
   },
 };
 
