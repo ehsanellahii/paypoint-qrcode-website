@@ -172,12 +172,12 @@ export const getImageURL = (imageKey: string): string => {
   return 'https://paypoint-web-storage.s3.eu-central-1.amazonaws.com/menu/' + imageKey;
 };
 
-
 type FormattedAddOn = {
   id: string;
   name: string;
   quantity: number;
   price: number;
+  parentGroupId: string;
 };
 
 export function formatCartItemsForOrder(cart: any[]) {
@@ -189,39 +189,30 @@ export function formatCartItemsForOrder(cart: any[]) {
     let addOnsTotal = 0;
 
     // Loop through customization groups
-    Object.entries(customizations || {}).forEach(
-      ([groupId, optionsMap]: any) => {
-        const group = product.addOns.find(
-          (g: any) => g._id === groupId
-        );
+    Object.entries(customizations || {}).forEach(([groupId, optionsMap]: any) => {
+      const group = product.addOns.find((g: any) => g._id === groupId);
 
-        if (!group) return;
+      if (!group) return;
 
-        Object.entries(optionsMap).forEach(
-          ([optionId, optionQty]: any) => {
-            const option = group.options.find(
-              (o: any) => o._id === optionId
-            );
+      Object.entries(optionsMap).forEach(([optionId, optionQty]: any) => {
+        const option = group.options.find((o: any) => o._id === optionId);
 
-            if (!option) return;
+        if (!option) return;
 
-            addOns.push({
-              id: option._id,
-              name: option.name,
-              quantity: optionQty,
-              price: Number(option.price),
-            });
+        addOns.push({
+          id: option._id,
+          name: option.name,
+          quantity: optionQty,
+          price: Number(option.price),
+          parentGroupId: group._id,
+        });
 
-            addOnsTotal += option.price * optionQty;
-          }
-        );
-      }
-    );
+        addOnsTotal += option.price * optionQty;
+      });
+    });
 
     const basePrice = product.currentPrice * quantity;
-    const totalPrice = Number(
-      (basePrice + addOnsTotal).toFixed(2)
-    );
+    const totalPrice = Number((basePrice + addOnsTotal).toFixed(2));
 
     return {
       id: product._id,
