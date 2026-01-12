@@ -3,6 +3,7 @@ import HomeScreen from '../components/HomeScreen';
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { getStoreData } from '~/lib/api';
+import ThemeVars from '~/lib/ThemeVars';
 
 // export const dynamic = 'force-dynamic';
 // export const revalidate = 0;
@@ -39,7 +40,14 @@ const page = async ({ params, searchParams }: { params: Promise<{ slug: string }
   const { t: token } = await searchParams;
   const storeInfo = await getStoreData(slug, token as string);
   console.log('Formatted Store Info:', storeInfo);
-  return <HomeScreen storeInfo={storeInfo} />;
+  const primaryColor = storeInfo?.settings?.themeColors?.primaryColor;
+  const selectedColor = storeInfo?.settings?.themeColors?.selectedTextColor;
+  return (
+    <>
+      <ThemeVars primary={primaryColor} selectedText={selectedColor} />
+      <HomeScreen storeInfo={storeInfo} />
+    </>
+  );
 };
 
 export default page;

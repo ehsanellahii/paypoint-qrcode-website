@@ -272,7 +272,7 @@ export default function DeliveryAddressModal({ open, onClose, onSelect, googleAp
                   placeholder={t.addressSearchPlaceholder}
                   className={cn(
                     'w-full rounded-lg border px-4 py-3 text-base outline-none focus:no-ring focus:border-none',
-                    'border-gray-200 focus:border-[#ffc338] focus:ring-0 focus:ring-[#ffc338]/30'
+                    'border-gray-200 focus:border-primary focus:ring-0 focus:ring-primary/30'
                   )}
                 />
 

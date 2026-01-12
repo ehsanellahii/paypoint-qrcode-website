@@ -99,7 +99,7 @@ export default function HomeScreen({ storeInfo }: { storeInfo?: IStoreInfo }) {
       <div className='min-h-screen bg-white flex items-center justify-center'>
         <div className='text-center'>
           <p className='text-red-600 mb-4'>{error || 'Failed to load menu'}</p>
-          <button onClick={() => window.location.reload()} className='bg-[#ffc338] px-6 py-2 rounded-lg font-medium'>
+          <button onClick={() => window.location.reload()} className='bg-primary px-6 py-2 rounded-lg font-medium'>
             Retry
           </button>
         </div>

@@ -224,9 +224,9 @@ export default function ProductModal({ product, isOpen, onClose }: ProductModalP
               <button
                 onClick={() => scrollContent('up')}
                 className='absolute top-8 left-1/2 -translate-x-1/2 z-10 rounded-full p-2 shadow-lg mx-4'
-                style={{ backgroundColor: '#ffc338' }}
+                style={{ backgroundColor: 'var(--primary)' }}
                 aria-label='Scroll up'>
-                <ChevronUp className='h-5 w-5 text-gray-700' />
+                <ChevronUp className='h-5 w-5 text-(--selected-text)' />
               </button>
             )}
 
@@ -302,11 +302,11 @@ export default function ProductModal({ product, isOpen, onClose }: ProductModalP
                               return (
                                 <div
                                   key={item._id}
-                                  className={`
-                                    rounded text-center border overflow-hidden select-none flex flex-col
-                                    ${isSelected ? 'bg-[#ffc338] border-[#ffc338]' : 'bg-gray-100 border-gray-200'}
-                                    ${!isAvailable ? 'opacity-30' : ''}
-                                  `}>
+                                  className={cn(
+                                    'rounded text-center border overflow-hidden select-none flex flex-col bg-gray-100 border-gray-200',
+                                    isSelected && 'bg-primary border-primary text-(--selected-text)',
+                                    !isAvailable && 'opacity-30'
+                                  )}>
                                   {/* click-to-toggle for non-multi-qty mode */}
                                   {!section.isMultipleSelectionAllowed && (
                                     <button
@@ -378,9 +378,9 @@ export default function ProductModal({ product, isOpen, onClose }: ProductModalP
               <button
                 onClick={() => scrollContent('down')}
                 className='absolute bottom-24 left-1/2 -translate-x-1/2 z-10 rounded-full p-2 shadow-lg mx-4'
-                style={{ backgroundColor: '#ffc338' }}
+                style={{ backgroundColor: 'var(--primary)' }}
                 aria-label='Scroll down'>
-                <ChevronDown className='h-5 w-5 text-gray-700' />
+                <ChevronDown className='h-5 w-5 text-[--selected-text]' />
               </button>
             )}
 
@@ -390,7 +390,7 @@ export default function ProductModal({ product, isOpen, onClose }: ProductModalP
                 {t.close}
               </Dialog.Close>
 
-              <button onClick={handleAddToCart} className='bg-[#ffc338] py-2 px-3 rounded font-medium' type='button'>
+              <button onClick={handleAddToCart} className='bg-primary text-[--selected-text] py-2 px-3 rounded font-medium' type='button'>
                 {t.add} ({formatPrice(calculateTotalPrice())})
               </button>
             </div>

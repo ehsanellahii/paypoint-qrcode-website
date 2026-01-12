@@ -40,7 +40,7 @@ const OrderSuccess = ({ lastOrderId, onSuccess, step }: { lastOrderId: string; o
             {t.redirectingIn ?? 'Redirecting in'} <span className='font-semibold'>{successCountdown}</span>s...
           </p>
 
-          <button type='button' onClick={onSuccess} className='py-3 max-w-xs px-4 rounded bg-[#ffc338] text-black font-medium hover:bg-[#f0b72f] transition-colors w-full'>
+          <button type='button' onClick={onSuccess} className='py-3 max-w-xs px-4 rounded bg-primary text-(--selected-text) font-medium  transition-colors w-full'>
             {t.continue ?? 'Continue now'}
           </button>
         </div>

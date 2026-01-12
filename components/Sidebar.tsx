@@ -90,9 +90,9 @@ export default function Sidebar({ categories, activeCategory, onCategoryClick, l
           <button
             onClick={() => scrollDesktopCategories('up')}
             className='absolute top-38 left-1/2 -translate-x-1/2 z-10 rounded-full p-2 shadow-md'
-            style={{ backgroundColor: '#ffc338' }}
+            style={{ backgroundColor: 'var(--primary)' }}
             aria-label='Scroll up'>
-            <ChevronUp className='h-5 w-5 text-gray-700' />
+            <ChevronUp className='h-5 w-5 text-(--selected-text)' />
           </button>
         )}
 
@@ -112,14 +112,14 @@ export default function Sidebar({ categories, activeCategory, onCategoryClick, l
                 onClick={() => handleCategoryClick(category.id)}
                 className={`
                   flex flex-col items-center justify-center gap-2 p-1.5 rounded-lg
-                  ${isActive ? 'bg-[#ffc338]' : 'bg-white'}
+                  ${isActive ? 'bg-primary' : 'bg-white'}
                 `}
                 aria-label={`${category.name} category${isActive ? ' (active)' : ''}`}
                 aria-current={isActive ? 'true' : undefined}>
                 <div className='relative w-16 h-16 rounded-lg overflow-hidden'>
                   {categoryImage && <Image src={categoryImage} alt={category.name} fill className='object-contain' sizes='64px' />}
                 </div>
-                <span className={`text-sm font-bold text-center ${isActive ? 'text-black' : 'text-gray-700'}`}>{category.name}</span>
+                <span className={`text-sm font-bold text-center ${isActive ? 'text-(--selected-text)' : 'text-gray-700'}`}>{category.name}</span>
               </button>
             );
           })}
@@ -132,10 +132,10 @@ export default function Sidebar({ categories, activeCategory, onCategoryClick, l
             className='absolute left-1/2 -translate-x-1/2 z-10 bg-white rounded-full p-2 shadow-md'
             style={{
               bottom: totalItems > 0 ? '7rem' : '0.5rem',
-              backgroundColor: '#ffc338',
+              backgroundColor: 'var(--primary)',
             }}
             aria-label='Scroll down'>
-            <ChevronDown className='h-5 w-5 text-gray-700' />
+            <ChevronDown className='h-5 w-5 text-(--selected-text)' />
           </button>
         )}
       </aside>

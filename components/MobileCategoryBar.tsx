@@ -69,9 +69,9 @@ export default function MobileCategoryBar({ categories, activeCategory, onCatego
           <button
             onClick={() => scrollCategories('left')}
             className='absolute left-0 top-1/2 -translate-y-1/2 z-10 rounded-full p-2 shadow-md ml-1'
-            style={{ backgroundColor: '#ffc338' }}
+            style={{ backgroundColor: 'var(--primary)' }}
             aria-label='Scroll left'>
-            <ChevronLeft className='h-5 w-5 text-gray-700' />
+            <ChevronLeft className='h-5 w-5 text-(--selected-text)' />
           </button>
         )}
 
@@ -87,7 +87,7 @@ export default function MobileCategoryBar({ categories, activeCategory, onCatego
                 onClick={() => handleCategoryClick(category.id)}
                 className={`
                   flex flex-col items-center justify-center gap-1 px-3 py-2 rounded-lg min-w-20 shrink-0
-                  ${isActive ? 'bg-[#ffc338]' : 'bg-white'}
+                  ${isActive ? 'bg-primary' : 'bg-white'}
                 `}
                 aria-label={`${category.name} category${isActive ? ' (active)' : ''}`}
                 aria-current={isActive ? 'true' : undefined}>
@@ -105,9 +105,9 @@ export default function MobileCategoryBar({ categories, activeCategory, onCatego
           <button
             onClick={() => scrollCategories('right')}
             className='absolute right-0 top-1/2 -translate-y-1/2 z-10 rounded-full p-2 shadow-md mr-1'
-            style={{ backgroundColor: '#ffc338' }}
+            style={{ backgroundColor: 'var(--primary)' }}
             aria-label='Scroll right'>
-            <ChevronRight className='h-5 w-5 text-gray-700' />
+            <ChevronRight className='h-5 w-5 text-(--selected-text)' />
           </button>
         )}
       </div>

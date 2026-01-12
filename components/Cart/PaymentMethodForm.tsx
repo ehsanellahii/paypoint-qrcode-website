@@ -33,7 +33,7 @@ const PaymentMethodForm = ({
               type='button'
               onClick={() => setPaymentMethod('cash')}
               className={`p-8 rounded-lg border-2 flex flex-col items-center justify-center gap-4 font-bold text-xl transition-all ${
-                paymentMethod === 'cash' ? 'bg-[#ffc338] border-[#ffc338] text-black' : 'bg-white border-gray-200 text-gray-900 hover:border-gray-300'
+                paymentMethod === 'cash' ? 'bg-primary border-primary text-(--selected-text)' : 'bg-white border-gray-200 text-gray-900 hover:border-gray-300'
               }`}>
               <div className={`w-16 h-16 rounded-full flex items-center justify-center ${paymentMethod === 'cash' ? 'bg-white/20' : 'bg-gray-100'}`}>
                 <Banknote className='w-8 h-8' />
@@ -46,7 +46,7 @@ const PaymentMethodForm = ({
               type='button'
               onClick={() => setPaymentMethod('card')}
               className={`p-8 rounded-lg border-2 flex flex-col items-center justify-center gap-4 font-bold text-xl transition-all ${
-                paymentMethod === 'card' ? 'bg-[#ffc338] border-[#ffc338] text-black' : 'bg-white border-gray-200 text-gray-900 hover:border-gray-300'
+                paymentMethod === 'card' ? 'bg-primary border-primary text-(--selected-text)' : 'bg-white border-gray-200 text-gray-900 hover:border-gray-300'
               }`}>
               <div className={`w-16 h-16 rounded-full flex items-center justify-center ${paymentMethod === 'card' ? 'bg-white/20' : 'bg-gray-100'}`}>
                 <CreditCard className='w-8 h-8' />
@@ -76,7 +76,7 @@ const PaymentMethodForm = ({
             onClick={() => {
               if (onSuccess) onSuccess(paymentMethod);
             }}
-            className='py-3 px-4 rounded bg-[#ffc338] text-black font-medium hover:bg-[#f0b72f] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center'
+            className='py-3 px-4 rounded bg-primary text-(--selected-text) font-medium hover:bg-primary transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center'
             disabled={isSubmitting || !paymentMethod}>
             {isSubmitting ? (
               <>

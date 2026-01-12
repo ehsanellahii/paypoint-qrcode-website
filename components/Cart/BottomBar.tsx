@@ -42,7 +42,9 @@ export default function BottomBar({ storeInfo }: { storeInfo?: IStoreInfo }) {
                     className='object-cover'
                     sizes='56px'
                   />
-                  {item.quantity > 1 && <div className='absolute bottom-0 right-0 bg-[#ffc338] text-black text-xs font-bold rounded-tl px-1'>{item.quantity}</div>}
+                  {item.quantity > 1 && (
+                    <div className='absolute bottom-0 right-0 bg-primary text-(--selected-text) text-xs font-bold rounded-tl px-1'>{item.quantity}</div>
+                  )}
                 </div>
                 <h3 className='font-medium'>{item.product.name}</h3>
               </div>
@@ -52,7 +54,7 @@ export default function BottomBar({ storeInfo }: { storeInfo?: IStoreInfo }) {
           <div className='ml-4'>
             <div
               className={`w-full font-medium h-full rounded py-2 px-5 inline-flex items-center justify-center ${
-                isClosed ? 'bg-gray-200 text-gray-500' : 'bg-[#ffc338] text-black'
+                isClosed ? 'bg-gray-200 text-gray-500' : 'bg-primary text-(--selected-text)'
               }`}>
               {isClosed ? t.closed : t.checkout}
             </div>

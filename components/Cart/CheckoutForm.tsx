@@ -388,7 +388,7 @@ export default function CheckoutForm({ onSuccess, onBack, storeInfo, onStepChang
                       id='pickupTime'
                       value={formData.pickupTime}
                       onChange={(e) => handleInputChange('pickupTime', e.target.value)}
-                      className='w-full px-4 py-3 rounded-lg border-2 border-gray-200 bg-white focus:border-[#ffc338] focus:outline-none transition-colors'
+                      className='w-full px-4 py-3 rounded-lg border-2 border-gray-200 bg-white focus:border-primary focus:outline-none transition-colors'
                       disabled={isSubmitting}>
                       {timeSlots.map((slot, index) => (
                         <option key={index} value={index === 0 ? 'asap' : slot}>
@@ -407,7 +407,7 @@ export default function CheckoutForm({ onSuccess, onBack, storeInfo, onStepChang
               <button type='button' onClick={onBack} className='py-3 px-4 rounded bg-gray-200 text-black font-medium hover:bg-gray-300 transition-colors'>
                 {t.back}
               </button>
-              <button type='button' onClick={handleNextStep} className='py-3 px-4 rounded bg-[#ffc338] text-black font-medium hover:bg-[#f0b72f] transition-colors'>
+              <button type='button' onClick={handleNextStep} className='py-3 px-4 rounded bg-primary text-(--selected-text) font-medium transition-colors'>
                 {t.next}
               </button>
             </div>

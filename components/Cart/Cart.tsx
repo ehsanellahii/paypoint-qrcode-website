@@ -116,7 +116,7 @@ export default function Cart({ isOpen: controlledIsOpen, onOpenChange, storeInfo
                   <div className='flex items-center gap-2'>
                     <button
                       onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                      className='w-10 h-10 rounded bg-[#ffc338] flex items-center justify-center font-bold'>
+                      className='w-10 h-10 rounded bg-primary flex items-center justify-center font-bold'>
                       −
                     </button>
 
@@ -124,7 +124,7 @@ export default function Cart({ isOpen: controlledIsOpen, onOpenChange, storeInfo
 
                     <button
                       onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                      className='w-10 h-10 rounded bg-[#ffc338] flex items-center justify-center font-bold'>
+                      className='w-10 h-10 rounded bg-primary flex items-center justify-center font-bold'>
                       +
                     </button>
                   </div>
@@ -166,7 +166,10 @@ export default function Cart({ isOpen: controlledIsOpen, onOpenChange, storeInfo
                     }
                     setShowCheckout(true);
                   }}
-                  className={cn('py-3 px-4 rounded bg-[#ffc338] font-medium', !isDeliveryAvailable && orderType === 'delivery' && 'opacity-50 cursor-not-allowed')}>
+                  className={cn(
+                    'py-3 px-4 rounded bg-primary text-(--selected-text) font-medium',
+                    !isDeliveryAvailable && orderType === 'delivery' && 'opacity-50 cursor-not-allowed'
+                  )}>
                   {t.next}
                 </button>
               </div>
