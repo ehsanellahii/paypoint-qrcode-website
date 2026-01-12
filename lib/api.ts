@@ -1,5 +1,5 @@
 import { cache } from 'react';
-import { IMenuData, MenuCategory, MenuProduct } from './utils';
+import { getImageURL, IMenuData, MenuCategory, MenuProduct } from './utils';
 
 export const API_BASE_URL = process.env.NODE_ENV === 'production' ? 'https://api.paypointpos.de/integration' : 'http://localhost:4000/integration';
 // export const API_BASE_URL = 'http://localhost:4000/integration';
@@ -35,12 +35,12 @@ export const getStoreData = cache(async (slug: string, token?: string) => {
     city: data?.data?.place,
     phone: data?.data?.phone,
     email: data?.data?.emailAddress,
-    logo: `https://paypoint-web-storage.s3.eu-central-1.amazonaws.com/menu/${data?.data?.logoFileName}` || null,
+    logo: data?.data?.logoFileName ? `${getImageURL(data?.data?.logoFileName)}` : null,
     timings: data?.data?.timings || null,
     settings: data?.data?.webShopSettings
       ? {
           ...data?.data?.webShopSettings,
-          logo: data?.data?.webShopSettings?.logo ? `https://paypoint-storage.s3.eu-central-1.amazonaws.com/menu/${data?.data?.webShopSettings?.logo}` : null,
+          logo: data?.data?.webShopSettings?.logo ? `${getImageURL(data?.data?.webShopSettings?.logo)}` : null,
         }
       : null,
     adminGoogleApiKey: data?.data?.adminGoogleApiKey || '',
