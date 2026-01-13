@@ -21,7 +21,7 @@ export default function Footer({ storeInfo }: { storeInfo?: IStoreInfo }) {
           {/* Logo + Brand - Left */}
           <div className='flex items-center gap-2 mb-2 md:mb-0'>
             <div className='inline-flex items-center justify-center rounded-full  h-12 w-12 relative'>
-              <Image src='/only_logo.png' alt='DIAZO Logo' className='' aria-label='PayPoint POS UG' fill />
+              <Image src='/new_logo.png' alt='DIAZO Logo' className='' aria-label='PayPoint POS UG' fill />
             </div>
             <span className='font-bold text-black italic text-lg'>PayPoint</span>
           </div>
