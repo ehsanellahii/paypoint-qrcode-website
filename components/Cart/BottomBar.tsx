@@ -33,7 +33,9 @@ export default function BottomBar({ storeInfo }: { storeInfo?: IStoreInfo }) {
         <button
           onClick={() => {
             if (!isClosed) {
-              if (orderType === 'delivery' && !deliveryAddress) {
+              if (storeInfo?.tableInfo?.token) {
+                setIsCartOpen(true);
+              } else if (orderType === 'delivery' && !deliveryAddress) {
                 setIsDeliveryModalOpen(true);
               } else {
                 setIsCartOpen(true);
