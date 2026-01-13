@@ -75,11 +75,13 @@ export default function Sidebar({ categories, activeCategory, onCategoryClick, l
     <>
       {/* Desktop Sidebar */}
       <aside
-        className='hidden lg:block fixed left-0 top-0 w-40 h-screen pb-20 bg-white'
+        className='hidden lg:block fixed left-0 top-0 w-40 h-screen bg-white pb-24'
         aria-label='Category navigation'
-        style={{
-          paddingBottom: totalItems > 0 ? '6rem' : '1.25rem',
-        }}>
+        style={
+          {
+            // paddingBottom: totalItems > 0 ? '6rem' : '1.25rem',
+          }
+        }>
         {/* Logo at top of sidebar */}
         <div className='p-4 py-10' role='img' aria-label='Fat Phills logo'>
           <Image width={100} height={100} src={logo || '/og-logo.png'} alt='Logo' />

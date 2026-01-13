@@ -89,7 +89,7 @@ const OrderTypeAndAddressControl = ({ storeInfo }: { storeInfo?: IStoreInfo }) =
   }, [isPickupAvailable, isDeliveryAvailable, isDineInAvailable, orderType]);
   return (
     <>
-      <div className='flex flex-col md:flex-row flex-wrap gap-2 justify-center items-center pt-2'>
+      <div className='flex flex-col md:flex-row flex-wrap gap-2 justify-center items-center md:items-start pt-2'>
         <div className='md:mr-2'>
           <OrderTypeToggle
             t={t}
@@ -115,7 +115,7 @@ const OrderTypeAndAddressControl = ({ storeInfo }: { storeInfo?: IStoreInfo }) =
             aria-label='Change delivery address'>
             <h5 className='font-medium text-gray-800'>{t.deliverTo}</h5>
             <p className='text-gray-600 truncate max-w-[320px]'>
-              {deliveryAddress.streetNumber} {deliveryAddress.route}, {deliveryAddress.postalCode} {deliveryAddress.locality}
+              {deliveryAddress.route}, {deliveryAddress.streetNumber}, {deliveryAddress.postalCode} {deliveryAddress.locality}
             </p>
           </button>
         )}
