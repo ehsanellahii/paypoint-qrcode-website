@@ -99,6 +99,8 @@ export interface Translations {
   orderId: string;
   redirectingIn: string;
   continue: string;
+  termAndConditions: string;
+  privacyPolicy: string;
 }
 
 export const translations: Record<Language, Translations> = {
@@ -203,6 +205,8 @@ export const translations: Record<Language, Translations> = {
     orderId: 'Order ID',
     redirectingIn: 'Redirecting in',
     continue: 'Continue now',
+    termAndConditions: 'Terms and Conditions',
+    privacyPolicy: 'Privacy Policy',
   },
   de: {
     openUntil: 'Geöffnet bis',
@@ -305,6 +309,8 @@ export const translations: Record<Language, Translations> = {
     orderId: 'Bestellnummer',
     redirectingIn: 'Weiterleitung in',
     continue: 'Jetzt fortfahren',
+    termAndConditions: 'Allgemeine Geschäftsbedingungen',
+    privacyPolicy: 'Datenschutz-Bestimmungen',
   },
 };
 
