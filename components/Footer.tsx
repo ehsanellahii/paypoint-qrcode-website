@@ -1,9 +1,11 @@
 'use client';
 
 import Image from 'next/image';
+import { useLanguage } from '~/contexts/language-context';
 import { IStoreInfo } from '~/lib/types';
 
 export default function Footer({ storeInfo }: { storeInfo?: IStoreInfo }) {
+  const { t } = useLanguage();
   return (
     <footer className='bg-gray-100 rounded-lg py-8 p-2 lg:-mb-10 m-4 lg:ml-42 lg:mr-4 text-sm'>
       <div className='container mx-auto px-4'>
@@ -21,7 +23,7 @@ export default function Footer({ storeInfo }: { storeInfo?: IStoreInfo }) {
           {/* Logo + Brand - Left */}
           <div className='flex items-center gap-2 mb-2 md:mb-0'>
             <div className='inline-flex items-center justify-center rounded-full size-44 h-20 relative '>
-              <Image src='/logo.png' alt='DIAZO Logo' className='object-cover' aria-label='PayPoint POS UG' fill />
+              <Image src='/logo.png' alt={'PayPoint POS UG'} className='object-cover' aria-label='PayPoint POS UG' fill />
             </div>
             {/* <span className='font-bold text-black italic text-lg'>PayPoint</span> */}
           </div>
@@ -29,10 +31,10 @@ export default function Footer({ storeInfo }: { storeInfo?: IStoreInfo }) {
           {/* Legal Links + Copyright - Right */}
           <div className='text-gray-700 text-center md:text-right'>
             <a href='https://byonesix.com/t-c-privacy-statement' className='hover:underline mr-4'>
-              Terms and conditions
+              {t.termAndConditions}
             </a>
             <a href='https://byonesix.com/t-c-privacy-statement' className='hover:underline mr-4'>
-              Privacy policy
+              {t.privacyPolicy}
             </a>
             <span>© PayPoint POS UG</span>
           </div>
