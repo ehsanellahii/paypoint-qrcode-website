@@ -10,11 +10,15 @@ import Cart from './Cart';
 import { IStoreInfo } from '~/lib/types';
 import { isRestaurantOpen } from '~/lib/restaurantTimings';
 import { getImageURL } from '~/lib/utils';
+import DeliveryAddressModal from '../dialogs/DeliveryAddressModal';
+import { useAddress } from '~/contexts/address-context';
 
 export default function BottomBar({ storeInfo }: { storeInfo?: IStoreInfo }) {
   const { cart, totalItems, totalPrice } = useCart();
   const { t } = useLanguage();
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const [isDeliveryModalOpen, setIsDeliveryModalOpen] = useState(false);
+  const { deliveryAddress, setDeliveryAddress, orderType, setOrderType } = useAddress();
   // const isClosed = isRestaurantClosed();
   const isOpen = isRestaurantOpen(storeInfo?.timings || {});
   const isClosed = !isOpen;
@@ -27,7 +31,15 @@ export default function BottomBar({ storeInfo }: { storeInfo?: IStoreInfo }) {
     <>
       {totalItems !== 0 && (
         <button
-          onClick={() => !isClosed && setIsCartOpen(true)}
+          onClick={() => {
+            if (!isClosed) {
+              if (orderType === 'delivery' && !deliveryAddress) {
+                setIsDeliveryModalOpen(true);
+              } else {
+                setIsCartOpen(true);
+              }
+            }
+          }}
           className='fixed bottom-4 left-4 right-4 bg-white rounded-lg p-4 border border-gray-100 shadow-md flex items-stretch cursor-pointer z-40'
           aria-label={`Open cart with ${totalItems} item${totalItems !== 1 ? 's' : ''}, total ${formatPrice(totalPrice)}`}
           disabled={isClosed}>
@@ -61,7 +73,18 @@ export default function BottomBar({ storeInfo }: { storeInfo?: IStoreInfo }) {
           </div>
         </button>
       )}
-
+      <DeliveryAddressModal
+        open={isDeliveryModalOpen}
+        onClose={() => setIsDeliveryModalOpen(false)}
+        onSelect={(addr) => {
+          setDeliveryAddress(addr); // ✅ persisted + global
+          setIsDeliveryModalOpen(false);
+        }}
+        googleApiKey={storeInfo?.posGoogleApiKey || ''}
+        onSuccess={() => {
+          if (orderType !== 'delivery') setOrderType('delivery');
+        }}
+      />
       <Cart isOpen={isCartOpen} onOpenChange={setIsCartOpen} storeInfo={storeInfo} />
     </>
   );
