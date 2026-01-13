@@ -113,9 +113,34 @@ export function getProductsByCategory(siteData: IMenuData, categoryId: string): 
   return category ? category.products : [];
 }
 
-export function formatPrice(price: number): string {
-  return `€${price.toFixed(2).replace('.', ',')}`;
-}
+// export function formatPrice(price: number): string {
+//   return `€${price.toFixed(2).replace('.', ',')}`;
+// }
+export const formattedEuroValue = (amount: any) => {
+  return new Intl.NumberFormat('de-DE', {
+    style: 'currency',
+    currency: 'EUR',
+  }).format(amount);
+};
+export const formatPrice = (value: number | string | null | undefined) => {
+  if (value === null || value === undefined || value === '') return '';
+
+  // Convert to number if it's a string
+  const numValue = typeof value === 'string' ? parseFloat(value) : value;
+
+  if (isNaN(numValue)) return '';
+  if (numValue === 0) return '0,00 €';
+
+  let finalValue;
+  if (numValue % 1 !== 0) {
+    finalValue = numValue.toFixed(2);
+  } else {
+    finalValue = numValue.toString();
+  }
+
+  return formattedEuroValue(finalValue);
+};
+
 // export const restaurantInfo: RestaurantInfo = {
 //   name: 'Fat Phills The Mall',
 //   logo: '/og-logo.png',
