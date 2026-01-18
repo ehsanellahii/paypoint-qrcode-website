@@ -2,15 +2,18 @@ import { cache } from 'react';
 import { getImageURL, IMenuData, MenuCategory, MenuProduct } from './utils';
 
 export const API_BASE_URL = process.env.NODE_ENV === 'production' ? 'https://api.paypointpos.de/integration' : 'http://localhost:4000/integration';
+export const X_API_KEY = 'b3db8d621de8b0b9ab5351d05779f400:92b2cbc1e4bdcb0ab019ea16ae31d3fea304508e734672a5cf6661cded997f0c';
 // export const API_BASE_URL = 'http://localhost:4000/integration';
 const API_HEADERS: {
   'accept': string;
   'content-type': string;
   'x-paypoint-tenant-id'?: string;
   'x-paypoint-store-id'?: string;
+  'x-api-key': string;
 } = {
   'accept': 'application/json',
   'content-type': 'application/json',
+  'x-api-key': X_API_KEY,
 };
 
 export const getStoreData = cache(async (slug: string, token?: string) => {

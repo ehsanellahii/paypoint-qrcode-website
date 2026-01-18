@@ -12,6 +12,7 @@ import { isRestaurantOpen } from '~/lib/restaurantTimings';
 import { getImageURL } from '~/lib/utils';
 import DeliveryAddressModal from '../dialogs/DeliveryAddressModal';
 import { useAddress } from '~/contexts/address-context';
+import OrdersDialog from '../Header/OrdersDialog';
 
 export default function BottomBar({ storeInfo }: { storeInfo?: IStoreInfo }) {
   const { cart, totalItems, totalPrice } = useCart();
@@ -26,6 +27,7 @@ export default function BottomBar({ storeInfo }: { storeInfo?: IStoreInfo }) {
   useEffect(() => {
     if (totalItems === 0) setIsCartOpen(false);
   }, [totalItems]);
+  const [ordersOpen, setOrdersOpen] = useState(false);
 
   return (
     <>
@@ -87,7 +89,8 @@ export default function BottomBar({ storeInfo }: { storeInfo?: IStoreInfo }) {
           if (orderType !== 'delivery') setOrderType('delivery');
         }}
       />
-      <Cart isOpen={isCartOpen} onOpenChange={setIsCartOpen} storeInfo={storeInfo} />
+      <Cart isOpen={isCartOpen} onOpenChange={setIsCartOpen} storeInfo={storeInfo} openOrdersDialog={() => setOrdersOpen(true)} />
+      <OrdersDialog open={ordersOpen} onOpenChange={setOrdersOpen} />
     </>
   );
 }

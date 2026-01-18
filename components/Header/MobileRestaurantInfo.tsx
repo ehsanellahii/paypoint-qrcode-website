@@ -6,13 +6,23 @@ import { IStoreInfo } from '~/lib/types';
 import { useLanguage } from '~/contexts/language-context';
 import { getTodayTimings, isRestaurantOpen } from '~/lib/restaurantTimings';
 import OrderTypeAndAddressControl from './OrderTypeAndAddressControl';
+import { useState } from 'react';
+import UserDrawer from './UserDrawer';
+import OrdersDialog from './OrdersDialog';
 
 export default function MobileRestaurantInfo({ storeInfo }: { storeInfo?: IStoreInfo }) {
   const { t } = useLanguage();
   const { close: ClosingHours } = getTodayTimings(storeInfo?.timings);
   const isOpen = isRestaurantOpen(storeInfo?.timings || {});
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [ordersOpen, setOrdersOpen] = useState(false);
+
   return (
     <div className='lg:hidden bg-white' role='banner' aria-label='Restaurant information'>
+      <button onClick={() => setDrawerOpen(true)} className='absolute top-4 right-4 z-20 rounded-full bg-gray-100 p-2' aria-label='Open menu'>
+        <Image src='/menu.png' alt='' width={28} height={28} className='rotate-180' />
+      </button>
+
       <div className='px-4 pb-6 pt-5'>
         {/* Logo */}
         <div className='flex flex-col items-center'>
@@ -45,6 +55,8 @@ export default function MobileRestaurantInfo({ storeInfo }: { storeInfo?: IStore
           )}
         </div>
         {!storeInfo?.tableInfo?.token && <OrderTypeAndAddressControl storeInfo={storeInfo} />}
+        <UserDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} onOpenOrders={() => setOrdersOpen(true)} />
+        <OrdersDialog open={ordersOpen} onOpenChange={setOrdersOpen} />
       </div>
     </div>
   );

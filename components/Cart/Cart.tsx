@@ -15,9 +15,10 @@ interface CartProps {
   isOpen?: boolean;
   onOpenChange?: (open: boolean) => void;
   storeInfo?: IStoreInfo;
+  openOrdersDialog?: () => void;
 }
 
-export default function Cart({ isOpen: controlledIsOpen, onOpenChange, storeInfo }: CartProps = {}) {
+export default function Cart({ isOpen: controlledIsOpen, onOpenChange, storeInfo, openOrdersDialog }: CartProps = {}) {
   const { cart, updateQuantity, totalPrice, clearCart } = useCart();
   const { orderType } = useAddress();
   const { deliveryAddress } = useAddress();
@@ -37,6 +38,7 @@ export default function Cart({ isOpen: controlledIsOpen, onOpenChange, storeInfo
   const handleCheckoutSuccess = () => {
     setShowCheckout(false);
     setIsOpen(false);
+    openOrdersDialog?.();
   };
 
   const handleBackToCart = () => {
@@ -47,6 +49,7 @@ export default function Cart({ isOpen: controlledIsOpen, onOpenChange, storeInfo
     setIsOpen(open);
     if (!open && checkoutStep === 'success') {
       clearCart();
+      openOrdersDialog?.();
     }
     if (!open) setShowCheckout(false);
   };

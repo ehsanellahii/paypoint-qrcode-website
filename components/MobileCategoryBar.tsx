@@ -56,9 +56,24 @@ export default function MobileCategoryBar({ categories, activeCategory, onCatego
     onCategoryClick(categoryId);
   };
 
+  const EPS = 1; // 1px tolerance
+
   const scrollCategories = (direction: 'left' | 'right') => {
-    const amount = direction === 'left' ? -200 : 200;
-    scrollMobile(amount, 'horizontal');
+    const el = scrollContainerRef.current;
+    if (!el) return;
+
+    const maxScrollLeft = el.scrollWidth - el.clientWidth;
+    const current = el.scrollLeft;
+
+    const step = 200;
+
+    const remaining = direction === 'left' ? current : maxScrollLeft - current;
+
+    const amount = Math.min(step, Math.max(0, remaining));
+
+    if (amount <= EPS) return;
+
+    scrollMobile(direction === 'left' ? -amount : amount, 'horizontal');
   };
 
   return (
@@ -86,7 +101,7 @@ export default function MobileCategoryBar({ categories, activeCategory, onCatego
                 data-category={category.id}
                 onClick={() => handleCategoryClick(category.id)}
                 className={`
-                  flex flex-col items-center justify-center gap-1 px-3 py-2 rounded-lg min-w-20 shrink-0
+                  flex flex-col items-center justify-center gap-1 px-3 py-1.5 rounded-lg min-w-26 shrink-0
                   ${isActive ? 'bg-primary' : 'bg-white'}
                 `}
                 aria-label={`${category.name} category${isActive ? ' (active)' : ''}`}

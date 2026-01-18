@@ -27,16 +27,16 @@ const PaymentMethodForm = ({
   return (
     <div className='flex flex-col h-full'>
       <div className='flex-1 overflow-y-auto px-6 py-8'>
-        <div className='grid grid-cols-1 md:grid-cols-2 gap-4 max-w-2xl mx-auto'>
+        <div className='flex flex-wrap gap-4 '>
           {isCashAvailable && (
             <button
               type='button'
               onClick={() => setPaymentMethod('cash')}
-              className={`p-8 rounded-lg border-2 flex flex-col items-center justify-center gap-4 font-bold text-xl transition-all ${
+              className={`size-40 p-4 md:p-8 rounded-lg border-2 flex flex-col items-center justify-center gap-4 font-bold text-xl transition-all ${
                 paymentMethod === 'cash' ? 'bg-primary border-primary text-(--selected-text)' : 'bg-white border-gray-200 text-gray-900 hover:border-gray-300'
               }`}>
-              <div className={`w-16 h-16 rounded-full flex items-center justify-center ${paymentMethod === 'cash' ? 'bg-white/20' : 'bg-gray-100'}`}>
-                <Banknote className='w-8 h-8' />
+              <div className={`size-12 rounded-full flex items-center justify-center ${paymentMethod === 'cash' ? 'bg-white/20' : 'bg-gray-100'}`}>
+                <Banknote className='size-6' />
               </div>
               {t.cash}
             </button>
@@ -45,11 +45,11 @@ const PaymentMethodForm = ({
             <button
               type='button'
               onClick={() => setPaymentMethod('card')}
-              className={`p-8 rounded-lg border-2 flex flex-col items-center justify-center gap-4 font-bold text-xl transition-all ${
+              className={`size-40 p-4 md:p-8 rounded-lg border-2 flex flex-col text-wrap items-center justify-center gap-4 font-bold text-xl transition-all ${
                 paymentMethod === 'card' ? 'bg-primary border-primary text-(--selected-text)' : 'bg-white border-gray-200 text-gray-900 hover:border-gray-300'
               }`}>
-              <div className={`w-16 h-16 rounded-full flex items-center justify-center ${paymentMethod === 'card' ? 'bg-white/20' : 'bg-gray-100'}`}>
-                <CreditCard className='w-8 h-8' />
+              <div className={`size-12 rounded-full flex items-center justify-center ${paymentMethod === 'card' ? 'bg-white/20' : 'bg-gray-100'}`}>
+                <CreditCard className='size-6' />
               </div>
               {t.posCardPayment}
             </button>

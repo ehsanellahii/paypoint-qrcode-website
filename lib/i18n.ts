@@ -101,6 +101,30 @@ export interface Translations {
   continue: string;
   termAndConditions: string;
   privacyPolicy: string;
+
+  orders: string;
+  items: string;
+  itemsTotal: string;
+  discount: string;
+  tax: string;
+  customer: string;
+  address: string;
+  vouchers: string;
+  totalOrders: string;
+
+  pleaseLogin: string;
+  loginToSeeOrders: string;
+  loading: string;
+  somethingWentWrong: string;
+  retry: string;
+  noOrdersYet: string;
+  yourOrdersWillAppearHere: string;
+  notLoggedIn: string;
+
+  sentToStore: string;
+  inDelivery: string;
+  isDelivered: string;
+  isCancelled: string;
 }
 
 export const translations: Record<Language, Translations> = {
@@ -140,7 +164,7 @@ export const translations: Record<Language, Translations> = {
     back: 'Back',
     pay: 'Pay',
     cash: 'Cash',
-    posCardPayment: 'POS Card payment',
+    posCardPayment: 'Card Payment (POS)',
 
     // specialInstructions: 'Special Instructions (Optional)',
     addAnySpecialRequests: 'Add any special requests...',
@@ -207,6 +231,30 @@ export const translations: Record<Language, Translations> = {
     continue: 'Continue now',
     termAndConditions: 'Terms and Conditions',
     privacyPolicy: 'Privacy Policy',
+
+    orders: 'Orders',
+    items: 'items',
+    itemsTotal: 'Items total',
+    discount: 'Discount',
+    tax: 'Tax',
+    customer: 'Customer',
+    address: 'Address',
+    vouchers: 'Vouchers',
+    totalOrders: 'Total orders',
+
+    pleaseLogin: 'Please login',
+    loginToSeeOrders: 'Login to see your order history.',
+    loading: 'Loading...',
+    somethingWentWrong: 'Something went wrong',
+    retry: 'Retry',
+    noOrdersYet: 'No orders yet',
+    yourOrdersWillAppearHere: 'Your recent orders will appear here.',
+    notLoggedIn: 'Not logged in',
+
+    sentToStore: 'Sent to store',
+    inDelivery: 'In delivery',
+    isDelivered: 'Delivered',
+    isCancelled: 'Cancelled',
   },
   de: {
     openUntil: 'Geöffnet bis',
@@ -230,7 +278,7 @@ export const translations: Record<Language, Translations> = {
     kids: 'Kinder',
 
     yourCart: 'Ihr Warenkorb',
-    checkout: 'Zur Kasse',
+    checkout: 'Bestellen',
     total: 'Gesamt',
     totalIncludingVAT: 'Gesamt (inkl. MwSt.)',
     proceedToCheckout: 'Zur Kasse gehen',
@@ -311,6 +359,30 @@ export const translations: Record<Language, Translations> = {
     continue: 'Jetzt fortfahren',
     termAndConditions: 'Allgemeine Geschäftsbedingungen',
     privacyPolicy: 'Datenschutz-Bestimmungen',
+
+    orders: 'Bestellungen',
+    items: 'Artikel',
+    itemsTotal: 'Zwischensumme',
+    discount: 'Rabatt',
+    tax: 'Steuer',
+    customer: 'Kunde',
+    address: 'Adresse',
+    vouchers: 'Gutscheine',
+    totalOrders: 'Anzahl Bestellungen',
+
+    pleaseLogin: 'Bitte anmelden',
+    loginToSeeOrders: 'Melde dich an, um deine Bestellhistorie zu sehen.',
+    loading: 'Wird geladen...',
+    somethingWentWrong: 'Etwas ist schiefgelaufen',
+    retry: 'Erneut versuchen',
+    noOrdersYet: 'Noch keine Bestellungen',
+    yourOrdersWillAppearHere: 'Deine letzten Bestellungen werden hier angezeigt.',
+    notLoggedIn: 'Nicht angemeldet',
+
+    sentToStore: 'An Restaurant gesendet',
+    inDelivery: 'In Zustellung',
+    isDelivered: 'Geliefert',
+    isCancelled: 'Storniert',
   },
 };
 

@@ -5,6 +5,8 @@ import { CartProvider } from '~/contexts/cart-context';
 import { LanguageProvider } from '@/contexts/language-context';
 import Script from 'next/script';
 import { AddressProvider } from '~/contexts/address-context';
+import { UserProvider } from '~/contexts/user-context';
+import DebugPersistError from '~/lib/DebugPersistError';
 
 const inter = Inter({
   variable: '--font-inter',
@@ -35,10 +37,14 @@ export default function RootLayout({
           strategy='afterInteractive'
           src={`https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&libraries=places`}
         />
+
         <LanguageProvider>
-          <AddressProvider storeKey={'default'}>
-            <CartProvider>{children}</CartProvider>
-          </AddressProvider>
+          <UserProvider>
+            <AddressProvider storeKey={'default'}>
+              <DebugPersistError />
+              <CartProvider>{children}</CartProvider>
+            </AddressProvider>
+          </UserProvider>
         </LanguageProvider>
       </body>
     </html>

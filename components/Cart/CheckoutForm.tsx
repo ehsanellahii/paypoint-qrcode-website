@@ -5,16 +5,16 @@ import { useState, useEffect } from 'react';
 import { useCart } from '~/contexts/cart-context';
 import { useLanguage } from '@/contexts/language-context';
 import { formatCartItemsForOrder, getPostalRateInfo, storage } from '@/lib/utils';
-import FormField from '@/components/FormField';
 import { DialogHeader, DialogTitle } from '../ui/dialog';
 import { IStoreInfo } from '~/lib/types';
 import PaymentMethodForm from './PaymentMethodForm';
 import { useAddress } from '~/contexts/address-context';
-import TextareaField from '../TextAreaField';
 import { generateTimeSlots } from '~/lib/generateTimeSlotsWithinHours';
 import moment from 'moment-timezone';
 import OrderSuccess from './OrderSuccess';
 import { API_BASE_URL } from '~/lib/api';
+import CheckoutDetailsForm from './CheckoutDetailsForm';
+import { useUser } from '~/contexts/user-context';
 
 const TZ = 'Europe/Berlin';
 
@@ -36,30 +36,21 @@ interface CheckoutFormData {
 const STORAGE_KEY = 'persisted';
 
 export default function CheckoutForm({ onSuccess, onBack, storeInfo, onStepChange }: CheckoutFormProps) {
+  const { user } = useUser();
   const { cart, totalPrice, clearCart, totalItems } = useCart();
   const { deliveryAddress, orderType } = useAddress();
   const { t } = useLanguage();
 
-  // ---- orderType helpers (normalize if needed)
-  const normalizedOrderType = orderType === 'dineIn' ? 'dine-in' : orderType; // if your app uses "dineIn"
+  const normalizedOrderType = orderType === 'dineIn' ? 'dine-in' : orderType;
   const isHaveTableInfo = !!storeInfo?.tableInfo?.token;
   const isDelivery = !isHaveTableInfo && normalizedOrderType === 'delivery';
   const isPickup = !isHaveTableInfo && normalizedOrderType === 'pickup';
   const isDineIn = isHaveTableInfo;
 
   const postalRateInfo = getPostalRateInfo(Number(deliveryAddress?.postalCode || 0), storeInfo?.postalRates || []);
-
   const deliveryAmount = postalRateInfo.deliveryCharges;
-
-  // ✅ Fix: charge delivery fee ONLY for delivery
-  const deliveryCharges = isDelivery ? deliveryAmount ?? 0 : 0;
-
+  const deliveryCharges = isDelivery ? (deliveryAmount ?? 0) : 0;
   const deliveryTime = postalRateInfo?.deliveryTime || 0;
-
-  const [orderId, setOrderId] = useState<string | null>(null);
-
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [errors, setErrors] = useState<Partial<CheckoutFormData>>({});
   const [step, setStep] = useState<'details' | 'payment' | 'success'>('details');
   const [formData, setFormData] = useState<CheckoutFormData>({
     customerName: '',
@@ -68,95 +59,12 @@ export default function CheckoutForm({ onSuccess, onBack, storeInfo, onStepChang
     deliveryNotes: '',
     pickupTime: 'asap', // now used as scheduled time for delivery/pickup
   });
-
-  // Generic time slots (same list, label changes)
-  // const generateTimeSlots = () => {
-  //   const slots = [t.asapTime];
-  //   const now = new Date();
-  //   const startHour = now.getHours();
-  //   const startMinute = now.getMinutes();
-
-  //   let currentMinute = Math.ceil(startMinute / 15) * 15;
-  //   let currentHour = startHour;
-
-  //   if (currentMinute >= 60) {
-  //     currentMinute = 0;
-  //     currentHour += 1;
-  //   }
-
-  //   for (let i = 0; i < 16; i++) {
-  //     const hour = currentHour + Math.floor((currentMinute + i * 15) / 60);
-  //     const minute = (currentMinute + i * 15) % 60;
-
-  //     if (hour < 23) {
-  //       const timeStr = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
-  //       slots.push(timeStr);
-  //     }
-  //   }
-
-  //   return slots;
-  // };
-
-  // const timeSlots = generateTimeSlots();
-
-  useEffect(() => {
-    const savedInfo = storage.get<{
-      customerName: string;
-      email: string;
-      phoneNumber: string;
-      deliveryNotes: string;
-    }>(STORAGE_KEY, {
-      customerName: '',
-      email: '',
-      phoneNumber: '',
-      deliveryNotes: '',
-    });
-
-    setFormData((prev) => ({
-      ...prev,
-      ...savedInfo,
-    }));
-  }, []);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [orderId, setOrderId] = useState<string | null>(null);
 
   useEffect(() => {
     onStepChange?.(step);
   }, [step, onStepChange]);
-
-  // Optional: if switching to dine-in, wipe these fields (prevents old values being sent)
-  useEffect(() => {
-    if (isDineIn) {
-      setFormData((prev) => ({
-        ...prev,
-        deliveryNotes: '',
-        pickupTime: 'asap',
-      }));
-    }
-  }, [isDineIn]);
-
-  const validateForm = (): boolean => {
-    const newErrors: Partial<CheckoutFormData> = {};
-
-    if (!formData.customerName.trim()) newErrors.customerName = t.nameRequired;
-
-    if (!formData.email.trim()) {
-      newErrors.email = t.emailRequired;
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newErrors.email = t.invalidEmail;
-    }
-
-    if (!formData.phoneNumber.trim()) {
-      newErrors.phoneNumber = t.phoneRequired;
-    } else if (!/^[\d\s\+\-\(\)]+$/.test(formData.phoneNumber)) {
-      newErrors.phoneNumber = t.invalidPhone;
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const handleNextStep = () => {
-    if (validateForm()) setStep('payment');
-  };
 
   const handleSubmit = async (paymentMethod: string) => {
     if (!paymentMethod) {
@@ -241,6 +149,9 @@ export default function CheckoutForm({ onSuccess, onBack, storeInfo, onStepChang
           tableToken: storeInfo?.tableInfo?.token || '',
         };
       }
+      if (user?._id) {
+        orderData.customerId = user._id;
+      }
       orderData.isDiscounted = false;
       orderData.discountAmount = 0;
       orderData.isVoucherApplied = false;
@@ -269,7 +180,7 @@ export default function CheckoutForm({ onSuccess, onBack, storeInfo, onStepChang
 
       setStep('success');
       setOrderId(result?.data?.collectionCode);
-      // onSuccess();
+     
       console.log('Order submitted successfully:', result);
     } catch (error) {
       console.error('Error submitting order:', error);
@@ -278,18 +189,10 @@ export default function CheckoutForm({ onSuccess, onBack, storeInfo, onStepChang
       setIsSubmitting(false);
     }
   };
-  const handleInputChange = (field: keyof CheckoutFormData, value: string) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
-    if (errors[field]) setErrors((prev) => ({ ...prev, [field]: undefined }));
-  };
 
-  // ✅ Dynamic label for scheduled time
-  const scheduledLabel = isDelivery ? t.deliveryTime ?? 'Delivery time' : t.pickupTime ?? 'Pickup time';
-
-  // ✅ show/hide rules
-  const showDeliveryNotes = isDelivery; // only delivery
+  const scheduledLabel = isDelivery ? (t.deliveryTime ?? 'Delivery time') : (t.pickupTime ?? 'Pickup time');
+  const showDeliveryNotes = isDelivery;
   const showScheduledTime = !isDineIn && (isDelivery || isPickup);
-
   const timeSlots = generateTimeSlots({
     weeklyHours: storeInfo?.timings, // <-- put your dynamic weekly hours object here
     intervalMinutes: 15,
@@ -324,95 +227,19 @@ export default function CheckoutForm({ onSuccess, onBack, storeInfo, onStepChang
           storeInfo={storeInfo}
         />
       ) : (
-        <div className='flex flex-col h-full'>
-          <div className='flex-1 overflow-y-auto px-6 py-4'>
-            <div className='bg-gray-100 rounded-lg p-6'>
-              <h2 className='text-xl font-bold mb-6'>{t.yourData}</h2>
-
-              <div className='space-y-4'>
-                <FormField
-                  id='customerName'
-                  label={t.name}
-                  type='text'
-                  placeholder=''
-                  value={formData.customerName}
-                  onChange={(value) => handleInputChange('customerName', value)}
-                  error={errors.customerName}
-                  required
-                  disabled={isSubmitting}
-                />
-
-                <FormField
-                  id='email'
-                  label={t.email}
-                  type='email'
-                  placeholder=''
-                  value={formData.email}
-                  onChange={(value) => handleInputChange('email', value)}
-                  error={errors.email}
-                  required
-                  disabled={isSubmitting}
-                />
-
-                <FormField
-                  id='phoneNumber'
-                  label={t.phoneNumber}
-                  type='tel'
-                  placeholder=''
-                  value={formData.phoneNumber}
-                  onChange={(value) => handleInputChange('phoneNumber', value)}
-                  error={errors.phoneNumber}
-                  required
-                  disabled={isSubmitting}
-                />
-
-                {/* ✅ Delivery notes only for delivery */}
-                {showDeliveryNotes && (
-                  <TextareaField
-                    id='deliveryNotes'
-                    label={t.deliveryNotes}
-                    placeholder={t.enterDeliveryNotes}
-                    value={formData.deliveryNotes}
-                    onChange={(value) => handleInputChange('deliveryNotes', value)}
-                    disabled={isSubmitting}
-                  />
-                )}
-
-                {/* ✅ Scheduled time for pickup/delivery only */}
-                {showScheduledTime && (
-                  <div>
-                    <label htmlFor='pickupTime' className='block font-semibold mb-2'>
-                      {scheduledLabel}
-                    </label>
-                    <select
-                      id='pickupTime'
-                      value={formData.pickupTime}
-                      onChange={(e) => handleInputChange('pickupTime', e.target.value)}
-                      className='w-full px-4 py-3 rounded-lg border-2 border-gray-200 bg-white focus:border-primary focus:outline-none transition-colors'
-                      disabled={isSubmitting}>
-                      {timeSlots.map((slot, index) => (
-                        <option key={index} value={index === 0 ? 'asap' : slot}>
-                          {index === 0 ? t.asapTime : slot}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-
-          <div className='border-t border-gray-300 px-6 py-4 space-y-3 bg-white'>
-            <div className='grid grid-cols-2 gap-3'>
-              <button type='button' onClick={onBack} className='py-3 px-4 rounded bg-gray-200 text-black font-medium hover:bg-gray-300 transition-colors'>
-                {t.back}
-              </button>
-              <button type='button' onClick={handleNextStep} className='py-3 px-4 rounded bg-primary text-(--selected-text) font-medium transition-colors'>
-                {t.next}
-              </button>
-            </div>
-          </div>
-        </div>
+        <CheckoutDetailsForm
+          t={t}
+          isSubmitting={isSubmitting}
+          showDeliveryNotes={showDeliveryNotes}
+          showScheduledTime={showScheduledTime}
+          scheduledLabel={scheduledLabel}
+          timeSlots={timeSlots}
+          onBack={onBack}
+          onValidNext={(data) => {
+            setFormData(data);
+            setStep('payment');
+          }}
+        />
       )}
     </>
   );

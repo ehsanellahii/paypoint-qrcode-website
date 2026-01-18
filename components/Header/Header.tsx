@@ -1,15 +1,22 @@
+/* eslint-disable @next/next/no-img-element */
 'use client';
 
+import { useState } from 'react';
 import { useLanguage } from '@/contexts/language-context';
 import LanguageSwitcher from '~/components/Header/LanguageSwitcher';
 import { IStoreInfo } from '~/lib/types';
 import { getTodayTimings, isRestaurantOpen } from '~/lib/restaurantTimings';
 import OrderTypeAndAddressControl from './OrderTypeAndAddressControl';
+import UserDrawer from './UserDrawer';
+import OrdersDialog from './OrdersDialog';
 
 export default function Header({ storeInfo }: { storeInfo?: IStoreInfo }) {
   const { t } = useLanguage();
   const { close: ClosingHours } = getTodayTimings(storeInfo?.timings);
   const isOpen = isRestaurantOpen(storeInfo?.timings || {});
+
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [ordersOpen, setOrdersOpen] = useState(false);
 
   return (
     <>
@@ -19,7 +26,6 @@ export default function Header({ storeInfo }: { storeInfo?: IStoreInfo }) {
           <div className='flex grow items-center'>
             {!storeInfo?.tableInfo?.token && <OrderTypeAndAddressControl storeInfo={storeInfo} />}
 
-            {/* Store hours badge */}
             <div className='bg-gray-200 rounded-full px-4 py-3 flex items-center text-sm mr-2' role='status' aria-label='Store hours'>
               {isOpen ? (
                 <p className='font-medium text-gray-700 whitespace-nowrap'>
@@ -46,26 +52,18 @@ export default function Header({ storeInfo }: { storeInfo?: IStoreInfo }) {
               rel='noopener noreferrer'
               className='bg-gray-200 ml-3 rounded-full py-3 px-4 flex items-center text-sm'
               aria-label='View location on Google Maps'>
-              <svg
-                xmlns='http://www.w3.org/2000/svg'
-                width={16}
-                height={16}
-                viewBox='0 0 24 24'
-                fill='none'
-                stroke='currentColor'
-                strokeWidth={2}
-                strokeLinecap='round'
-                strokeLinejoin='round'
-                className='text-gray-500 mr-1'>
-                <polygon points='3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21' />
-                <line x1={9} y1={3} x2={9} y2={18} />
-                <line x1={15} y1={6} x2={15} y2={21} />
-              </svg>
               <span className='text-sm font-medium'>{t.location}</span>
             </a>
+
+            <button className='rounded hover:bg-gray-100 ml-1 p-1' onClick={() => setDrawerOpen(true)} aria-label='Open user menu'>
+              <img src='/menu.png' alt='' className='rotate-180 size-10' />
+            </button>
           </div>
         </div>
       </header>
+
+      <UserDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} onOpenOrders={() => setOrdersOpen(true)} />
+      <OrdersDialog open={ordersOpen} onOpenChange={setOrdersOpen} />
     </>
   );
 }
