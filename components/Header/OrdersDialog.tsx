@@ -150,7 +150,7 @@ function getStatusMeta(status?: string, t?: any) {
 }
 
 const getOrderTypeMeta = (type?: string, t?: any) => {
-  return type === 'delivery' ? t.delivery : type === 'pickup' ? t.pickup : type === 'dine-in' ? t.dineIn : t.unknown;
+  return type === 'delivery' ? t.delivery : type === 'pickup' ? t.pickup : type === 'dineIn' ? t.dineIn : t.unknown;
 };
 
 export default function OrdersDialog({ open, onOpenChange }: Props) {
