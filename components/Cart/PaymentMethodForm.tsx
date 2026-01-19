@@ -4,6 +4,7 @@ import { useLanguage } from '@/contexts/language-context';
 import { useCart } from '~/contexts/cart-context';
 import { formatPrice } from '@/lib/api';
 import { IStoreInfo } from '~/lib/types';
+import VoucherSection from './VoucherSection';
 
 const PaymentMethodForm = ({
   onBack,
@@ -19,11 +20,12 @@ const PaymentMethodForm = ({
   storeInfo?: IStoreInfo;
 }) => {
   const { t } = useLanguage();
-  const { totalPrice } = useCart();
+  const { totalPrice, discountAmount } = useCart();
 
   const [paymentMethod, setPaymentMethod] = React.useState<'cash' | 'card' | null>(null);
   const isCashAvailable = storeInfo?.settings?.paymentMethods?.cash;
   const isCardAvailable = storeInfo?.settings?.paymentMethods?.ecCardReader;
+
   return (
     <div className='flex flex-col h-full'>
       <div className='flex-1 overflow-y-auto px-6 py-8'>
@@ -56,11 +58,11 @@ const PaymentMethodForm = ({
           )}
         </div>
       </div>
-
+      <VoucherSection storeInfo={storeInfo} disabled={isSubmitting} />
       <div className='border-t border-gray-300 px-6 py-4 space-y-3 bg-white'>
         <div className='flex items-center justify-between text-lg font-bold'>
           <span>{t.totalIncludingVAT}</span>
-          <span>{formatPrice(totalPrice + (deliveryCharges ?? 0))}</span>
+          <span>{formatPrice(totalPrice - discountAmount + (deliveryCharges ?? 0))}</span>
         </div>
 
         <div className='grid grid-cols-2 gap-3'>

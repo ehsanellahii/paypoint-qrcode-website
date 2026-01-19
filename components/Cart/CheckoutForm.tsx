@@ -37,7 +37,7 @@ const STORAGE_KEY = 'persisted';
 
 export default function CheckoutForm({ onSuccess, onBack, storeInfo, onStepChange }: CheckoutFormProps) {
   const { user } = useUser();
-  const { cart, totalPrice, clearCart, totalItems } = useCart();
+  const { cart, totalPrice, clearCart, totalItems, discountAmount, appliedVoucher } = useCart();
   const { deliveryAddress, orderType } = useAddress();
   const { t } = useLanguage();
 
@@ -51,6 +51,7 @@ export default function CheckoutForm({ onSuccess, onBack, storeInfo, onStepChang
   const deliveryAmount = postalRateInfo.deliveryCharges;
   const deliveryCharges = isDelivery ? (deliveryAmount ?? 0) : 0;
   const deliveryTime = postalRateInfo?.deliveryTime || 0;
+  const minimumOrderAmount = postalRateInfo?.minimumOrderAmount || 0;
   const [step, setStep] = useState<'details' | 'payment' | 'success'>('details');
   const [formData, setFormData] = useState<CheckoutFormData>({
     customerName: '',
@@ -69,6 +70,14 @@ export default function CheckoutForm({ onSuccess, onBack, storeInfo, onStepChang
   const handleSubmit = async (paymentMethod: string) => {
     if (!paymentMethod) {
       alert('Please select a payment method');
+      return;
+    }
+    if (isDelivery && deliveryCharges === null) {
+      alert('Delivery is not available for the provided postal code.');
+      return;
+    }
+    if (isDelivery && totalPrice < minimumOrderAmount) {
+      alert(`The minimum order amount for delivery is ${minimumOrderAmount.toFixed(2)}.`);
       return;
     }
 
@@ -90,7 +99,7 @@ export default function CheckoutForm({ onSuccess, onBack, storeInfo, onStepChang
 
         items: formatCartItemsForOrder(cart),
 
-        totalOrderPrice: totalPrice + (deliveryCharges ?? 0),
+        totalOrderPrice: totalPrice - discountAmount + (deliveryCharges ?? 0),
         totalItems: totalItems,
         totalItemsPrice: totalPrice,
         deliveryCharges: deliveryCharges,
@@ -152,10 +161,21 @@ export default function CheckoutForm({ onSuccess, onBack, storeInfo, onStepChang
       if (user?._id) {
         orderData.customerId = user._id;
       }
-      orderData.isDiscounted = false;
-      orderData.discountAmount = 0;
-      orderData.isVoucherApplied = false;
-      orderData.vouchers = [];
+      orderData.isDiscounted = discountAmount > 0;
+      orderData.discountAmount = discountAmount;
+      orderData.isVoucherApplied = appliedVoucher != null;
+      if (appliedVoucher) {
+        orderData.vouchers = [
+          {
+            id: appliedVoucher.voucherId,
+            voucherId: appliedVoucher.voucherId,
+            title: appliedVoucher.title,
+            code: appliedVoucher.code,
+            discountType: appliedVoucher.discountType,
+            discountValue: appliedVoucher.discountValue,
+          },
+        ];
+      }
       console.log('Submitting order data:', orderData);
       const response = await fetch(apiUrl, {
         method: 'POST',
@@ -180,7 +200,7 @@ export default function CheckoutForm({ onSuccess, onBack, storeInfo, onStepChang
 
       setStep('success');
       setOrderId(result?.data?.collectionCode);
-     
+
       console.log('Order submitted successfully:', result);
     } catch (error) {
       console.error('Error submitting order:', error);

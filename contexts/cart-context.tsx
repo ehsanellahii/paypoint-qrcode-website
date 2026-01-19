@@ -25,7 +25,28 @@ interface CartContextType {
   clearCart: () => void;
   totalItems: number;
   totalPrice: number;
+  discountAmount: number;
+  appliedVoucher: AppliedVoucher | null;
+  applyVoucher: (payload: VoucherApplyResponse) => void;
+  removeVoucher: () => void;
 }
+
+export type AppliedVoucher = {
+  voucherId: string;
+  code: string;
+  title?: string;
+  description?: string;
+  discountType: 'percentage' | 'fixed';
+  discountValue: number;
+  minimumOrderValue?: number;
+  maximumDiscountValue?: number;
+  validUntil?: string;
+};
+
+type VoucherApplyResponse = {
+  voucher: AppliedVoucher;
+  discountAmount: number;
+};
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
@@ -79,6 +100,8 @@ const stableStringifyCustomizations = (c: CartItemCustomization) => {
 export function CartProvider({ children }: { children: ReactNode }) {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [isHydrated, setIsHydrated] = useState(false);
+  const [appliedVoucher, setAppliedVoucher] = useState<AppliedVoucher | null>(null);
+  const [discountAmount, setDiscountAmount] = useState(0);
 
   useEffect(() => {
     const storedCart = getStoredCart();
@@ -136,6 +159,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const clearCart = useCallback(() => {
     setCart([]);
+    setAppliedVoucher(null);
+    setDiscountAmount(0);
   }, []);
 
   const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
@@ -163,6 +188,17 @@ export function CartProvider({ children }: { children: ReactNode }) {
     return sum + (basePrice + customizationPrice) * item.quantity;
   }, 0);
 
+  const applyVoucher = useCallback((payload: VoucherApplyResponse) => {
+    const safeDiscount = Math.max(0, Number(payload.discountAmount ?? 0));
+    setAppliedVoucher(payload.voucher);
+    setDiscountAmount(safeDiscount);
+  }, []);
+
+  const removeVoucher = useCallback(() => {
+    setAppliedVoucher(null);
+    setDiscountAmount(0);
+  }, []);
+
   return (
     <CartContext.Provider
       value={{
@@ -173,6 +209,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
         clearCart,
         totalItems,
         totalPrice,
+        appliedVoucher,
+        discountAmount,
+        applyVoucher,
+        removeVoucher,
       }}>
       {children}
     </CartContext.Provider>

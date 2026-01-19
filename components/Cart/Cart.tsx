@@ -19,7 +19,7 @@ interface CartProps {
 }
 
 export default function Cart({ isOpen: controlledIsOpen, onOpenChange, storeInfo, openOrdersDialog }: CartProps = {}) {
-  const { cart, updateQuantity, totalPrice, clearCart } = useCart();
+  const { cart, updateQuantity, totalPrice, clearCart, discountAmount } = useCart();
   const { orderType } = useAddress();
   const { deliveryAddress } = useAddress();
   const { t } = useLanguage();
@@ -147,8 +147,8 @@ export default function Cart({ isOpen: controlledIsOpen, onOpenChange, storeInfo
                 <span>{t.totalIncludingVAT}</span>
                 <span>
                   {deliveryCharges != null && isDeliveryAvailable
-                    ? apiFormatPrice(totalPrice + (orderType === 'delivery' ? deliveryCharges : 0))
-                    : apiFormatPrice(totalPrice)}
+                    ? apiFormatPrice(totalPrice - discountAmount + (orderType === 'delivery' ? deliveryCharges : 0))
+                    : apiFormatPrice(totalPrice - discountAmount)}
                 </span>
               </div>
 

@@ -125,6 +125,15 @@ export interface Translations {
   inDelivery: string;
   isDelivered: string;
   isCancelled: string;
+  enterVoucherCode: string;
+  apply: string;
+  remove: string;
+  voucher: string;
+  voucherApplyFailed: string;
+  VOUCHER_NOT_FOUND: string;
+  LIMIT_EXCEEDED: string;
+  MINIMUM_ORDER_VALUE_NOT_MET: string;
+  CUSTOMER_NOT_FOUND: string;
 }
 
 export const translations: Record<Language, Translations> = {
@@ -255,6 +264,16 @@ export const translations: Record<Language, Translations> = {
     inDelivery: 'In delivery',
     isDelivered: 'Delivered',
     isCancelled: 'Cancelled',
+    enterVoucherCode: 'Enter voucher code',
+    apply: 'Apply',
+    remove: 'Remove',
+    voucher: 'Voucher',
+    voucherApplyFailed: 'Voucher apply failed',
+    
+    VOUCHER_NOT_FOUND: 'The voucher code you entered does not exist. Please check the code and try again.',
+    LIMIT_EXCEEDED: 'You have exceeded the usage limit for this voucher. Please check the voucher terms and conditions.',
+    MINIMUM_ORDER_VALUE_NOT_MET: 'Your order does not meet the minimum value required to apply this voucher. Please add more items to your cart.',
+    CUSTOMER_NOT_FOUND: 'The customer associated with this voucher could not be found. Please ensure you are logged in with the correct account.',
   },
   de: {
     openUntil: 'Geöffnet bis',
@@ -383,6 +402,15 @@ export const translations: Record<Language, Translations> = {
     inDelivery: 'In Zustellung',
     isDelivered: 'Geliefert',
     isCancelled: 'Storniert',
+    enterVoucherCode: 'Gutscheincode eingeben',
+    apply: 'Anwenden',
+    remove: 'Entfernen',
+    voucher: 'Gutschein',
+    voucherApplyFailed: 'Gutschein konnte nicht angewendet werden',
+    VOUCHER_NOT_FOUND: 'Der eingegebene Gutscheincode ist ungültig. Bitte überprüfen Sie den Code und versuchen Sie es erneut.',
+    LIMIT_EXCEEDED: 'Sie haben das Nutzungslimit für diesen Gutschein überschritten. Bitte überprüfen Sie die Gutscheinbedingungen.',
+    MINIMUM_ORDER_VALUE_NOT_MET: 'Ihr Bestellwert erfüllt nicht den Mindestwert, um diesen Gutschein anzuwenden. Bitte fügen Sie Ihrer Bestellung weitere Artikel hinzu.',
+    CUSTOMER_NOT_FOUND: 'Der dem Gutschein zugeordnete Kunde konnte nicht gefunden werden. Bitte stellen Sie sicher, dass Sie mit dem richtigen Konto angemeldet sind.',
   },
 };
 
