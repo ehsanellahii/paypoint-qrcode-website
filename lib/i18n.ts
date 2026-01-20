@@ -88,6 +88,7 @@ export interface Translations {
   weAreNotAvailableInYourArea: string;
   minimumOrderAmountIs: string;
   requiredChooseAtleast: string;
+  chooseMin: string;
   chooseUpTo: string;
   maxReached: string;
   add: string;
@@ -226,6 +227,7 @@ export const translations: Record<Language, Translations> = {
     specialInstructions: 'Special Instructions / Notes (Optional)',
     minimumOrderAmountIs: 'Minimum order amount is',
     requiredChooseAtleast: 'Required: Choose at least',
+    chooseMin: 'Choose min',
     chooseUpTo: 'Choose up to',
     maxReached: 'Max reached',
     add: 'Add',
@@ -269,7 +271,7 @@ export const translations: Record<Language, Translations> = {
     remove: 'Remove',
     voucher: 'Voucher',
     voucherApplyFailed: 'Voucher apply failed',
-    
+
     VOUCHER_NOT_FOUND: 'The voucher code you entered does not exist. Please check the code and try again.',
     LIMIT_EXCEEDED: 'You have exceeded the usage limit for this voucher. Please check the voucher terms and conditions.',
     MINIMUM_ORDER_VALUE_NOT_MET: 'Your order does not meet the minimum value required to apply this voucher. Please add more items to your cart.',
@@ -364,6 +366,7 @@ export const translations: Record<Language, Translations> = {
     specialInstructions: 'Spezielle Anweisungen / Notizen (Optional)',
     minimumOrderAmountIs: 'Mindestbestellwert ist',
     requiredChooseAtleast: 'Erforderlich: Wählen Sie mindestens',
+    chooseMin: 'Wählen Sie mindestens',
     chooseUpTo: 'Wählen Sie bis zu',
     maxReached: 'Maximal erreicht',
     add: 'Hinzufügen',

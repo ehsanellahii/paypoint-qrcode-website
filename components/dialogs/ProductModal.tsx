@@ -20,7 +20,7 @@ interface ProductModalProps {
 }
 
 export default function ProductModal({ product, isOpen, onClose }: ProductModalProps) {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const { addToCart } = useCart();
 
   const [quantity, setQuantity] = useState(1);
@@ -270,17 +270,32 @@ export default function ProductModal({ product, isOpen, onClose }: ProductModalP
                           <div className='mb-4 flex flex-col items-center justify-center'>
                             <h2 className='font-semibold my-4 text-center text-lg mb-2'>{section.name}</h2>
 
-                            {min > 0 && (
+                            {min > 0 && (!max || max === 0) && (
                               <span className={cn('text-gray-500 font-normal text-sm italic', errors[section._id] ? 'text-red-600' : 'text-gray-500')}>
-                                {t.requiredChooseAtleast} {min}
+                                {t.chooseMin} {min}
+                              </span>
+                            )}
+                            {min > 0 && max > 0 && min != max && (
+                              <span className={cn('text-gray-500 font-normal text-sm italic', errors[section._id] ? 'text-red-600' : 'text-gray-500')}>
+                                {language === 'de' ? `Wähle min ${min} bis zu ${max}` : `Choose min ${min} up to ${max}`}
+                              </span>
+                            )}
+                            {min === 0 && max > 0 && (
+                              <span className='text-gray-500 font-normal text-sm italic'>
+                                {t.chooseUpTo} {max}
+                              </span>
+                            )}
+                            {min === max && min > 0 && (
+                              <span className={cn('text-gray-500 font-normal text-sm italic', errors[section._id] ? 'text-red-600' : 'text-gray-500')}>
+                                {language === 'de' ? `Wähle genau ${min}` : `Choose exactly ${min}`}
                               </span>
                             )}
 
-                            {max > 0 && (
+                            {/* {max > 0 && (
                               <span className='text-gray-500 font-normal text-sm italic'>
                                 {t.chooseUpTo} {max} ({t.selected} {groupTotal})
                               </span>
-                            )}
+                            )} */}
                           </div>
 
                           {/* Options Grid */}
@@ -297,7 +312,7 @@ export default function ProductModal({ product, isOpen, onClose }: ProductModalP
                               const maxReached = section.isMultipleSelectionAllowed && max > 0 && groupTotal >= max && qty === 0;
 
                               // allow increasing up to remaining capacity
-                              const optionMax = max > 0 ? qty + (max - groupTotal) : section.maxMultipleSelection ?? 99;
+                              const optionMax = max > 0 ? qty + (max - groupTotal) : (section.maxMultipleSelection ?? 99);
 
                               return (
                                 <div
