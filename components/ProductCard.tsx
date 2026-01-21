@@ -36,7 +36,7 @@ export default function ProductCard({ product, onClick }: ProductCardProps) {
       {/* Product info */}
       <div className='p-3 flex flex-col items-center text-center'>
         <h3 className='line-clamp-2 text-sm md:text-base'>{product.name}</h3>
-        <p className='text-base md:text-lg text-gray-500'>{formatPrice(product.currentPrice)}</p>
+        <p className='text-base  text-gray-500'>{formatPrice(product.currentPrice)}</p>
       </div>
     </button>
   );
