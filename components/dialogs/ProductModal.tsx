@@ -405,7 +405,7 @@ export default function ProductModal({ product, isOpen, onClose }: ProductModalP
                 {t.close}
               </Dialog.Close>
 
-              <button onClick={handleAddToCart} className='bg-primary text-[--selected-text] py-2 px-3 rounded font-medium' type='button'>
+              <button onClick={handleAddToCart} className='bg-primary text-(--selected-text) py-2 px-3 rounded font-medium' type='button'>
                 {t.add} ({formatPrice(calculateTotalPrice())})
               </button>
             </div>
