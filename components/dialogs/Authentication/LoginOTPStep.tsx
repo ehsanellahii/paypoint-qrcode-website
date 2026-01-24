@@ -55,23 +55,26 @@ export default function LoginOtpStep({ t, disabled, phoneLabel, otp, otpError, o
         {!!otpError && <p className='text-sm text-red-500 text-center'>{otpError}</p>}
 
         <button type='button' onClick={onResend} disabled={disabled} className='text-sm underline text-gray-700 disabled:opacity-60 self-center'>
-          {t?.resendOtp ?? 'Resend OTP'}
+          {t.resendOtp}
         </button>
       </div>
 
       <div className='border-t border-gray-300 px-6 py-4 bg-white flex items-center justify-between gap-2'>
         <button onClick={onBack} className='py-3 px-4 rounded bg-gray-200 font-medium' disabled={disabled}>
-          {t?.back ?? 'Back'}
+          {t.back}
         </button>
 
-        <button onClick={onVerify} className='py-3 px-4 rounded bg-black text-white font-medium disabled:opacity-60 flex justify-center items-center' disabled={disabled}>
+        <button
+          onClick={onVerify}
+          className='py-3 px-4 rounded bg-primary text-(--selected-text) font-medium disabled:opacity-60 flex justify-center items-center'
+          disabled={disabled}>
           {disabled ? (
             <>
               <Loader2 className='mr-2 h-4 w-4 animate-spin' />
-              {t?.verify ?? 'Verify'}
+              {t.verify}
             </>
           ) : (
-            <> {t?.verify ?? 'Verify'}</>
+            <> {t.verify}</>
           )}
         </button>
       </div>

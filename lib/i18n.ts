@@ -123,8 +123,10 @@ export interface Translations {
   notLoggedIn: string;
   enterOtp: string;
   otpSendFailed: string;
+  sendOtp: string;
   invalidOtp: string;
   otpExpired: string;
+  verify: string;
   otpVerifyFailed: string;
   otpSessionExpired: string;
 
@@ -297,8 +299,10 @@ export const translations: Record<Language, Translations> = {
     logout: 'Logout',
     enterOtp: 'Enter OTP code',
     otpSendFailed: 'Failed to send OTP. Please try again.',
+    sendOtp: 'Send OTP',
     invalidOtp: 'Invalid OTP. Please try again.',
     otpExpired: 'OTP has expired. Please request a new one.',
+    verify: 'Verify',
     otpVerifyFailed: 'Failed to verify OTP. Please try again.',
     otpSessionExpired: 'OTP session expired. Please resend OTP.',
     profile: 'Profile',
@@ -444,7 +448,9 @@ export const translations: Record<Language, Translations> = {
     logout: 'Abmelden',
     enterOtp: 'Geben Sie den OTP-Code ein',
     otpSendFailed: 'OTP konnte nicht gesendet werden. Bitte versuchen Sie es erneut.',
+    sendOtp: 'OTP senden',
     invalidOtp: 'Ungültiger OTP. Bitte versuchen Sie es erneut.',
+    verify: 'Verifizieren',
     otpExpired: 'OTP ist abgelaufen. Bitte fordern Sie ein neues an.',
     otpVerifyFailed: 'OTP konnte nicht verifiziert werden. Bitte versuchen Sie es erneut.',
     otpSessionExpired: 'OTP-Sitzung abgelaufen. Bitte senden Sie OTP erneut.',

@@ -53,17 +53,17 @@ export default function RegistrationDetailsStep({ t, loading, values, errors, on
 
       <div className='border-t border-gray-300 px-6 py-4 bg-white flex items-center justify-between gap-2'>
         <button onClick={onClose} className='py-3 px-4 rounded bg-gray-200 font-medium' disabled={loading}>
-          {t?.close ?? 'Close'}
+          {t.close}
         </button>
 
-        <button onClick={onSendOtp} className='py-3 px-4 rounded bg-black text-white font-medium disabled:opacity-60 flex justify-center items-center' disabled={loading}>
+        <button onClick={onSendOtp} className='py-3 px-4 rounded bg-primary text-(--selected-text) font-medium disabled:opacity-60 flex justify-center items-center' disabled={loading}>
           {loading ? (
             <>
               <Loader2 className='mr-2 h-4 w-4 animate-spin' />
-              {t?.sendOtp ?? 'Send OTP'}
+              {t.sendOtp}
             </>
           ) : (
-            <>{t?.sendOtp ?? 'Send OTP'}</>
+            <>{t.sendOtp}</>
           )}
         </button>
       </div>

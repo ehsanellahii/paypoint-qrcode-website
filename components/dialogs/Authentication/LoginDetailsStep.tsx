@@ -43,14 +43,17 @@ export default function LoginDetailsStep({ t, loading, values, errors, onChange,
           {t?.close ?? 'Close'}
         </button>
 
-        <button onClick={onSendOtp} className='py-3 px-4 rounded bg-black text-white font-medium disabled:opacity-60 flex justify-center items-center' disabled={loading}>
+        <button
+          onClick={onSendOtp}
+          className='py-3 px-4 rounded bg-primary text-(--selected-text) font-medium disabled:opacity-60 flex justify-center items-center'
+          disabled={loading}>
           {loading ? (
             <>
               <Loader2 className='mr-2 h-4 w-4 animate-spin' />
-              {t?.sendOtp ?? 'Send OTP'}
+              {t.sendOtp}
             </>
           ) : (
-            (t?.sendOtp ?? 'Send OTP')
+            t.sendOtp
           )}
           {}
         </button>
