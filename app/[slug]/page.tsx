@@ -18,7 +18,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug } = await params;
   const { t: token } = await searchParams;
-  if (BLOCKED.has(slug)) notFound();
+  if (BLOCKEDSLUGS.has(slug)) notFound();
   const store = await getStoreData(slug, token as string);
 
   return {
@@ -32,12 +32,12 @@ export async function generateMetadata({
   };
 }
 
-const BLOCKED = new Set(['favicon.ico', 'robots.txt', 'sitemap.xml']);
+export const BLOCKEDSLUGS = new Set(['favicon.ico', 'robots.txt', 'sitemap.xml', 'favicon.png']);
 
 const page = async ({ params, searchParams }: { params: Promise<{ slug: string }>; searchParams: Promise<Record<string, string | string[] | undefined>> }) => {
   const paramsResult = await params;
   const { slug } = paramsResult;
-  if (BLOCKED.has(slug)) notFound();
+  if (BLOCKEDSLUGS.has(slug)) notFound();
   const { t: token } = await searchParams;
   const storeInfo = await getStoreData(slug, token as string);
   console.log('Formatted Store Info:', storeInfo);

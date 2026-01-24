@@ -1,5 +1,6 @@
 import { cache } from 'react';
 import { getImageURL, IMenuData, MenuCategory, MenuProduct } from './utils';
+import { BLOCKEDSLUGS } from '~/app/[slug]/page';
 
 export const API_BASE_URL = process.env.NODE_ENV === 'production' ? 'https://api.paypointpos.de/integration' : 'http://localhost:4000/integration';
 export const X_API_KEY = 'b3db8d621de8b0b9ab5351d05779f400:92b2cbc1e4bdcb0ab019ea16ae31d3fea304508e734672a5cf6661cded997f0c';
@@ -18,6 +19,7 @@ const API_HEADERS: {
 
 export const getStoreData = cache(async (slug: string, token?: string) => {
   if (!slug) return null;
+  if (BLOCKEDSLUGS.has(slug)) return null;
   console.log('Fetching store data for slug:', slug, 'with token:', token);
   const tokenParam = token ? `?token=${token}` : '';
   const response = await fetch(`${API_BASE_URL}/slugs/${slug}${tokenParam}`, {
