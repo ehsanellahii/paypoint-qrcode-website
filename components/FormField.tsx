@@ -2,6 +2,7 @@
 
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { cn } from '~/lib/utils';
 
 interface FormFieldProps {
   id: string;
@@ -14,6 +15,7 @@ interface FormFieldProps {
   required?: boolean;
   disabled?: boolean;
   helperText?: string;
+  inputClassName?: string;
 }
 
 export default function FormField({
@@ -27,12 +29,13 @@ export default function FormField({
   required = false,
   disabled = false,
   helperText,
+  inputClassName,
 }: FormFieldProps) {
   return (
-    <div className="space-y-2">
+    <div className='space-y-2'>
       <Label htmlFor={id}>
         {label}
-        {required && <span className="text-red-500 ml-1">*</span>}
+        {required && <span className='text-red-500 ml-1'>*</span>}
       </Label>
       <Input
         id={id}
@@ -40,22 +43,21 @@ export default function FormField({
         placeholder={placeholder}
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className={error ? 'border-red-500' : 'focus:outline-none focus:ring-0 focus:border-none'}
+        className={cn('focus:outline-none focus:ring-0 focus:border-none', inputClassName, error ? 'border-red-500' : '')}
         disabled={disabled}
         aria-invalid={!!error}
         aria-describedby={error ? `${id}-error` : helperText ? `${id}-helper` : undefined}
       />
       {error && (
-        <p id={`${id}-error`} className="text-sm text-red-500" role="alert">
+        <p id={`${id}-error`} className='text-sm text-red-500' role='alert'>
           {error}
         </p>
       )}
       {helperText && !error && (
-        <p id={`${id}-helper`} className="text-xs text-gray-500">
+        <p id={`${id}-helper`} className='text-xs text-gray-500'>
           {helperText}
         </p>
       )}
     </div>
   );
 }
-

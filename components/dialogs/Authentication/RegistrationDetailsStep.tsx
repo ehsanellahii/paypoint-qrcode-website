@@ -34,6 +34,7 @@ export default function RegistrationDetailsStep({ t, loading, values, errors, on
           error={errors.customerName}
           required
           disabled={loading}
+          inputClassName='h-9.5!'
         />
 
         <PhoneNumberField
