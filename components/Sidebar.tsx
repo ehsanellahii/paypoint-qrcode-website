@@ -100,7 +100,7 @@ export default function Sidebar({ categories, activeCategory, onCategoryClick, l
 
         <nav
           ref={desktopScrollRef}
-          className='flex flex-col gap-2 p-6 pl-4 pt-4 pb-20 h-[calc(100%-80px)] overflow-y-auto scrollbar-hide'
+          className='flex flex-col gap-2 p-6 pl-4 pt-4 pb-28 h-[calc(100%-80px)] overflow-y-auto scrollbar-hide'
           role='navigation'
           aria-label='Product categories'>
           {categories.map((category) => {
