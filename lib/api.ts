@@ -19,7 +19,6 @@ const API_HEADERS: {
 
 export const getStoreData = cache(async (slug: string, token?: string) => {
   if (!slug) return null;
-  if (BLOCKEDSLUGS.has(slug)) return null;
   console.log('Fetching store data for slug:', slug, 'with token:', token);
   const tokenParam = token ? `?token=${token}` : '';
   const response = await fetch(`${API_BASE_URL}/slugs/${slug}${tokenParam}`, {
