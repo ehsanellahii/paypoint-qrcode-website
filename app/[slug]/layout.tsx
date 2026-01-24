@@ -8,8 +8,6 @@ import { AddressProvider } from '~/contexts/address-context';
 import { UserProvider } from '~/contexts/user-context';
 import DebugPersistError from '~/lib/DebugPersistError';
 import { getStoreData } from '~/lib/api';
-import StoreProvider from '~/contexts/store-context';
-import ThemeVars from '~/lib/ThemeVars';
 
 const inter = Inter({
   variable: '--font-inter',
@@ -42,21 +40,8 @@ export async function generateMetadata({
   };
 }
 
-export default async function RootLayout({
-  children,
-  params,
-  searchParams,
-}: Readonly<{
-  params: Promise<{ slug: string }>;
-  searchParams: Promise<Record<string, string | string[] | undefined>>;
-  children: React.ReactNode;
-}>) {
-  const paramsResult = await params;
-  const { slug } = paramsResult;
-  const sParams = await searchParams;
-  const storeInfo = await getStoreData(slug, sParams?.t as string);
-  const primaryColor = storeInfo?.settings?.themeColors?.primaryColor;
-  const selectedColor = storeInfo?.settings?.themeColors?.selectedTextColor;
+export default async function RootLayout({ children, params }: { children: React.ReactNode; params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
   return (
     <html lang='en'>
       <head>
@@ -72,15 +57,12 @@ export default async function RootLayout({
         />
 
         <LanguageProvider>
-          <ThemeVars primary={primaryColor} selectedText={selectedColor} />
-          <StoreProvider value={storeInfo}>
-            <UserProvider>
-              <AddressProvider storeKey={slug || 'default'}>
-                <DebugPersistError />
-                <CartProvider>{children}</CartProvider>
-              </AddressProvider>
-            </UserProvider>
-          </StoreProvider>
+          <UserProvider>
+            <AddressProvider storeKey={slug || 'default'}>
+              <DebugPersistError />
+              <CartProvider>{children}</CartProvider>
+            </AddressProvider>
+          </UserProvider>
         </LanguageProvider>
       </body>
     </html>
