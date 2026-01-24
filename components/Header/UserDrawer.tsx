@@ -11,6 +11,7 @@ import FavoriteItemsDialog from '../dialogs/FavoriteItems/FavoriteItemsDialog';
 import OrdersDialog from './OrdersDialog';
 import ProductModal from '../dialogs/ProductModal';
 import { MenuProduct } from '~/lib/utils';
+import { useLanguage } from '~/contexts/language-context';
 
 type Props = {
   open: boolean;
@@ -20,6 +21,7 @@ type Props = {
 };
 
 export default function UserDrawer({ open, onClose }: Props) {
+  const { t } = useLanguage();
   const { user } = useUser(); // adjust if your context shape differs
   const panelRef = useRef<HTMLDivElement | null>(null);
   const isLoggedIn = !!user && !user?.isGuest;
@@ -85,7 +87,7 @@ export default function UserDrawer({ open, onClose }: Props) {
           <div className=' '>
             <div className='flex items-center justify-between border-b border-gray-100 px-4 py-4'>
               <div>
-                <div className='text-sm text-gray-500'>Hey, </div>
+                <div className='text-sm text-gray-500'>{t.hey}, </div>
                 <div className='font-semibold text-gray-900'>{displayName}</div>
                 {/* {user?.email && <div className='text-sm text-gray-600'>{user.email}</div>} */}
               </div>
@@ -102,27 +104,27 @@ export default function UserDrawer({ open, onClose }: Props) {
                     className='flex w-full gap-x-2 items-center rounded-lg px-4 py-3 text-sm font-medium text-gray-800 hover:bg-gray-100 text-left'
                     onClick={() => go('profile')}>
                     <IconifyIcon icon='bxs:user' className='text-icon  size-6' />
-                    Profile
+                    {t.profile}
                   </button>
                   <button
                     className=' w-full flex gap-x-2 rounded-lg px-4 py-3 text-sm font-medium text-gray-800 hover:bg-gray-100 text-left'
                     onClick={() => go('orders')}>
                     <IconifyIcon icon='heroicons-solid:shopping-bag' className='text-icon  size-6' />
-                    Orders
+                    {t.orders}
                   </button>
                   <button
                     className='flex w-full items-center gap-x-2 rounded-lg px-4 py-3 text-sm font-medium text-gray-800 hover:bg-gray-100 text-left'
                     onClick={() => go('favorites')}>
                     <IconifyIcon icon='mdi:book-favorite' className='text-icon  size-5.5' />
-                    Favorite Products
+                    {t.favoriteProducts}
                   </button>
                 </>
               ) : (
                 <>
-                  <div className='px-4 pt-2 text-xs text-gray-500'>Login to view profile and favorites.</div>
+                  <div className='px-4 pt-2 text-xs text-gray-500'>{t.loginToSeeProfileAndFavorites}</div>
                   <div className='flex gap-x-2'>
-                    <DrawerLink label='Login' onClick={() => setDialogs((prev) => ({ ...prev, login: true }))} />
-                    <DrawerLink label='Create account' onClick={() => setDialogs((prev) => ({ ...prev, register: true }))} />
+                    <DrawerLink label={t.login} onClick={() => setDialogs((prev) => ({ ...prev, login: true }))} />
+                    <DrawerLink label={t.register} onClick={() => setDialogs((prev) => ({ ...prev, register: true }))} />
                   </div>
                 </>
               )}
@@ -158,7 +160,9 @@ export default function UserDrawer({ open, onClose }: Props) {
         </div>
       </aside>
       {dialogs.login && <AuthenticationDialog isOpen={dialogs.login} handleOpenChange={(open) => setDialogs((prev) => ({ ...prev, login: open }))} />}
-      {dialogs.register && <AuthenticationDialog isOpen={dialogs.register} handleOpenChange={(open) => setDialogs((prev) => ({ ...prev, register: open }))} isRegistration={true} />}
+      {dialogs.register && (
+        <AuthenticationDialog isOpen={dialogs.register} handleOpenChange={(open) => setDialogs((prev) => ({ ...prev, register: open }))} isRegistration={true} />
+      )}
       {dialogs.profile && <ProfileDialog isOpen={dialogs.profile} handleOpenChange={(open) => setDialogs((prev) => ({ ...prev, profile: open }))} />}
       {dialogs.favoriteItems && (
         <FavoriteItemsDialog

@@ -142,7 +142,7 @@ export interface Translations {
   MINIMUM_ORDER_VALUE_NOT_MET: string;
   CUSTOMER_NOT_FOUND: string;
   phoneHelper?: string;
-  login?: string;
+  login: string;
   logout?: string;
   profile: string;
   points: string;
@@ -152,6 +152,10 @@ export interface Translations {
   favorites: string;
   savedItemsForRestaurant: string;
   clear: string;
+  hey: string;
+  favoriteProducts: string;
+  register: string;
+  loginToSeeProfileAndFavorites: string;
 }
 
 export const translations: Record<Language, Translations> = {
@@ -304,6 +308,10 @@ export const translations: Record<Language, Translations> = {
     favorites: 'Favorites',
     savedItemsForRestaurant: 'Saved items for this restaurant',
     clear: 'Clear',
+    hey: 'Hey',
+    favoriteProducts: 'Favorite Products',
+    register: 'Register',
+    loginToSeeProfileAndFavorites: 'Login to view profile and favorites.',
 
     VOUCHER_NOT_FOUND: 'The voucher code you entered does not exist. Please check the code and try again.',
     LIMIT_EXCEEDED: 'You have exceeded the usage limit for this voucher. Please check the voucher terms and conditions.',
@@ -454,6 +462,10 @@ export const translations: Record<Language, Translations> = {
     login: 'Anmelden',
     profile: 'Profil',
     points: 'Punkte',
+    hey: 'Hallo',
+    favoriteProducts: 'Favoritenprodukte',
+    register: 'Registrieren',
+    loginToSeeProfileAndFavorites: 'Melden Sie sich an, um Profil und Favoriten zu sehen.',
 
     noFavoriteItemsYet: 'Noch keine Favoriten.',
     totalFavItems: 'Gesamtanzahl Favoriten',

@@ -214,7 +214,7 @@ export default function AuthenticationDialog({ isOpen, handleOpenChange, isRegis
     <DialogWrapper
       isOpen={isOpen}
       handleOpenChange={onOpenChangeInternal}
-      title={step === 'details' ? (t?.login ?? 'Login') : (t?.enterOtp ?? 'Enter OTP')}
+      title={step === 'details' ? (isRegistration ? t.register : t.login) : (t?.enterOtp ?? 'Enter OTP')}
       ContentClassName='max-w-[60vh] max-h-[calc(60dvh)]'>
       {/* ✅ required for Firebase phone auth on web */}
       <div id='recaptcha-container' style={{ display: 'none' }} />
