@@ -34,7 +34,7 @@ export default function RegistrationDetailsStep({ t, loading, values, errors, on
           error={errors.customerName}
           required
           disabled={loading}
-          inputClassName='focus:outline-0 focus:ring-0 shadow-none  border-0 rounded-none h-9.5! focus-visible:outline-none  focus-visible:ring-0 focus-visible:outline-offset-0! focus-visible:outline-0! focus-visible:border-gray-200! focus:border-gray-200! focus-visible:border'
+          inputClassName='focus:outline-0 focus:ring-0 shadow-none  h-9.5! focus-visible:outline-none  focus-visible:ring-0 focus-visible:outline-offset-0! focus-visible:outline-0! focus-visible:border-gray-200! focus:border-gray-200! focus:border-2!'
         />
 
         <PhoneNumberField
