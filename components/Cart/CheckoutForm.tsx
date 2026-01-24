@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -6,7 +5,6 @@ import { useCart } from '~/contexts/cart-context';
 import { useLanguage } from '@/contexts/language-context';
 import { formatCartItemsForOrder, getPostalRateInfo, storage } from '@/lib/utils';
 import { DialogHeader, DialogTitle } from '../ui/dialog';
-import { IStoreInfo } from '~/lib/types';
 import PaymentMethodForm from './PaymentMethodForm';
 import { useAddress } from '~/contexts/address-context';
 import { generateTimeSlots } from '~/lib/generateTimeSlotsWithinHours';
@@ -15,13 +13,13 @@ import OrderSuccess from './OrderSuccess';
 import { API_BASE_URL } from '~/lib/api';
 import CheckoutDetailsForm from './CheckoutDetailsForm';
 import { useUser } from '~/contexts/user-context';
+import { useStore } from '~/contexts/store-context';
 
 const TZ = 'Europe/Berlin';
 
 interface CheckoutFormProps {
   onSuccess: () => void;
   onBack?: () => void;
-  storeInfo?: IStoreInfo;
   onStepChange?: (s: 'details' | 'payment' | 'success') => void;
 }
 
@@ -35,7 +33,8 @@ interface CheckoutFormData {
 
 const STORAGE_KEY = 'persisted';
 
-export default function CheckoutForm({ onSuccess, onBack, storeInfo, onStepChange }: CheckoutFormProps) {
+export default function CheckoutForm({ onSuccess, onBack, onStepChange }: CheckoutFormProps) {
+  const storeInfo = useStore();
   const { user } = useUser();
   const { cart, totalPrice, clearCart, totalItems, discountAmount, appliedVoucher } = useCart();
   const { deliveryAddress, orderType } = useAddress();
@@ -244,7 +243,6 @@ export default function CheckoutForm({ onSuccess, onBack, storeInfo, onStepChang
           onSuccess={(paymentMethod) => handleSubmit(paymentMethod!)}
           deliveryCharges={deliveryCharges}
           isSubmitting={isSubmitting}
-          storeInfo={storeInfo}
         />
       ) : (
         <CheckoutDetailsForm

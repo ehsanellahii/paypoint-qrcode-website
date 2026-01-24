@@ -2,15 +2,16 @@
 
 import Image from 'next/image';
 import LanguageSwitcher from './LanguageSwitcher';
-import { IStoreInfo } from '~/lib/types';
 import { useLanguage } from '~/contexts/language-context';
 import { getTodayTimings, isRestaurantOpen } from '~/lib/restaurantTimings';
 import OrderTypeAndAddressControl from './OrderTypeAndAddressControl';
 import { useState } from 'react';
 import UserDrawer from './UserDrawer';
 import OrdersDialog from './OrdersDialog';
+import { useStore } from '~/contexts/store-context';
 
-export default function MobileRestaurantInfo({ storeInfo }: { storeInfo?: IStoreInfo }) {
+export default function MobileRestaurantInfo() {
+  const storeInfo = useStore();
   const { t } = useLanguage();
   const { close: ClosingHours } = getTodayTimings(storeInfo?.timings);
   const isOpen = isRestaurantOpen(storeInfo?.timings || {});
@@ -54,8 +55,8 @@ export default function MobileRestaurantInfo({ storeInfo }: { storeInfo?: IStore
             <p className='font-medium text-red-600 whitespace-nowrap'>{t.closed}</p>
           )}
         </div>
-        {!storeInfo?.tableInfo?.token && <OrderTypeAndAddressControl storeInfo={storeInfo} />}
-        <UserDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} onOpenOrders={() => setOrdersOpen(true)} />
+        {!storeInfo?.tableInfo?.token && <OrderTypeAndAddressControl />}
+        <UserDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} onOpenOrders={() => setOrdersOpen(true)} storeSlug={storeInfo?.slug || ''} />
         <OrdersDialog open={ordersOpen} onOpenChange={setOrdersOpen} />
       </div>
     </div>

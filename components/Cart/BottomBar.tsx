@@ -7,14 +7,15 @@ import { useCart } from '~/contexts/cart-context';
 import { useLanguage } from '@/contexts/language-context';
 import { formatPrice } from '@/lib/api';
 import Cart from './Cart';
-import { IStoreInfo } from '~/lib/types';
 import { isRestaurantOpen } from '~/lib/restaurantTimings';
 import { getImageURL } from '~/lib/utils';
 import DeliveryAddressModal from '../dialogs/DeliveryAddressModal';
 import { useAddress } from '~/contexts/address-context';
 import OrdersDialog from '../Header/OrdersDialog';
+import { useStore } from '~/contexts/store-context';
 
-export default function BottomBar({ storeInfo }: { storeInfo?: IStoreInfo }) {
+export default function BottomBar() {
+  const storeInfo = useStore();
   const { cart, totalItems, totalPrice } = useCart();
   const { t } = useLanguage();
   const [isCartOpen, setIsCartOpen] = useState(false);
@@ -89,7 +90,7 @@ export default function BottomBar({ storeInfo }: { storeInfo?: IStoreInfo }) {
           if (orderType !== 'delivery') setOrderType('delivery');
         }}
       />
-      <Cart isOpen={isCartOpen} onOpenChange={setIsCartOpen} storeInfo={storeInfo} openOrdersDialog={() => setOrdersOpen(true)} />
+      <Cart isOpen={isCartOpen} onOpenChange={setIsCartOpen} openOrdersDialog={() => setOrdersOpen(true)} />
       <OrdersDialog open={ordersOpen} onOpenChange={setOrdersOpen} />
     </>
   );

@@ -40,7 +40,7 @@ export default function FormField({
         placeholder={placeholder}
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className={error ? 'border-red-500' : ''}
+        className={error ? 'border-red-500' : 'focus:outline-none focus:ring-0 focus:border-none'}
         disabled={disabled}
         aria-invalid={!!error}
         aria-describedby={error ? `${id}-error` : helperText ? `${id}-helper` : undefined}

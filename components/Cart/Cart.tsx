@@ -7,18 +7,19 @@ import { formatPrice as apiFormatPrice } from '@/lib/api';
 import { useLanguage } from '@/contexts/language-context';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import CheckoutForm from './CheckoutForm';
-import { IStoreInfo } from '~/lib/types';
 import { cn, getImageURL, getPostalRateInfo } from '~/lib/utils';
 import { useAddress } from '~/contexts/address-context';
+import { useStore } from '~/contexts/store-context';
 
 interface CartProps {
   isOpen?: boolean;
   onOpenChange?: (open: boolean) => void;
-  storeInfo?: IStoreInfo;
   openOrdersDialog?: () => void;
 }
 
-export default function Cart({ isOpen: controlledIsOpen, onOpenChange, storeInfo, openOrdersDialog }: CartProps = {}) {
+export default function Cart({ isOpen: controlledIsOpen, onOpenChange, openOrdersDialog }: CartProps = {}) {
+  const storeInfo = useStore();
+  const logoURL = storeInfo?.logo || '';
   const { cart, updateQuantity, totalPrice, clearCart, discountAmount } = useCart();
   const { orderType } = useAddress();
   const { deliveryAddress } = useAddress();
@@ -58,7 +59,7 @@ export default function Cart({ isOpen: controlledIsOpen, onOpenChange, storeInfo
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <DialogContent className='max-w-5xl w-[calc(100vw-2rem)] h-[calc(100dvh-2rem)] max-h-[calc(100dvh-2rem)] flex flex-col p-0'>
         {showCheckout ? (
-          <CheckoutForm onSuccess={handleCheckoutSuccess} onBack={handleBackToCart} storeInfo={storeInfo} onStepChange={setCheckoutStep} />
+          <CheckoutForm onSuccess={handleCheckoutSuccess} onBack={handleBackToCart} onStepChange={setCheckoutStep} />
         ) : (
           <>
             <DialogHeader className='p-6 pb-0 border-b-0'>
@@ -71,13 +72,13 @@ export default function Cart({ isOpen: controlledIsOpen, onOpenChange, storeInfo
                 <div key={item.id} className='bg-gray-100 rounded-lg p-4 flex items-center gap-3' role='listitem'>
                   {/* Image */}
                   <div className='relative w-16 h-16 shrink-0 rounded overflow-hidden'>
-                    <Image
-                      src={item.product.images.length ? getImageURL(item.product.images[0]) : '/'}
-                      alt={item.product.name}
-                      fill
-                      className='object-cover'
-                      sizes='64px'
-                    />
+                    {item.product.images?.length ? (
+                      <Image src={getImageURL(item.product.images[0])} alt={item.product.name} fill className='object-cover' sizes='64px' />
+                    ) : logoURL ? (
+                      <div className='relative w-16 h-16 opacity-40 grayscale'>
+                        <Image src={logoURL} alt='Restaurant logo' fill className='object-contain' sizes='64px' />
+                      </div>
+                    ) : null}
                   </div>
 
                   {/* Details */}

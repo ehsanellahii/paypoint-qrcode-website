@@ -121,6 +121,12 @@ export interface Translations {
   noOrdersYet: string;
   yourOrdersWillAppearHere: string;
   notLoggedIn: string;
+  enterOtp: string;
+  otpSendFailed: string;
+  invalidOtp: string;
+  otpExpired: string;
+  otpVerifyFailed: string;
+  otpSessionExpired: string;
 
   sentToStore: string;
   inDelivery: string;
@@ -135,6 +141,17 @@ export interface Translations {
   LIMIT_EXCEEDED: string;
   MINIMUM_ORDER_VALUE_NOT_MET: string;
   CUSTOMER_NOT_FOUND: string;
+  phoneHelper?: string;
+  login?: string;
+  logout?: string;
+  profile: string;
+  points: string;
+
+  noFavoriteItemsYet: string;
+  totalFavItems: string;
+  favorites: string;
+  savedItemsForRestaurant: string;
+  clear: string;
 }
 
 export const translations: Record<Language, Translations> = {
@@ -174,7 +191,7 @@ export const translations: Record<Language, Translations> = {
     back: 'Back',
     pay: 'Pay',
     cash: 'Cash',
-    posCardPayment: 'Card Payment (POS)',
+    posCardPayment: 'Card Payment',
 
     // specialInstructions: 'Special Instructions (Optional)',
     addAnySpecialRequests: 'Add any special requests...',
@@ -271,6 +288,22 @@ export const translations: Record<Language, Translations> = {
     remove: 'Remove',
     voucher: 'Voucher',
     voucherApplyFailed: 'Voucher apply failed',
+    phoneHelper: 'Include your mobile number without leading 0',
+    login: 'Login',
+    logout: 'Logout',
+    enterOtp: 'Enter OTP code',
+    otpSendFailed: 'Failed to send OTP. Please try again.',
+    invalidOtp: 'Invalid OTP. Please try again.',
+    otpExpired: 'OTP has expired. Please request a new one.',
+    otpVerifyFailed: 'Failed to verify OTP. Please try again.',
+    otpSessionExpired: 'OTP session expired. Please resend OTP.',
+    profile: 'Profile',
+    points: 'Points',
+    noFavoriteItemsYet: 'No favorite items yet.',
+    totalFavItems: 'Total Favorite Items',
+    favorites: 'Favorites',
+    savedItemsForRestaurant: 'Saved items for this restaurant',
+    clear: 'Clear',
 
     VOUCHER_NOT_FOUND: 'The voucher code you entered does not exist. Please check the code and try again.',
     LIMIT_EXCEEDED: 'You have exceeded the usage limit for this voucher. Please check the voucher terms and conditions.',
@@ -313,7 +346,7 @@ export const translations: Record<Language, Translations> = {
     back: 'Zurück',
     pay: 'Bezahlen',
     cash: 'Bargeld',
-    posCardPayment: 'POS-Kartenzahlung',
+    posCardPayment: 'Kartenzahlung',
 
     // specialInstructions: 'Spezielle Anweisungen (Optional)',
     addAnySpecialRequests: 'Fügen Sie spezielle Wünsche hinzu...',
@@ -400,6 +433,13 @@ export const translations: Record<Language, Translations> = {
     noOrdersYet: 'Noch keine Bestellungen',
     yourOrdersWillAppearHere: 'Deine letzten Bestellungen werden hier angezeigt.',
     notLoggedIn: 'Nicht angemeldet',
+    logout: 'Abmelden',
+    enterOtp: 'Geben Sie den OTP-Code ein',
+    otpSendFailed: 'OTP konnte nicht gesendet werden. Bitte versuchen Sie es erneut.',
+    invalidOtp: 'Ungültiger OTP. Bitte versuchen Sie es erneut.',
+    otpExpired: 'OTP ist abgelaufen. Bitte fordern Sie ein neues an.',
+    otpVerifyFailed: 'OTP konnte nicht verifiziert werden. Bitte versuchen Sie es erneut.',
+    otpSessionExpired: 'OTP-Sitzung abgelaufen. Bitte senden Sie OTP erneut.',
 
     sentToStore: 'An Restaurant gesendet',
     inDelivery: 'In Zustellung',
@@ -410,6 +450,16 @@ export const translations: Record<Language, Translations> = {
     remove: 'Entfernen',
     voucher: 'Gutschein',
     voucherApplyFailed: 'Gutschein konnte nicht angewendet werden',
+    phoneHelper: 'Geben Sie Ihre Handynummer ohne führende 0 ein',
+    login: 'Anmelden',
+    profile: 'Profil',
+    points: 'Punkte',
+
+    noFavoriteItemsYet: 'Noch keine Favoriten.',
+    totalFavItems: 'Gesamtanzahl Favoriten',
+    favorites: 'Favoriten',
+    savedItemsForRestaurant: 'Gespeicherte Artikel für dieses Restaurant',
+    clear: 'Löschen',
     VOUCHER_NOT_FOUND: 'Der eingegebene Gutscheincode ist ungültig. Bitte überprüfen Sie den Code und versuchen Sie es erneut.',
     LIMIT_EXCEEDED: 'Sie haben das Nutzungslimit für diesen Gutschein überschritten. Bitte überprüfen Sie die Gutscheinbedingungen.',
     MINIMUM_ORDER_VALUE_NOT_MET: 'Ihr Bestellwert erfüllt nicht den Mindestwert, um diesen Gutschein anzuwenden. Bitte fügen Sie Ihrer Bestellung weitere Artikel hinzu.',
@@ -435,5 +485,5 @@ export function getCategoryTranslation(categoryId: string, language: Language): 
   };
 
   const key = mapping[categoryId];
-  return key ? translations[language][key] : categoryId;
+  return key ? translations[language][key]! : categoryId;
 }

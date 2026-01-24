@@ -5,16 +5,16 @@ import { Loader2, Tag, X } from 'lucide-react';
 import { useLanguage } from '@/contexts/language-context';
 import { useCart } from '~/contexts/cart-context';
 import { API_BASE_URL, formatPrice, X_API_KEY } from '@/lib/api';
-import type { IStoreInfo } from '~/lib/types';
 import { useUser } from '~/contexts/user-context';
 import { getTranslatedVoucherApiErrorMessage } from '~/lib/errorMessges';
+import { useStore } from '~/contexts/store-context';
 
 type Props = {
-  storeInfo?: IStoreInfo;
   disabled?: boolean; // disable input + buttons when submitting order etc.
 };
 
-export default function VoucherSection({ storeInfo, disabled }: Props) {
+export default function VoucherSection({ disabled }: Props) {
+  const storeInfo = useStore();
   const { user } = useUser();
   const { applyVoucher, removeVoucher, appliedVoucher, discountAmount } = useCart();
   const customerId = user?.id ?? user?._id;

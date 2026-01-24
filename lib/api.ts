@@ -17,6 +17,7 @@ const API_HEADERS: {
 };
 
 export const getStoreData = cache(async (slug: string, token?: string) => {
+  if (!slug) return null;
   console.log('Fetching store data for slug:', slug, 'with token:', token);
   const tokenParam = token ? `?token=${token}` : '';
   const response = await fetch(`${API_BASE_URL}/slugs/${slug}${tokenParam}`, {
@@ -40,6 +41,7 @@ export const getStoreData = cache(async (slug: string, token?: string) => {
     email: data?.data?.emailAddress,
     logo: data?.data?.logoFileName ? `${getImageURL(data?.data?.logoFileName)}` : null,
     timings: data?.data?.timings || null,
+    slug: slug,
     settings: data?.data?.webShopSettings
       ? {
           ...data?.data?.webShopSettings,
@@ -60,6 +62,58 @@ export const getStoreData = cache(async (slug: string, token?: string) => {
     },
   };
 });
+
+export const resolveFavorites = async (adminId: string, storeId: string, productIds: string[]) => {
+  if (!storeId || productIds.length === 0 || !adminId) {
+    return { products: [], missingIds: [] };
+  }
+
+  const response = await fetch(`${API_BASE_URL}/favorites/resolve`, {
+    method: 'POST',
+    headers: {
+      ...API_HEADERS,
+      'x-paypoint-tenant-id': adminId,
+      'x-paypoint-store-id': storeId,
+    },
+    body: JSON.stringify({ productIds }),
+    cache: 'no-store',
+  });
+
+  if (!response.ok) {
+    throw new Error('Failed to resolve favorites');
+  }
+
+  const apiRes = await response.json();
+  const data = apiRes?.data;
+  console.log('Resolved Favorites Data:', data);
+  return {
+    products: data?.products || [],
+    missingIds: data?.missingIds || [],
+  };
+};
+
+export const syncFavorites = async (adminId: string, storeId: string, customerId: string, productIds: string[]) => {
+  if (!adminId || !storeId || !customerId) {
+    throw new Error('Admin ID, Store ID, and Customer ID are required to sync favorites.');
+  }
+
+  const response = await fetch(`${API_BASE_URL}/favorites/sync`, {
+    method: 'POST',
+    headers: {
+      ...API_HEADERS,
+      'x-paypoint-tenant-id': adminId,
+      'x-paypoint-store-id': storeId,
+    },
+    body: JSON.stringify({ customerId, productIds }),
+    cache: 'no-store',
+  });
+
+  if (!response.ok) {
+    throw new Error('Failed to sync favorites');
+  }
+  const data = await response.json();
+  return data?.data;
+};
 
 export const fetchMenuData = async (adminId?: string, storeId?: string) => {
   if (!adminId || !storeId) {
@@ -88,6 +142,81 @@ export const fetchMenuData = async (adminId?: string, storeId?: string) => {
     console.error('Error fetching menu data:', error);
     throw error;
   }
+};
+
+export const loginUser = async (adminId: string, storeId: string, phoneNumberWithCode: string) => {
+  const API_URL = `${API_BASE_URL}/user/login`;
+  API_HEADERS['x-paypoint-tenant-id'] = adminId;
+  API_HEADERS['x-paypoint-store-id'] = storeId;
+  const requestBody = { phoneNumber: phoneNumberWithCode, signInSource: 'web', signInWith: 'phone' };
+  try {
+    const response = await fetch(API_URL, {
+      method: 'POST',
+      headers: API_HEADERS,
+      body: JSON.stringify({
+        ...requestBody,
+      }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error('Error response data:', errorData);
+      throw new Error(errorData.message ?? `Login failed: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data?.data; // assuming the user object is in data.data
+  } catch (error) {
+    console.error('Error during login:', error);
+    throw error;
+  }
+};
+
+export const registerUser = async (adminId: string, storeId: string, name: string, phoneNumberWithCode: string) => {
+  const API_URL = `${API_BASE_URL}/user/register`;
+  API_HEADERS['x-paypoint-tenant-id'] = adminId;
+  API_HEADERS['x-paypoint-store-id'] = storeId;
+  const requestBody = { name, phoneNumber: phoneNumberWithCode, signInSource: 'web', signInWith: 'phone' };
+  try {
+    const response = await fetch(API_URL, {
+      method: 'POST',
+      headers: API_HEADERS,
+      body: JSON.stringify(requestBody),
+    });
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error('Error response data:', errorData);
+      throw new Error(errorData.message ?? `Registration failed: ${response.status}`);
+    }
+    const data = await response.json();
+    return data?.data; // assuming the user object is in data.data
+  } catch (error) {
+    console.error('Error during registration:', error);
+    throw error;
+  }
+};
+
+export const mergeFavorites = (adminId: string, storeId: string, customerId: string, productIds: string[]) => {
+  const API_URL = `${API_BASE_URL}/favorites/merge`;
+  API_HEADERS['x-paypoint-tenant-id'] = adminId;
+  API_HEADERS['x-paypoint-store-id'] = storeId;
+
+  return fetch(API_URL, {
+    method: 'POST',
+    headers: API_HEADERS,
+    body: JSON.stringify({ customerId, productIds }),
+  })
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error('Failed to merge favorites');
+      }
+      return response.json();
+    })
+    .then((data) => data?.data)
+    .catch((error) => {
+      console.error('Error merging favorites:', error);
+      throw error;
+    });
 };
 
 // Utility functions to process menu data

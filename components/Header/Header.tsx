@@ -1,16 +1,17 @@
-/* eslint-disable @next/next/no-img-element */
 'use client';
 
 import { useState } from 'react';
 import { useLanguage } from '@/contexts/language-context';
 import LanguageSwitcher from '~/components/Header/LanguageSwitcher';
-import { IStoreInfo } from '~/lib/types';
 import { getTodayTimings, isRestaurantOpen } from '~/lib/restaurantTimings';
 import OrderTypeAndAddressControl from './OrderTypeAndAddressControl';
 import UserDrawer from './UserDrawer';
 import OrdersDialog from './OrdersDialog';
+import { Menu } from 'lucide-react';
+import { useStore } from '~/contexts/store-context';
 
-export default function Header({ storeInfo }: { storeInfo?: IStoreInfo }) {
+export default function Header() {
+  const storeInfo = useStore();
   const { t } = useLanguage();
   const { close: ClosingHours } = getTodayTimings(storeInfo?.timings);
   const isOpen = isRestaurantOpen(storeInfo?.timings || {});
@@ -24,7 +25,7 @@ export default function Header({ storeInfo }: { storeInfo?: IStoreInfo }) {
         <div className='flex items-center lg:px-6 py-3 lg:py-4'>
           {/* Left section */}
           <div className='flex grow items-center'>
-            {!storeInfo?.tableInfo?.token && <OrderTypeAndAddressControl storeInfo={storeInfo} />}
+            {!storeInfo?.tableInfo?.token && <OrderTypeAndAddressControl />}
 
             <div className='bg-gray-200 rounded-full px-4 py-3 flex items-center text-sm mr-2' role='status' aria-label='Store hours'>
               {isOpen ? (
@@ -56,13 +57,14 @@ export default function Header({ storeInfo }: { storeInfo?: IStoreInfo }) {
             </a>
 
             <button className='rounded hover:bg-gray-100 ml-1 p-1' onClick={() => setDrawerOpen(true)} aria-label='Open user menu'>
-              <img src='/menu.png' alt='' className='rotate-180 size-10' />
+              <Menu size={30} />
+              {/* <img src='/menu.png' alt='' className='rotate-180 size-10' /> */}
             </button>
           </div>
         </div>
       </header>
 
-      <UserDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} onOpenOrders={() => setOrdersOpen(true)} />
+      <UserDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} onOpenOrders={() => setOrdersOpen(true)} storeSlug={storeInfo?.slug} />
       <OrdersDialog open={ordersOpen} onOpenChange={setOrdersOpen} />
     </>
   );

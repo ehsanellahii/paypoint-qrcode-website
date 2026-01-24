@@ -10,12 +10,13 @@ import ProductCard from '@/components/ProductCard';
 import ProductModal from '~/components/dialogs/ProductModal';
 import BottomBar from '~/components/Cart/BottomBar';
 import Footer from '@/components/Footer';
-import { IStoreInfo } from '@/lib/types';
 import { fetchMenuData, getCategories } from '@/lib/api';
 import { IMenuData, MenuProduct } from '~/lib/utils';
 import LoadingSkeleton from './LoadingSkeleton';
+import { useStore } from '~/contexts/store-context';
 
-export default function HomeScreen({ storeInfo }: { storeInfo?: IStoreInfo }) {
+export default function HomeScreen() {
+  const storeInfo = useStore();
   const [menuData, setMenuData] = useState<IMenuData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -115,11 +116,11 @@ export default function HomeScreen({ storeInfo }: { storeInfo?: IStoreInfo }) {
       {/* Main Content Area */}
       <div className='lg:ml-40'>
         {/* Header - part of main content flow */}
-        <Header storeInfo={storeInfo} />
+        <Header />
 
         {/* Mobile Restaurant Info - shows below header on mobile */}
         <div className='lg:hidden'>
-          <MobileRestaurantInfo storeInfo={storeInfo} />
+          <MobileRestaurantInfo />
         </div>
 
         {/* Mobile Category Bar - shows below mobile restaurant info */}
@@ -151,10 +152,10 @@ export default function HomeScreen({ storeInfo }: { storeInfo?: IStoreInfo }) {
       <ProductModal product={selectedProduct} isOpen={isModalOpen} onClose={handleCloseModal} />
 
       {/* Bottom Bar with Cart */}
-      <BottomBar storeInfo={storeInfo} />
+      <BottomBar />
 
       {/* Footer */}
-      <Footer storeInfo={storeInfo} />
+      <Footer  />
     </div>
   );
 }

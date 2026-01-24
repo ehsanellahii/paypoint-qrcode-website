@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useEffect, useMemo, useState } from 'react';
 import { useAddress } from '~/contexts/address-context';
-import { IStoreInfo } from '~/lib/types';
 import { cn } from '~/lib/utils';
 import DeliveryAddressModal from '../dialogs/DeliveryAddressModal';
 import { useLanguage } from '~/contexts/language-context';
+import { useStore } from '~/contexts/store-context';
 
 type OrderType = 'pickup' | 'delivery' | 'dineIn';
 
@@ -59,7 +59,8 @@ function OrderTypeToggle({
   );
 }
 
-const OrderTypeAndAddressControl = ({ storeInfo }: { storeInfo?: IStoreInfo }) => {
+const OrderTypeAndAddressControl = () => {
+  const storeInfo = useStore();
   const { t } = useLanguage();
   const isPickupAvailable = storeInfo?.settings?.orderTypes?.takeaway ?? true;
   const isDeliveryAvailable = storeInfo?.settings?.orderTypes?.delivery ?? false;

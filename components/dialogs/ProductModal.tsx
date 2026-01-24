@@ -214,8 +214,8 @@ export default function ProductModal({ product, isOpen, onClose }: ProductModalP
   return (
     <Dialog.Root open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <Dialog.Portal>
-        <Dialog.Backdrop className='fixed inset-0 z-50 bg-black/30 data-open:animate-in data-closed:animate-out data-closed:fade-out-0 data-open:fade-in-0' />
-        <Dialog.Viewport className='fixed inset-0 z-50 flex items-center justify-center p-4'>
+        <Dialog.Backdrop className='fixed inset-0 z-60 bg-black/30 data-open:animate-in data-closed:animate-out data-closed:fade-out-0 data-open:fade-in-0' />
+        <Dialog.Viewport className='fixed inset-0 z-60 flex items-center justify-center p-4'>
           <Dialog.Popup className='max-w-5xl w-[calc(100vw-2rem)] h-[calc(100dvh-2rem)] max-h-[calc(100dvh-2rem)] flex flex-col bg-white rounded-lg shadow-lg p-0 px-4 data-open:animate-in data-closed:animate-out data-closed:fade-out-0 data-open:fade-in-0 data-closed:zoom-out-95 data-open:zoom-in-95'>
             <Dialog.Title className='sr-only'>{product.name}</Dialog.Title>
 

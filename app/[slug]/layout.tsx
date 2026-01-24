@@ -7,6 +7,9 @@ import Script from 'next/script';
 import { AddressProvider } from '~/contexts/address-context';
 import { UserProvider } from '~/contexts/user-context';
 import DebugPersistError from '~/lib/DebugPersistError';
+import { getStoreData } from '~/lib/api';
+import StoreProvider from '~/contexts/store-context';
+import ThemeVars from '~/lib/ThemeVars';
 
 const inter = Inter({
   variable: '--font-inter',
@@ -14,16 +17,46 @@ const inter = Inter({
   weight: ['400', '500', '600', '700'],
 });
 
-export const metadata: Metadata = {
-  title: 'Order Online',
-  description: 'Order delicious burgers, wings, and more from Fat Phills The Mall in Leidschendam',
-};
+export async function generateMetadata({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ slug: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  const sParams = await searchParams;
+  const store = await getStoreData(slug, sParams?.t as string);
 
-export default function RootLayout({
+  return {
+    title: {
+      default: 'Order Online',
+      template: `%s - ${store?.brandName || 'Online Ordering'}`,
+    },
+    description: 'Order delicious burgers, wings, and more online',
+    openGraph: {
+      title: store?.brandName || 'Online Ordering',
+      description: store?.brandName ? `Order online from ${store?.brandName}` : 'Order delicious burgers, wings, and more online',
+      images: store?.logo ? [store.logo] : [],
+    },
+  };
+}
+
+export default async function RootLayout({
   children,
+  params,
+  searchParams,
 }: Readonly<{
+  params: Promise<{ slug: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
   children: React.ReactNode;
 }>) {
+  const paramsResult = await params;
+  const { slug } = paramsResult;
+  const sParams = await searchParams;
+  const storeInfo = await getStoreData(slug, sParams?.t as string);
+  const primaryColor = storeInfo?.settings?.themeColors?.primaryColor;
+  const selectedColor = storeInfo?.settings?.themeColors?.selectedTextColor;
   return (
     <html lang='en'>
       <head>
@@ -39,12 +72,15 @@ export default function RootLayout({
         />
 
         <LanguageProvider>
-          <UserProvider>
-            <AddressProvider storeKey={'default'}>
-              <DebugPersistError />
-              <CartProvider>{children}</CartProvider>
-            </AddressProvider>
-          </UserProvider>
+          <ThemeVars primary={primaryColor} selectedText={selectedColor} />
+          <StoreProvider value={storeInfo}>
+            <UserProvider>
+              <AddressProvider storeKey={slug || 'default'}>
+                <DebugPersistError />
+                <CartProvider>{children}</CartProvider>
+              </AddressProvider>
+            </UserProvider>
+          </StoreProvider>
         </LanguageProvider>
       </body>
     </html>

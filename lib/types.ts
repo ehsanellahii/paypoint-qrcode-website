@@ -190,6 +190,7 @@ export interface IStoreInfo {
   city: string;
   phone: string;
   email: string;
+  slug: string;
   logo: string | null;
   timings: {
     tuesday: { open: string; close: string };
