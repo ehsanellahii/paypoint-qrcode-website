@@ -7,6 +7,8 @@ import { ChevronUp, ChevronDown } from 'lucide-react';
 import { useScrollDetection, useSmoothScroll } from '@/hooks/useScrollDetection';
 import { useCart } from '~/contexts/cart-context';
 import { getImageURL, MenuCategory } from '~/lib/utils';
+import { useStore } from '~/contexts/store-context';
+import SmartImage from '~/lib/SmartImage';
 
 interface SidebarProps {
   categories: MenuCategory[];
@@ -18,7 +20,8 @@ interface SidebarProps {
 export default function Sidebar({ categories, activeCategory, onCategoryClick, logo }: SidebarProps) {
   const desktopScrollRef = useRef<HTMLDivElement>(null);
   const { totalItems } = useCart();
-
+  const storeInfo = useStore();
+  const logoURL = storeInfo?.settings?.logo ?? '';
   // Use scroll detection hooks
   const desktopScroll = useScrollDetection(desktopScrollRef, 'vertical');
 
@@ -119,7 +122,7 @@ export default function Sidebar({ categories, activeCategory, onCategoryClick, l
                 aria-label={`${category.name} category${isActive ? ' (active)' : ''}`}
                 aria-current={isActive ? 'true' : undefined}>
                 <div className='relative w-16 h-16 rounded-lg overflow-hidden'>
-                  {categoryImage && <Image src={categoryImage} alt={category.name} fill className='object-contain' sizes='64px' />}
+                  <SmartImage fallbackOpacity={0.7} fallbackSrc={logoURL} src={categoryImage} alt={category.name} fill className='object-contain' sizes='64px' />
                 </div>
                 <span className={`text-sm font-bold text-center ${isActive ? 'text-(--selected-text)' : 'text-gray-700'}`}>{category.name}</span>
               </button>

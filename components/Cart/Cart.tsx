@@ -10,6 +10,7 @@ import CheckoutForm from './CheckoutForm';
 import { cn, getImageURL, getPostalRateInfo } from '~/lib/utils';
 import { useAddress } from '~/contexts/address-context';
 import { useStore } from '~/contexts/store-context';
+import SmartImage from '~/lib/SmartImage';
 
 interface CartProps {
   isOpen?: boolean;
@@ -19,7 +20,7 @@ interface CartProps {
 
 export default function Cart({ isOpen: controlledIsOpen, onOpenChange, openOrdersDialog }: CartProps = {}) {
   const storeInfo = useStore();
-  const logoURL = storeInfo?.logo || '';
+  const logoURL = storeInfo?.settings?.logo || '';
   const { cart, updateQuantity, totalPrice, clearCart, discountAmount } = useCart();
   const { orderType } = useAddress();
   const { deliveryAddress } = useAddress();
@@ -73,7 +74,7 @@ export default function Cart({ isOpen: controlledIsOpen, onOpenChange, openOrder
                   {/* Image */}
                   <div className='relative w-16 h-16 shrink-0 rounded overflow-hidden'>
                     {item.product.images?.length ? (
-                      <Image src={getImageURL(item.product.images[0])} alt={item.product.name} fill className='object-cover' sizes='64px' />
+                      <SmartImage fallbackSrc={logoURL} src={getImageURL(item.product.images[0])} alt={item.product.name} fill className='object-cover' sizes='64px' />
                     ) : logoURL ? (
                       <div className='relative w-16 h-16 opacity-40 grayscale'>
                         <Image src={logoURL} alt='Restaurant logo' fill className='object-contain' sizes='64px' />

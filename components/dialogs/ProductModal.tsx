@@ -10,6 +10,8 @@ import { Dialog } from '@base-ui/react/dialog';
 import { AddOnGroup, cn, getImageURL, MenuProduct } from '~/lib/utils';
 import QuantityControl from '../QuantityControl';
 import { useLanguage } from '~/contexts/language-context';
+import SmartImage from '~/lib/SmartImage';
+import { useStore } from '~/contexts/store-context';
 
 type CartItemCustomization = Record<string, Record<string, number>>; // sectionId -> { optionId -> qty }
 
@@ -22,7 +24,9 @@ interface ProductModalProps {
 export default function ProductModal({ product, isOpen, onClose }: ProductModalProps) {
   const { t, language } = useLanguage();
   const { addToCart } = useCart();
-
+  const storeInfo = useStore();
+  const logo = storeInfo?.settings?.logo || '';
+  const logoURL = logo;
   const [quantity, setQuantity] = useState(1);
   const [selectedOptions, setSelectedOptions] = useState<CartItemCustomization>({});
   const [notes, setNotes] = useState('');
@@ -234,7 +238,8 @@ export default function ProductModal({ product, isOpen, onClose }: ProductModalP
             <div ref={setScrollRef} className='grow overflow-y-scroll scrollbar-hide py-4 px-5'>
               {/* Product Image */}
               <div className='relative w-full max-w-md h-96 mx-auto overflow-hidden rounded-lg'>
-                <Image
+              <SmartImage
+                fallbackSrc={logoURL}
                   src={product.images?.length ? getImageURL(product.images[0]) : '/'}
                   alt={`${product.name} image`}
                   fill

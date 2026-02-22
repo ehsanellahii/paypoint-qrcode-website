@@ -9,6 +9,7 @@ import { cn, getImageURL } from '~/lib/utils';
 import { useUser } from '~/contexts/user-context';
 import { useLanguage } from '@/contexts/language-context';
 import { useStore } from '~/contexts/store-context';
+import SmartImage from '~/lib/SmartImage';
 
 type Props = {
   open: boolean;
@@ -157,7 +158,7 @@ export default function OrdersDialog({ open, onOpenChange }: Props) {
   const { t } = useLanguage();
   const { user } = useUser(); // adjust if your context differs
   const storeInfo = useStore();
-  const logoURL = storeInfo?.logo || '';
+  const logoURL = storeInfo?.settings?.logo || '';
   console.log('User in OrdersDialog:', user);
   const userId = user?.id ?? user?._id; // safe fallbacks
   const [didAutoExpand, setDidAutoExpand] = useState(false);
@@ -345,7 +346,7 @@ export default function OrdersDialog({ open, onOpenChange }: Props) {
                                 <div key={it.id} className='md:flex gap-3 rounded-lg bg-gray-50 p-3'>
                                   <div className='relative h-14 w-14 shrink-0 overflow-hidden rounded-md bg-white hidden md:block'>
                                     {it.image ? (
-                                      <Image src={getImageURL(it.image)} alt={it.name} fill className='object-cover' sizes='56px' />
+                                      <SmartImage fallbackSrc={logoURL} src={getImageURL(it.image)} alt={it.name} fill className='object-cover' sizes='56px' />
                                     ) : logoURL ? (
                                       <div className='relative w-14 h-14 opacity-40 grayscale'>
                                         <Image src={logoURL} alt='Restaurant logo' fill className='object-contain' sizes='56px' />

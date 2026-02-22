@@ -5,6 +5,7 @@ import { formatPrice } from '@/lib/api';
 import { cn, getImageURL, MenuProduct } from '~/lib/utils';
 import FavoriteButton from './FavoriteButton';
 import { useStore } from '~/contexts/store-context';
+import SmartImage from '~/lib/SmartImage';
 
 interface ProductCardProps {
   product: MenuProduct;
@@ -15,7 +16,7 @@ export default function ProductCard({ product, onClick }: ProductCardProps) {
   const isAvailable = true;
   const storeInfo = useStore();
   const storeKey = storeInfo?.slug || 'default';
-  const logo = storeInfo?.logo || '';
+  const logo = storeInfo?.settings?.logo || '';
   const logoURL = logo;
   return (
     <button
@@ -34,15 +35,16 @@ export default function ProductCard({ product, onClick }: ProductCardProps) {
       {/* Image container with fixed height */}
       <div className={cn('relative w-full h-56 overflow-hidden', !product.images?.length && 'flex items-center justify-center bg-gray-50 rounded-sm')}>
         {product.images?.length ? (
-          <Image
+          <SmartImage
             src={getImageURL(product.images[0])}
             alt={product.name}
+            fallbackSrc={logoURL}
             fill
             className='object-contain'
             sizes='(max-width: 640px) 50vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, (max-width: 1280px) 25vw, (max-width: 1536px) 20vw, 16vw'
           />
         ) : logoURL ? (
-          <div className='relative w-24 h-24 opacity-40 grayscale'> 
+          <div className='relative w-24 h-24 opacity-40 grayscale'>
             <Image src={logoURL} alt='Restaurant logo' fill className='object-contain' sizes='96px' />
           </div>
         ) : (
