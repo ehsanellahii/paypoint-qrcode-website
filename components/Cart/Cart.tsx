@@ -121,7 +121,7 @@ export default function Cart({ isOpen: controlledIsOpen, onOpenChange, openOrder
                   <div className='flex items-center gap-2'>
                     <button
                       onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                      className='w-10 h-10 rounded bg-primary flex items-center justify-center font-bold'>
+                      className='w-10 h-10 rounded bg-primary flex items-center justify-center font-bold text-(--selected-text)'>
                       −
                     </button>
 
@@ -129,7 +129,7 @@ export default function Cart({ isOpen: controlledIsOpen, onOpenChange, openOrder
 
                     <button
                       onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                      className='w-10 h-10 rounded bg-primary flex items-center justify-center font-bold'>
+                      className='w-10 h-10 rounded bg-primary flex items-center justify-center font-bold text-(--selected-text)'>
                       +
                     </button>
                   </div>
