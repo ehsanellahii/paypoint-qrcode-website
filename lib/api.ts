@@ -19,7 +19,6 @@ const API_HEADERS: {
 
 export const getStoreData = cache(async (slug: string, token?: string) => {
   if (!slug) return null;
-  console.log('Fetching store data for slug:', slug, 'with token:', token);
   const tokenParam = token ? `?token=${token}` : '';
   const response = await fetch(`${API_BASE_URL}/slugs/${slug}${tokenParam}`, {
     headers: API_HEADERS,
@@ -29,7 +28,6 @@ export const getStoreData = cache(async (slug: string, token?: string) => {
     throw new Error('Failed to fetch store data');
   }
   const data = await response.json();
-  console.log('API Store Data:', data?.data);
   return {
     brandName: data?.data?.brandName,
     storeName: data?.data?.store_name,
@@ -86,7 +84,6 @@ export const resolveFavorites = async (adminId: string, storeId: string, product
 
   const apiRes = await response.json();
   const data = apiRes?.data;
-  console.log('Resolved Favorites Data:', data);
   return {
     products: data?.products || [],
     missingIds: data?.missingIds || [],
@@ -114,6 +111,36 @@ export const syncFavorites = async (adminId: string, storeId: string, customerId
   }
   const data = await response.json();
   return data?.data;
+};
+
+/**
+ * Cart recommendations ("customers who ordered these also ordered ...").
+ * Backed by the server's co-purchase product pairings. Returns [] on failure so
+ * the cart can fall back to a simple menu slice.
+ */
+export const fetchCartRecommendations = async (adminId: string, storeId: string, productIds: string[], limit = 8): Promise<MenuProduct[]> => {
+  if (!adminId || !storeId) return [];
+
+  try {
+    const response = await fetch(`${API_BASE_URL}/recommendations/cart`, {
+      method: 'POST',
+      headers: {
+        ...API_HEADERS,
+        'x-paypoint-tenant-id': adminId,
+        'x-paypoint-store-id': storeId,
+      },
+      body: JSON.stringify({ productIds, limit }),
+      cache: 'no-store',
+    });
+
+    if (!response.ok) return [];
+
+    const apiRes = await response.json();
+    return (apiRes?.data ?? []) as MenuProduct[];
+  } catch (error) {
+    console.error('Error fetching cart recommendations:', error);
+    return [];
+  }
 };
 
 export const fetchMenuData = async (adminId?: string, storeId?: string) => {

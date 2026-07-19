@@ -49,12 +49,12 @@ export default function FormField({
         aria-describedby={error ? `${id}-error` : helperText ? `${id}-helper` : undefined}
       />
       {error && (
-        <p id={`${id}-error`} className='text-sm text-red-500' role='alert'>
+        <p id={`${id}-error`} className='text-sm text-brand-red' role='alert'>
           {error}
         </p>
       )}
       {helperText && !error && (
-        <p id={`${id}-helper`} className='text-xs text-gray-500'>
+        <p id={`${id}-helper`} className='text-xs text-muted-foreground-2'>
           {helperText}
         </p>
       )}

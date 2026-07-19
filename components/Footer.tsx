@@ -8,37 +8,36 @@ export default function Footer() {
   const storeInfo = useStore();
   const { t } = useLanguage();
   return (
-    <footer className='bg-gray-100 rounded-lg py-8 p-2 lg:-mb-10 m-4 lg:ml-42 lg:mr-4 text-sm'>
-      <div className='container mx-auto px-4'>
+    <footer className='mx-auto mb-6 mt-4 max-w-[1320px] rounded-2xl border border-border bg-surface-1 p-6 text-sm'>
+      <div className='mx-auto'>
         {/* Top Section */}
-        <div className='flex flex-col md:flex-row justify-between items-center md:items-start pb-4 mb-4 border-b border-gray-300'>
+        <div className='mb-4 flex flex-col items-center justify-between border-b border-border pb-4 md:flex-row md:items-start'>
           {/* Business Name - Left */}
-          <div className='font-bold text-gray-800 mb-2 md:mb-0'>{storeInfo?.brandName}</div>
+          <div className='mb-2 font-bold text-foreground md:mb-0'>{storeInfo?.brandName}</div>
 
           {/* Contact Information - Right */}
-          <div className='text-gray-700 text-center md:text-right'>Email: {storeInfo?.email}</div>
+          <div className='text-center text-muted-foreground md:text-right'>Email: {storeInfo?.email}</div>
         </div>
 
         {/* Bottom Section */}
-        <div className='flex flex-col md:flex-row justify-between items-center md:items-start'>
+        <div className='flex flex-col items-center justify-between md:flex-row md:items-start'>
           {/* Logo + Brand - Left */}
-          <div className='flex items-center gap-2 mb-2 md:mb-0'>
+          <div className='mb-2 flex items-center gap-2 md:mb-0'>
             <a
               href='https://get-paypoint.de'
               target='_blank'
               rel='noopener noreferrer'
-              className='inline-flex items-center justify-center rounded-full size-44 h-20 relative '>
+              className='relative inline-flex h-20 size-44 items-center justify-center rounded-full'>
               <Image src='/logo.png' alt={'PayPoint POS UG'} className='object-cover' aria-label='PayPoint POS UG' fill />
             </a>
-            {/* <span className='font-bold text-black italic text-lg'>PayPoint</span> */}
           </div>
 
           {/* Legal Links + Copyright - Right */}
-          <div className='text-gray-700 text-center md:text-right'>
-            <a href='https://byonesix.com/t-c-privacy-statement' className='hover:underline mr-4'>
+          <div className='text-center text-muted-foreground md:text-right'>
+            <a href='https://byonesix.com/t-c-privacy-statement' className='mr-4 transition hover:text-white hover:underline'>
               {t.termAndConditions}
             </a>
-            <a href='https://byonesix.com/t-c-privacy-statement' className='hover:underline mr-4'>
+            <a href='https://byonesix.com/t-c-privacy-statement' className='mr-4 transition hover:text-white hover:underline'>
               {t.privacyPolicy}
             </a>
             <span>© PayPoint POS UG</span>

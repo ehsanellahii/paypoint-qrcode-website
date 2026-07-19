@@ -7,9 +7,9 @@ import { useLanguage } from '~/contexts/language-context';
 function Row({ label, value, className }: { label: string; value?: string | number | null; className?: string }) {
   if (value === undefined || value === null || value === '') return null;
   return (
-    <div className={cn('flex items-start justify-between gap-4 border-b border-gray-100 py-3', className)}>
-      <div className='text-sm text-gray-500'>{label}</div>
-      <div className='text-sm font-medium text-gray-900 text-right wrap-break-word max-w-[60%]'>{value}</div>
+    <div className={cn('flex items-start justify-between gap-4 border-b border-border py-3', className)}>
+      <div className='text-sm text-muted-foreground'>{label}</div>
+      <div className='max-w-[60%] wrap-break-word text-right text-sm font-semibold text-foreground'>{value}</div>
     </div>
   );
 }
@@ -49,10 +49,10 @@ const ProfileDialog = ({ isOpen, handleOpenChange }: { isOpen: boolean; handleOp
         </div> */}
 
         <div className='flex justify-end gap-x-3'>
-          <button onClick={logout} className='py-3 px-4 rounded bg-red-500 text-white font-medium hover:bg-red-600 transition'>
+          <button onClick={logout} className='rounded-[12px] bg-brand-red px-4 py-3 font-bold text-white transition hover:brightness-110'>
             {t?.logout ?? 'Logout'}
           </button>
-          <button onClick={() => handleOpenChange(false)} className='py-3 px-4 rounded bg-gray-200 font-medium'>
+          <button onClick={() => handleOpenChange(false)} className='rounded-[12px] bg-surface-3 px-4 py-3 font-bold text-white transition hover:bg-elevated'>
             {t?.close ?? 'Close'}
           </button>
         </div>

@@ -19,12 +19,8 @@ const voucherApiErrorMessagesWithCode = [
 ];
 
 const getTranslatedVoucherApiErrorMessage = (code: string, message: string, t: any): string => {
-  console.log('Translating voucher API error message for code:', code, 'with default message:', message);
   const errorEntry = voucherApiErrorMessagesWithCode.find((entry) => entry.code === code);
-  console.log('Error entry found:', errorEntry);
   if (errorEntry) {
-    console.log('Returning translated message for key:', errorEntry.code);
-    console.log('Translated message:', t[errorEntry.code]);
     return t[errorEntry.code];
   }
 

@@ -118,6 +118,103 @@ export interface Translations {
   loading: string;
   somethingWentWrong: string;
   retry: string;
+  searchMenu: string;
+  restaurantDetails: string;
+  preorder: string;
+  noResults: string;
+  noResultsFor: string;
+  resetSearch: string;
+  minimumOrderValue: string;
+  free: string;
+  optional: string;
+  required: string;
+  added: string;
+  recommendedForYou: string;
+  messageForRestaurant: string;
+  messageForRestaurantPlaceholder: string;
+  save: string;
+  edit: string;
+  tip: string;
+  noTip: string;
+  tipToDriver: string;
+  tipToTeam: string;
+  tipThanksDriver: string;
+  tipThanksTeam: string;
+  onDelivery: string;
+  onPickup: string;
+  bellName: string;
+  bellNameRequired: string;
+  deliverySpeedLabel: string;
+  standard: string;
+  priority: string;
+  zoneHeroTitle: string;
+  zoneFeature1: string;
+  zoneFeature2: string;
+  zoneFeature3: string;
+  deliveryAndPickup: string;
+  doWeDeliver: string;
+  doWeDeliverSub: string;
+  streetHouseAndPostcode: string;
+  useCurrentLocation: string;
+  weDeliverToYou: string;
+  deliveryTimeApprox: string;
+  from: string;
+  continueToMenu: string;
+  outsideDeliveryArea: string;
+  outsideDeliveryAreaSub: string;
+  checkAnotherAddress: string;
+  callUs: string;
+  switchToPickupBrowse: string;
+  exploreShopAnyway: string;
+  orderConfirmed: string;
+  orderConfirmedDeliverySub: string;
+  orderConfirmedPickupSub: string;
+  inProgress: string;
+  estimatedDelivery: string;
+  readyForPickup: string;
+  preparation: string;
+  onTheWay: string;
+  delivered: string;
+  ready: string;
+  pickedUp: string;
+  courierBeingAssigned: string;
+  courierBeingAssignedSub: string;
+  orderNumber: string;
+  pickupAt: string;
+  payment: string;
+  problemWithOrder: string;
+  helpAndSupport: string;
+  yourOrder: string;
+  backToHome: string;
+  guest: string;
+  welcomeBack: string;
+  myAccount: string;
+  orderingAsGuest: string;
+  orderingAsGuestSub: string;
+  help: string;
+  contactSupport: string;
+  changeLanguage: string;
+  legal: string;
+  privacy: string;
+  terms: string;
+  imprint: string;
+  account: string;
+  invite: string;
+  inviteTitle: string;
+  inviteSub: string;
+  copy: string;
+  copied: string;
+  noReferralCode: string;
+  cartItemsRemoved: string;
+  day: string;
+  time: string;
+  today: string;
+  tomorrow: string;
+  confirmPreorder: string;
+  preorderSubDelivery: string;
+  preorderSubPickup: string;
+  openingHours: string;
+  addressContact: string;
   noOrdersYet: string;
   yourOrdersWillAppearHere: string;
   notLoggedIn: string;
@@ -281,6 +378,103 @@ export const translations: Record<Language, Translations> = {
     loading: 'Loading...',
     somethingWentWrong: 'Something went wrong',
     retry: 'Retry',
+    searchMenu: 'Search the menu — pizza, burgers, pasta…',
+    restaurantDetails: 'Restaurant details',
+    preorder: 'Pre-order',
+    noResults: 'Nothing found',
+    noResultsFor: 'No dish found for',
+    resetSearch: 'Reset search',
+    minimumOrderValue: 'Min. order',
+    free: 'Free',
+    optional: 'optional',
+    required: 'Required',
+    added: 'Added',
+    recommendedForYou: 'Recommended for you',
+    messageForRestaurant: 'Message for the restaurant',
+    messageForRestaurantPlaceholder: 'Special requests, allergies, dietary notes…',
+    save: 'Save',
+    edit: 'Edit',
+    tip: 'Tip',
+    noTip: 'None',
+    tipToDriver: '100% to the driver',
+    tipToTeam: '100% to the team',
+    tipThanksDriver: 'Thank you! Your driver receives 100% of the tip.',
+    tipThanksTeam: 'Thank you! The team receives 100% of the tip.',
+    onDelivery: 'On delivery',
+    onPickup: 'On pickup',
+    bellName: 'Bell name',
+    bellNameRequired: 'Please enter a bell name',
+    deliverySpeedLabel: 'Delivery time',
+    standard: 'Standard',
+    priority: 'Priority',
+    zoneHeroTitle: 'Real cuisine, fresh to your door.',
+    zoneFeature1: 'Delivered in 20–40 min',
+    zoneFeature2: 'Fresh ingredients, daily',
+    zoneFeature3: '4.8 ★ · 820+ reviews',
+    deliveryAndPickup: 'Delivery & pickup',
+    doWeDeliver: 'Do we deliver to you?',
+    doWeDeliverSub: 'Enter your address — we’ll instantly check if you’re in our delivery area.',
+    streetHouseAndPostcode: 'Street, house no. & postcode',
+    useCurrentLocation: 'Use current location',
+    weDeliverToYou: 'Yay, we deliver to you!',
+    deliveryTimeApprox: 'Delivery approx. 20–40 min',
+    from: 'from',
+    continueToMenu: 'Continue to menu',
+    outsideDeliveryArea: 'Unfortunately outside our area',
+    outsideDeliveryAreaSub: 'This address is outside our delivery area.',
+    checkAnotherAddress: 'Check another address',
+    callUs: 'Call',
+    switchToPickupBrowse: 'Switch to pickup & browse',
+    exploreShopAnyway: 'Explore the shop anyway',
+    orderConfirmed: 'Order confirmed',
+    orderConfirmedDeliverySub: 'The kitchen is preparing your food.',
+    orderConfirmedPickupSub: 'The kitchen is preparing your food.',
+    inProgress: 'In progress',
+    estimatedDelivery: 'Estimated delivery',
+    readyForPickup: 'Ready for pickup',
+    preparation: 'Preparation',
+    onTheWay: 'On the way',
+    delivered: 'Delivered',
+    ready: 'Ready',
+    pickedUp: 'Picked up',
+    courierBeingAssigned: 'Courier being assigned',
+    courierBeingAssignedSub: 'You’ll be notified once someone is on the way',
+    orderNumber: 'Order number',
+    pickupAt: 'Pickup at',
+    payment: 'Payment',
+    problemWithOrder: 'Problem with your order?',
+    helpAndSupport: 'Help & support',
+    yourOrder: 'Your order',
+    backToHome: 'Back to home',
+    guest: 'Guest',
+    welcomeBack: 'Welcome back',
+    myAccount: 'My account',
+    orderingAsGuest: 'You’re ordering as a guest',
+    orderingAsGuestSub: 'Sign in for favorites, order history & rewards.',
+    help: 'Help',
+    contactSupport: 'Contact support',
+    changeLanguage: 'Change language',
+    legal: 'Legal',
+    privacy: 'Privacy',
+    terms: 'Terms',
+    imprint: 'Imprint',
+    account: 'Account',
+    invite: 'Invite',
+    inviteTitle: '€5 for you, €5 for your friends',
+    inviteSub: 'Share your code. On your friend’s first order you both get €5.',
+    copy: 'Copy',
+    copied: 'Copied!',
+    noReferralCode: 'No referral code available for your account yet.',
+    cartItemsRemoved: 'Some items are no longer available and were removed from your cart.',
+    day: 'Day',
+    time: 'Time',
+    today: 'Today',
+    tomorrow: 'Tomorrow',
+    confirmPreorder: 'Confirm pre-order',
+    preorderSubDelivery: 'Choose the day and time of your delivery',
+    preorderSubPickup: 'Choose the day and time of your pickup',
+    openingHours: 'Opening hours',
+    addressContact: 'Address & contact',
     noOrdersYet: 'No orders yet',
     yourOrdersWillAppearHere: 'Your recent orders will appear here.',
     notLoggedIn: 'Not logged in',
@@ -442,6 +636,103 @@ export const translations: Record<Language, Translations> = {
     loading: 'Wird geladen...',
     somethingWentWrong: 'Etwas ist schiefgelaufen',
     retry: 'Erneut versuchen',
+    searchMenu: 'Im Menü suchen — Pizza, Burger, Pasta…',
+    restaurantDetails: 'Restaurantdetails',
+    preorder: 'Vorbestellen',
+    noResults: 'Nichts gefunden',
+    noResultsFor: 'Kein Gericht gefunden für',
+    resetSearch: 'Suche zurücksetzen',
+    minimumOrderValue: 'MBW',
+    free: 'Gratis',
+    optional: 'optional',
+    required: 'Pflicht',
+    added: 'Hinzugefügt',
+    recommendedForYou: 'Für dich empfohlen',
+    messageForRestaurant: 'Nachricht für das Restaurant',
+    messageForRestaurantPlaceholder: 'Spezielle Wünsche, Allergien, Ernährungshinweise…',
+    save: 'Speichern',
+    edit: 'Ändern',
+    tip: 'Trinkgeld',
+    noTip: 'Kein',
+    tipToDriver: '100 % an den Fahrer',
+    tipToTeam: '100 % ans Team',
+    tipThanksDriver: 'Danke! Dein Fahrer erhält 100 % des Trinkgelds.',
+    tipThanksTeam: 'Danke! Das Team erhält 100 % des Trinkgelds.',
+    onDelivery: 'Bei Lieferung',
+    onPickup: 'Bei Abholung',
+    bellName: 'Klingelname',
+    bellNameRequired: 'Bitte gib einen Klingelnamen an',
+    deliverySpeedLabel: 'Lieferzeit',
+    standard: 'Standard',
+    priority: 'Priority',
+    zoneHeroTitle: 'Echte italienische Küche, frisch zu dir.',
+    zoneFeature1: 'In 20–40 Min. bei dir',
+    zoneFeature2: 'Frische Zutaten, täglich',
+    zoneFeature3: '4,8 ★ · 820+ Bewertungen',
+    deliveryAndPickup: 'Lieferung & Abholung',
+    doWeDeliver: 'Liefern wir zu dir?',
+    doWeDeliverSub: 'Gib deine Adresse ein — wir prüfen sofort, ob du im Liefergebiet liegst.',
+    streetHouseAndPostcode: 'Straße, Hausnr. & PLZ',
+    useCurrentLocation: 'Aktuellen Standort verwenden',
+    weDeliverToYou: 'Juhu, wir liefern zu dir!',
+    deliveryTimeApprox: 'Lieferzeit ca. 20–40 Min',
+    from: 'ab',
+    continueToMenu: 'Weiter zum Menü',
+    outsideDeliveryArea: 'Leider außerhalb',
+    outsideDeliveryAreaSub: 'Diese Adresse liegt außerhalb unseres Liefergebiets.',
+    checkAnotherAddress: 'Andere Adresse prüfen',
+    callUs: 'Anrufen',
+    switchToPickupBrowse: 'Zur Abholung wechseln & stöbern',
+    exploreShopAnyway: 'Trotzdem Webshop entdecken',
+    orderConfirmed: 'Bestellung bestätigt',
+    orderConfirmedDeliverySub: 'Die Küche bereitet dein Essen zu.',
+    orderConfirmedPickupSub: 'Die Küche bereitet dein Essen zu.',
+    inProgress: 'In Bearbeitung',
+    estimatedDelivery: 'Voraussichtliche Lieferung',
+    readyForPickup: 'Bereit zur Abholung',
+    preparation: 'Zubereitung',
+    onTheWay: 'Unterwegs',
+    delivered: 'Geliefert',
+    ready: 'Bereit',
+    pickedUp: 'Abgeholt',
+    courierBeingAssigned: 'Kurier wird zugeteilt',
+    courierBeingAssignedSub: 'Du wirst benachrichtigt, sobald jemand unterwegs ist',
+    orderNumber: 'Bestellnummer',
+    pickupAt: 'Abholung bei',
+    payment: 'Zahlung',
+    problemWithOrder: 'Problem mit der Bestellung?',
+    helpAndSupport: 'Hilfe & Kundenservice',
+    yourOrder: 'Deine Bestellung',
+    backToHome: 'Zur Startseite',
+    guest: 'Gast',
+    welcomeBack: 'Willkommen zurück',
+    myAccount: 'Mein Konto',
+    orderingAsGuest: 'Du bestellst als Gast',
+    orderingAsGuestSub: 'Melde dich an für Favoriten, Bestellverlauf & Prämien.',
+    help: 'Hilfe',
+    contactSupport: 'Kundenservice kontaktieren',
+    changeLanguage: 'Sprache ändern',
+    legal: 'Rechtliches',
+    privacy: 'Datenschutz',
+    terms: 'AGB',
+    imprint: 'Impressum',
+    account: 'Konto',
+    invite: 'Einladen',
+    inviteTitle: '5 € für dich, 5 € für deine Freunde',
+    inviteSub: 'Teile deinen Code. Bei der ersten Bestellung deines Freundes bekommt ihr beide 5 €.',
+    copy: 'Kopieren',
+    copied: 'Kopiert!',
+    noReferralCode: 'Für dein Konto ist noch kein Empfehlungscode verfügbar.',
+    cartItemsRemoved: 'Einige Artikel sind nicht mehr verfügbar und wurden aus deinem Warenkorb entfernt.',
+    day: 'Tag',
+    time: 'Uhrzeit',
+    today: 'Heute',
+    tomorrow: 'Morgen',
+    confirmPreorder: 'Vorbestellung bestätigen',
+    preorderSubDelivery: 'Wähle Tag und Uhrzeit deiner Lieferung',
+    preorderSubPickup: 'Wähle Tag und Uhrzeit deiner Abholung',
+    openingHours: 'Öffnungszeiten',
+    addressContact: 'Adresse & Kontakt',
     noOrdersYet: 'Noch keine Bestellungen',
     yourOrdersWillAppearHere: 'Deine letzten Bestellungen werden hier angezeigt.',
     notLoggedIn: 'Nicht angemeldet',

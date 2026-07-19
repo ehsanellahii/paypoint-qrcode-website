@@ -2,9 +2,8 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { X } from 'lucide-react';
+import { X, Heart, ShoppingBag, Ticket, MessageSquare, Globe, Shield, FileText, Info, LogOut, ChevronRight, User, ArrowLeft, Copy, Check, Gift } from 'lucide-react';
 import { useUser } from '~/contexts/user-context';
-import { IconifyIcon } from '~/lib/IconfiyIcon';
 import AuthenticationDialog from '../dialogs/Authentication/AuthenticationDialog';
 import ProfileDialog from '../dialogs/ProfileDialog';
 import FavoriteItemsDialog from '../dialogs/FavoriteItems/FavoriteItemsDialog';
@@ -12,6 +11,7 @@ import OrdersDialog from './OrdersDialog';
 import ProductModal from '../dialogs/ProductModal';
 import { MenuProduct } from '~/lib/utils';
 import { useLanguage } from '~/contexts/language-context';
+import { useStore } from '~/contexts/store-context';
 
 type Props = {
   open: boolean;
@@ -20,172 +20,210 @@ type Props = {
   storeSlug?: string;
 };
 
+type View = 'home' | 'invite';
+
 export default function UserDrawer({ open, onClose }: Props) {
-  const { t } = useLanguage();
-  const { user } = useUser(); // adjust if your context shape differs
+  const { t, language, setLanguage } = useLanguage();
+  const { user, clearUser } = useUser();
+  const storeInfo = useStore();
   const panelRef = useRef<HTMLDivElement | null>(null);
   const isLoggedIn = !!user && !user?.isGuest;
-  const [dialogs, setDialogs] = useState<{ login: boolean; register: boolean; favoriteItems: boolean; profile: boolean; orders: boolean; singleProductDetails: boolean }>(
-    {
-      login: false,
-      register: false,
-      favoriteItems: false,
-      profile: false,
-      orders: false,
-      singleProductDetails: false,
-    }
-  );
+
+  const [view, setView] = useState<View>('home');
+  const [copied, setCopied] = useState(false);
+  const [dialogs, setDialogs] = useState({ login: false, register: false, favoriteItems: false, profile: false, orders: false, singleProductDetails: false });
   const [selectedProduct, setSelectedProduct] = useState<MenuProduct | null>(null);
-  // Close on ESC
+
   useEffect(() => {
     if (!open) return;
-    const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
-    };
+    setView('home');
+    const onKeyDown = (e: KeyboardEvent) => e.key === 'Escape' && onClose();
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
   }, [open, onClose]);
 
-  // Focus panel when opened
   useEffect(() => {
     if (open) panelRef.current?.focus();
   }, [open]);
 
   if (!open) return null;
 
-  const displayName = user?.name || (user?.email ? user.email.split('@')[0] : null) || 'Guest';
-  const go = (path: string) => {
-    if (path === 'orders') {
-      setDialogs((prev) => ({ ...prev, orders: true }));
-      // onClose();
-      return;
-    } else if (path === 'favorites') {
-      setDialogs((prev) => ({ ...prev, favoriteItems: true }));
-      // onClose();
-      return;
-    } else if (path === 'profile') {
-      setDialogs((prev) => ({ ...prev, profile: true }));
-      // onClose();
-      return;
+  const displayName = user?.name || (user?.email ? user.email.split('@')[0] : null) || (t.guest ?? 'Guest');
+  // The customer's real referral code, issued by the backend on account creation.
+  const referralCode = user?.promoCode ?? '';
+
+  const copyCode = async () => {
+    if (!referralCode) return;
+    try {
+      await navigator.clipboard.writeText(referralCode);
+    } catch {
+      /* clipboard unavailable — non-critical */
     }
-    // onClose();
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1600);
   };
+
+  const QuickAction = ({ icon: Icon, label, onClick }: { icon: typeof Heart; label: string; onClick: () => void }) => (
+    <button onClick={onClick} className='flex flex-1 flex-col items-center gap-3 rounded-2xl bg-surface-3 px-2 pb-3 pt-4 transition hover:bg-elevated'>
+      <Icon className='h-6 w-6' />
+      <span className='text-xs font-bold'>{label}</span>
+    </button>
+  );
+
+  const Row = ({ icon: Icon, label, value, onClick, danger }: { icon: typeof Heart; label: string; value?: string; onClick: () => void; danger?: boolean }) => (
+    <button onClick={onClick} className='flex w-full items-center gap-3.5 px-4 py-[15px] text-left transition hover:bg-white/[0.03]'>
+      <Icon className={`h-[21px] w-[21px] ${danger ? 'text-brand-red' : ''}`} />
+      <span className={`flex-1 text-[15px] font-semibold ${danger ? 'text-brand-red' : ''}`}>{label}</span>
+      {value && <span className='text-[13px] font-bold'>{value}</span>}
+      {!danger && <ChevronRight className='h-4 w-4 text-[#55575c]' />}
+    </button>
+  );
+
   return (
     <div className='fixed inset-0 z-50'>
-      {/* overlay */}
-      <button aria-label='Close menu' className='absolute inset-0 bg-black/30' onClick={onClose} />
+      <button aria-label='Close menu' className='absolute inset-0 bg-black/55' onClick={onClose} />
 
-      {/* panel */}
       <aside
         ref={panelRef}
         tabIndex={-1}
         role='dialog'
         aria-modal='true'
         aria-label='User menu'
-        className='absolute right-0 top-0 h-full w-90 max-w-[90vw] bg-white shadow-xl outline-none flex flex-col '>
-        <div className='flex-1 overflow-y-auto flex flex-col justify-between'>
-          <div className=' '>
-            <div className='flex items-center justify-between border-b border-gray-100 px-4 py-4'>
-              <div>
-                <div className='text-sm text-gray-500'>{t.hey}, </div>
-                <div className='font-semibold text-gray-900'>{displayName}</div>
-                {/* {user?.email && <div className='text-sm text-gray-600'>{user.email}</div>} */}
-              </div>
+        className='anim-drawer absolute right-0 top-0 flex h-full w-[400px] max-w-[92vw] flex-col border-l border-border bg-card outline-none'>
+        {/* Header with brand tiles */}
+        <div className='relative h-[150px] shrink-0 overflow-hidden'>
+          <div className='absolute -inset-5 flex flex-wrap content-center justify-center gap-x-[22px] gap-y-2.5 overflow-hidden bg-[#161618] -rotate-12 select-none'>
+            {Array.from({ length: 48 }).map((_, i) => (
+              <span key={i} className='whitespace-nowrap font-script text-[17px] leading-none text-white/[0.05]'>
+                {storeInfo?.brandName || 'Restaurant'}
+              </span>
+            ))}
+          </div>
+          <div className='absolute inset-0 bg-gradient-to-b from-[rgba(0,0,0,0.3)] via-transparent to-card' />
+          <button onClick={onClose} aria-label='Close' className='absolute right-[18px] top-[18px] flex h-9 w-9 items-center justify-center rounded-full bg-black/45 text-white backdrop-blur'>
+            <X className='h-4 w-4' strokeWidth={2.2} />
+          </button>
+          <div className='absolute bottom-[18px] left-[22px]'>
+            {isLoggedIn ? (
+              <>
+                <div className='text-[12px] font-bold uppercase tracking-[0.04em] text-[#9a9da3]'>{t.welcomeBack ?? 'Welcome back'}</div>
+                <div className='mt-1 text-2xl font-extrabold tracking-tight'>{displayName}</div>
+              </>
+            ) : (
+              <div className='text-2xl font-extrabold tracking-tight'>{t.myAccount ?? 'My account'}</div>
+            )}
+          </div>
+        </div>
 
-              <button className='rounded-md p-2 hover:bg-gray-100' onClick={onClose} aria-label='Close drawer'>
-                <X className='h-5 w-5' />
+        <div className='min-h-0 flex-1 overflow-y-auto scrollbar-hide px-5 pb-7 pt-[18px]'>
+          {view === 'invite' ? (
+            <>
+              <button onClick={() => setView('home')} className='mb-3.5 inline-flex h-9 items-center gap-1.5 rounded-[11px] bg-surface-3 px-3 text-[13px] font-bold'>
+                <ArrowLeft className='h-4 w-4' /> {t.invite ?? 'Invite'}
               </button>
-            </div>
-
-            <nav className='p-2'>
+              <div className='text-center'>
+                <div className='mx-auto flex h-20 w-20 items-center justify-center rounded-3xl bg-gradient-to-br from-success to-[#1f9f60]'>
+                  <Gift className='h-10 w-10 text-[#0d1f14]' />
+                </div>
+                <h2 className='mt-4 text-[22px] font-extrabold leading-tight tracking-tight'>{t.inviteTitle ?? '€5 for you, €5 for your friends'}</h2>
+                <p className='mt-2.5 text-[13.5px] font-medium leading-relaxed text-[#a9adb3]'>{t.inviteSub ?? 'Share your code. On your friend’s first order you both get €5.'}</p>
+              </div>
+              {referralCode ? (
+                <div className='mt-5 flex items-center gap-3 rounded-[14px] border border-dashed border-[#45474b] bg-surface-3 px-4 py-3.5'>
+                  <span className='flex-1 break-all text-[17px] font-extrabold tracking-[0.06em]'>{referralCode}</span>
+                  <button onClick={copyCode} className='inline-flex shrink-0 items-center gap-1.5 rounded-[11px] bg-primary px-3.5 py-2 text-[13px] font-extrabold text-selected-text'>
+                    {copied ? <Check className='h-[15px] w-[15px]' strokeWidth={2.6} /> : <Copy className='h-[15px] w-[15px]' />}
+                    {copied ? (t.copied ?? 'Copied!') : (t.copy ?? 'Copy')}
+                  </button>
+                </div>
+              ) : (
+                <div className='mt-5 rounded-[14px] border border-dashed border-[#45474b] bg-surface-3 px-4 py-4 text-center text-[13.5px] font-medium text-muted-foreground'>
+                  {t.noReferralCode ?? 'No referral code available for your account yet.'}
+                </div>
+              )}
+            </>
+          ) : (
+            <>
+              {/* Guest / member top */}
               {isLoggedIn ? (
-                <>
-                  <button
-                    className='flex w-full gap-x-2 items-center rounded-lg px-4 py-3 text-sm font-medium text-gray-800 hover:bg-gray-100 text-left'
-                    onClick={() => go('profile')}>
-                    <IconifyIcon icon='bxs:user' className='text-icon  size-6' />
-                    {t.profile}
-                  </button>
-                  <button
-                    className=' w-full flex gap-x-2 rounded-lg px-4 py-3 text-sm font-medium text-gray-800 hover:bg-gray-100 text-left'
-                    onClick={() => go('orders')}>
-                    <IconifyIcon icon='heroicons-solid:shopping-bag' className='text-icon  size-6' />
-                    {t.orders}
-                  </button>
-                  <button
-                    className='flex w-full items-center gap-x-2 rounded-lg px-4 py-3 text-sm font-medium text-gray-800 hover:bg-gray-100 text-left'
-                    onClick={() => go('favorites')}>
-                    <IconifyIcon icon='mdi:book-favorite' className='text-icon  size-5.5' />
-                    {t.favoriteProducts}
-                  </button>
-                </>
+                <div className='flex gap-2.5'>
+                  <QuickAction icon={Heart} label={t.favoriteProducts ?? 'Favorites'} onClick={() => setDialogs((p) => ({ ...p, favoriteItems: true }))} />
+                  <QuickAction icon={ShoppingBag} label={t.orders ?? 'Orders'} onClick={() => setDialogs((p) => ({ ...p, orders: true }))} />
+                  <QuickAction icon={Ticket} label={t.invite ?? 'Invite'} onClick={() => setView('invite')} />
+                </div>
               ) : (
                 <>
-                  <div className='px-4 pt-2 text-xs text-gray-500'>{t.loginToSeeProfileAndFavorites}</div>
-                  <div className='flex gap-x-2'>
-                    <DrawerLink label={t.login} onClick={() => setDialogs((prev) => ({ ...prev, login: true }))} />
-                    <DrawerLink label={t.register} onClick={() => setDialogs((prev) => ({ ...prev, register: true }))} />
+                  <div className='flex items-center gap-3.5 rounded-2xl border border-border bg-surface-3 p-4'>
+                    <span className='flex h-[42px] w-[42px] shrink-0 items-center justify-center rounded-xl bg-white/[0.08]'>
+                      <User className='h-[22px] w-[22px]' />
+                    </span>
+                    <div className='min-w-0 flex-1'>
+                      <div className='text-[15px] font-bold'>{t.orderingAsGuest ?? 'You’re ordering as a guest'}</div>
+                      <div className='mt-0.5 text-[12.5px] font-medium leading-snug text-muted-foreground'>{t.orderingAsGuestSub ?? 'Sign in for favorites, order history & rewards.'}</div>
+                    </div>
+                  </div>
+                  <button onClick={() => setDialogs((p) => ({ ...p, login: true }))} className='mt-3 h-[52px] w-full rounded-[15px] bg-primary text-[15px] font-extrabold text-selected-text active:scale-[0.98]'>
+                    {t.login ?? 'Sign in'}
+                  </button>
+                </>
+              )}
+
+              {/* Help */}
+              <div className='mb-2.5 mt-6 text-[12px] font-extrabold uppercase tracking-[0.06em] text-muted-foreground'>{t.help ?? 'Help'}</div>
+              <div className='overflow-hidden rounded-2xl bg-surface-3'>
+                <Row icon={MessageSquare} label={t.contactSupport ?? 'Contact support'} onClick={() => (storeInfo?.phone ? window.open(`tel:${storeInfo.phone}`) : undefined)} />
+                <div className='ml-[51px] h-px bg-white/[0.06]' />
+                <Row icon={Globe} label={t.changeLanguage ?? 'Change language'} value={language.toUpperCase()} onClick={() => setLanguage(language === 'de' ? 'en' : 'de')} />
+              </div>
+
+              {/* Legal */}
+              <div className='mb-2.5 mt-6 text-[12px] font-extrabold uppercase tracking-[0.06em] text-muted-foreground'>{t.legal ?? 'Legal'}</div>
+              <div className='overflow-hidden rounded-2xl bg-surface-3'>
+                <Row icon={Shield} label={t.privacy ?? 'Privacy'} onClick={onClose} />
+                <div className='ml-[51px] h-px bg-white/[0.06]' />
+                <Row icon={FileText} label={t.terms ?? 'Terms'} onClick={onClose} />
+                <div className='ml-[51px] h-px bg-white/[0.06]' />
+                <Row icon={Info} label={t.imprint ?? 'Imprint'} onClick={onClose} />
+              </div>
+
+              {/* Account */}
+              {isLoggedIn && (
+                <>
+                  <div className='mb-2.5 mt-6 text-[12px] font-extrabold uppercase tracking-[0.06em] text-muted-foreground'>{t.account ?? 'Account'}</div>
+                  <div className='overflow-hidden rounded-2xl bg-surface-3'>
+                    <Row icon={User} label={t.profile ?? 'Profile'} onClick={() => setDialogs((p) => ({ ...p, profile: true }))} />
+                    <div className='ml-[51px] h-px bg-white/[0.06]' />
+                    <Row icon={LogOut} label={t.logout ?? 'Log out'} danger onClick={() => { clearUser(); onClose(); }} />
                   </div>
                 </>
               )}
-              {/* <DrawerLink href='/support' label='Support' onClick={onClose} /> */}
-              {/* <DrawerLink href='/franchise' label='Franchise' onClick={onClose} /> */}
-              {/* <DrawerLink href='/profile' label='Profile' onClick={onClose} /> */}
 
-              {/* <div className='my-3 border-t border-gray-100' /> */}
-
-              {/* {user?.isGuest ? (
-                <>
-                  <DrawerLink href='/login' label='Login' onClick={onClose} />
-                  <DrawerLink href='/signup' label='Create account' onClick={onClose} />
-                </>
-              ) : (
-                <button
-                  className='w-full rounded-lg px-4 py-3 text-left text-sm font-medium hover:bg-gray-100'
-                  onClick={() => {
-                    // logout
-                    onClose();
-                  }}>
-                  Logout
-                </button>
-              )} */}
-            </nav>
-          </div>
-          <div className='border-t border-gray-100 px-4 py-3'>
-            <a href='https://get-paypoint.de' target='_blank' rel='noopener noreferrer' className='flex items-center justify-center gap-2 text-xs text-gray-500'>
-              <span className='italic'>Powered by</span>
-              <img src='/paypoint.png' alt='PayPoint' className='h-14 w-auto object-contain opacity-80' />
-            </a>
-          </div>
+              <div className='mt-6 flex items-center justify-center gap-2.5 text-[12.5px] font-semibold text-muted-foreground-2'>
+                <a href='https://get-paypoint.de' target='_blank' rel='noopener noreferrer' className='flex items-center gap-2'>
+                  <span className='italic'>Powered by</span>
+                  <img src='/paypoint.png' alt='PayPoint' className='h-10 w-auto object-contain opacity-80' />
+                </a>
+              </div>
+            </>
+          )}
         </div>
       </aside>
-      {dialogs.login && <AuthenticationDialog isOpen={dialogs.login} handleOpenChange={(open) => setDialogs((prev) => ({ ...prev, login: open }))} />}
-      {dialogs.register && (
-        <AuthenticationDialog isOpen={dialogs.register} handleOpenChange={(open) => setDialogs((prev) => ({ ...prev, register: open }))} isRegistration={true} />
-      )}
-      {dialogs.profile && <ProfileDialog isOpen={dialogs.profile} handleOpenChange={(open) => setDialogs((prev) => ({ ...prev, profile: open }))} />}
+
+      {dialogs.login && <AuthenticationDialog isOpen={dialogs.login} handleOpenChange={(o) => setDialogs((p) => ({ ...p, login: o }))} />}
+      {dialogs.register && <AuthenticationDialog isOpen={dialogs.register} handleOpenChange={(o) => setDialogs((p) => ({ ...p, register: o }))} isRegistration />}
+      {dialogs.profile && <ProfileDialog isOpen={dialogs.profile} handleOpenChange={(o) => setDialogs((p) => ({ ...p, profile: o }))} />}
       {dialogs.favoriteItems && (
         <FavoriteItemsDialog
           isOpen={dialogs.favoriteItems}
-          handleOpenChange={(open) => setDialogs((prev) => ({ ...prev, favoriteItems: open }))}
+          handleOpenChange={(o) => setDialogs((p) => ({ ...p, favoriteItems: o }))}
           openProductDetailsCallback={(product: MenuProduct) => {
             setSelectedProduct(product);
-            setDialogs((prev) => ({ ...prev, singleProductDetails: true }));
+            setDialogs((p) => ({ ...p, singleProductDetails: true }));
           }}
         />
       )}
-      {dialogs.orders && <OrdersDialog onOpenChange={(open) => setDialogs((prev) => ({ ...prev, orders: open }))} open={dialogs.orders} />}
-      {dialogs.singleProductDetails && (
-        <ProductModal product={selectedProduct} isOpen={dialogs.singleProductDetails} onClose={() => setDialogs((prev) => ({ ...prev, singleProductDetails: false }))} />
-      )}
+      {dialogs.orders && <OrdersDialog onOpenChange={(o) => setDialogs((p) => ({ ...p, orders: o }))} open={dialogs.orders} />}
+      {dialogs.singleProductDetails && <ProductModal product={selectedProduct} isOpen={dialogs.singleProductDetails} onClose={() => setDialogs((p) => ({ ...p, singleProductDetails: false }))} />}
     </div>
-  );
-}
-
-function DrawerLink({ label, onClick }: { label: string; onClick: () => void }) {
-  return (
-    <button onClick={onClick} className='block w-full rounded-lg px-4 py-3 text-sm font-medium text-gray-800 hover:bg-gray-100'>
-      {label}
-    </button>
   );
 }

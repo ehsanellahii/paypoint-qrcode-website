@@ -57,12 +57,10 @@ export default function VoucherSection({ disabled }: Props) {
       });
       if (!res.ok) {
         const resError = await res.json();
-        console.log('Voucher apply error response:', resError);
         const errorMessage = getTranslatedVoucherApiErrorMessage(resError.errorCode, resError.message, t);
         throw new Error(errorMessage ?? 'Failed to apply voucher');
       }
       const responseData = await res.json();
-      console.log('Voucher apply response data:', responseData);
       const { voucher, discountAmount: discount } = responseData.data;
       if (voucher && discount) applyVoucher({ voucher, discountAmount: discount });
       setVoucherCode('');
@@ -79,19 +77,19 @@ export default function VoucherSection({ disabled }: Props) {
   };
 
   return (
-    <div className='mt-8 border border-gray-200 bg-white p-4 space-y-3'>
-      <div className='flex items-center gap-2 font-semibold text-lg'>
+    <div className='mt-7 space-y-3 rounded-[16px] border border-border bg-surface-1 p-4'>
+      <div className='flex items-center gap-2 text-lg font-bold'>
         <Tag className='size-5' />
         <span>{t.voucher ?? 'Voucher'}</span>
       </div>
 
       {isVoucherApplied && appliedVoucher ? (
-        <div className='flex items-center justify-between rounded-md bg-gray-50 p-3'>
+        <div className='flex items-center justify-between rounded-[12px] border border-success/40 bg-surface-3 p-3'>
           <div className='flex flex-col'>
-            <span className='font-semibold'>
+            <span className='font-bold'>
               {appliedVoucher?.title} - {appliedVoucher?.code}
             </span>
-            <span className='text-sm text-gray-600'>
+            <span className='text-sm text-success'>
               {t.discount ?? 'Discount'}: -{formatPrice(discountAmount)}
             </span>
           </div>
@@ -99,7 +97,7 @@ export default function VoucherSection({ disabled }: Props) {
           <button
             type='button'
             onClick={onRemoveVoucher}
-            className='inline-flex items-center gap-2 rounded-md bg-gray-200 px-3 py-2 text-sm font-medium hover:bg-gray-300'
+            className='inline-flex items-center gap-2 rounded-[10px] bg-surface-3 px-3 py-2 text-sm font-bold text-white hover:bg-elevated'
             disabled={disabled || voucherLoading}>
             <X className='size-4' />
             {t.remove ?? 'Remove'}
@@ -112,20 +110,20 @@ export default function VoucherSection({ disabled }: Props) {
               value={voucherCode}
               onChange={(e) => setVoucherCode(e.target.value)}
               placeholder={t.enterVoucherCode ?? 'Enter voucher code'}
-              className='flex-1 rounded-md border border-gray-300 px-3 py-2 outline-none focus:ring-0 focus:ring-primary focus:border-none'
+              className='h-12 flex-1 rounded-[12px] border border-border-strong bg-surface-3 px-4 font-bold uppercase tracking-[0.04em] text-white outline-none placeholder:normal-case placeholder:tracking-normal placeholder:text-muted-foreground focus:border-white/60'
               disabled={disabled || voucherLoading}
             />
 
             <button
               type='button'
               onClick={onApplyVoucher}
-              className='rounded-md bg-primary px-4 py-2 text-(--selected-text) font-medium disabled:opacity-50'
+              className='flex h-12 items-center justify-center rounded-[12px] bg-primary px-5 font-extrabold text-selected-text disabled:opacity-50'
               disabled={disabled || voucherLoading || !voucherCode.trim()}>
               {voucherLoading ? <Loader2 className='size-4 animate-spin' /> : (t.apply ?? 'Apply')}
             </button>
           </div>
 
-          {voucherError && <p className='text-sm text-red-600'>{voucherError}</p>}
+          {voucherError && <p className='text-sm text-brand-red'>{voucherError}</p>}
         </>
       )}
     </div>

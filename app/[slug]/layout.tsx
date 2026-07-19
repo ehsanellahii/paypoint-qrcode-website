@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
+import { Inter, Plus_Jakarta_Sans, Baloo_2, Kaushan_Script, Playfair_Display } from 'next/font/google';
 import '../globals.css';
 import { CartProvider } from '~/contexts/cart-context';
 import { LanguageProvider } from '@/contexts/language-context';
@@ -13,6 +13,38 @@ const inter = Inter({
   variable: '--font-inter',
   subsets: ['latin'],
   weight: ['400', '500', '600', '700'],
+});
+
+// Body / UI font
+const jakarta = Plus_Jakarta_Sans({
+  variable: '--font-jakarta',
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700', '800'],
+  display: 'swap',
+});
+
+// Display / heading font
+const baloo = Baloo_2({
+  variable: '--font-baloo',
+  subsets: ['latin'],
+  weight: ['700', '800'],
+  display: 'swap',
+});
+
+// Script logo font
+const kaushan = Kaushan_Script({
+  variable: '--font-kaushan',
+  subsets: ['latin'],
+  weight: ['400'],
+  display: 'swap',
+});
+
+// Serif accent font
+const playfair = Playfair_Display({
+  variable: '--font-playfair',
+  subsets: ['latin'],
+  weight: ['700', '800', '900'],
+  display: 'swap',
 });
 
 export async function generateMetadata({
@@ -43,13 +75,13 @@ export async function generateMetadata({
 export default async function RootLayout({ children, params }: { children: React.ReactNode; params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   return (
-    <html lang='en'>
+    <html lang='en' className='dark'>
       <head>
         <link rel='icon' href='/logo-light.svg' media='(prefers-color-scheme: light)' />
         <link rel='icon' href='/logo-dark.svg' media='(prefers-color-scheme: dark)' />
-        <meta name='color-scheme' content='light' />
+        <meta name='color-scheme' content='dark' />
       </head>
-      <body className={`${inter.variable} antialiased `}>
+      <body className={`${inter.variable} ${jakarta.variable} ${baloo.variable} ${kaushan.variable} ${playfair.variable} antialiased`}>
         <Script
           id='google-maps'
           strategy='afterInteractive'
@@ -60,7 +92,7 @@ export default async function RootLayout({ children, params }: { children: React
           <UserProvider>
             <AddressProvider storeKey={slug || 'default'}>
               <DebugPersistError />
-              <CartProvider>{children}</CartProvider>
+              <CartProvider storeKey={slug || 'default'}>{children}</CartProvider>
             </AddressProvider>
           </UserProvider>
         </LanguageProvider>

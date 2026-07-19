@@ -25,8 +25,8 @@ export default function LoginOtpStep({ t, disabled, phoneLabel, otp, otpError, o
   return (
     <>
       <div className='flex-1 overflow-y-auto flex flex-col gap-y-4 px-4 py-6'>
-        <div className='text-sm text-gray-600'>
-          {t?.otpSentTo ?? 'We sent an OTP to'} <span className='font-medium text-gray-900'>{phoneLabel}</span>
+        <div className='text-sm text-muted-foreground'>
+          {t?.otpSentTo ?? 'We sent an OTP to'} <span className='font-semibold text-foreground'>{phoneLabel}</span>
         </div>
 
         <div className='flex justify-center'>
@@ -34,17 +34,19 @@ export default function LoginOtpStep({ t, disabled, phoneLabel, otp, otpError, o
             value={otp}
             onChange={onChangeOtp}
             numInputs={otpLength}
-            // isInputNum
             shouldAutoFocus
             inputType='tel'
             renderSeparator={<span className='w-2' />}
             containerStyle='flex justify-center gap-2'
             inputStyle={{
               width: '44px',
-              height: '48px',
-              borderRadius: '10px',
-              border: '1px solid #d1d5db',
-              fontSize: '18px',
+              height: '52px',
+              borderRadius: '12px',
+              border: '1.5px solid rgba(255,255,255,0.16)',
+              background: '#26262a',
+              color: '#fff',
+              fontSize: '20px',
+              fontWeight: 800,
               textAlign: 'center',
               outline: 'none',
             }}
@@ -52,21 +54,21 @@ export default function LoginOtpStep({ t, disabled, phoneLabel, otp, otpError, o
           />
         </div>
 
-        {!!otpError && <p className='text-sm text-red-500 text-center'>{otpError}</p>}
+        {!!otpError && <p className='text-center text-sm text-brand-red'>{otpError}</p>}
 
-        <button type='button' onClick={onResend} disabled={disabled} className='text-sm underline text-gray-700 disabled:opacity-60 self-center'>
+        <button type='button' onClick={onResend} disabled={disabled} className='self-center text-sm font-semibold text-muted-foreground underline disabled:opacity-60 hover:text-white'>
           {t.resendOtp}
         </button>
       </div>
 
-      <div className='border-t border-gray-300 px-6 py-4 bg-white flex items-center justify-between gap-2'>
-        <button onClick={onBack} className='py-3 px-4 rounded bg-gray-200 font-medium' disabled={disabled}>
+      <div className='flex items-center justify-between gap-2 border-t border-border bg-card px-6 py-4'>
+        <button onClick={onBack} className='rounded-[12px] bg-surface-3 px-4 py-3 font-bold text-white transition hover:bg-elevated' disabled={disabled}>
           {t.back}
         </button>
 
         <button
           onClick={onVerify}
-          className='py-3 px-4 rounded bg-primary text-(--selected-text) font-medium disabled:opacity-60 flex justify-center items-center'
+          className='flex items-center justify-center rounded-[12px] bg-primary px-4 py-3 font-extrabold text-selected-text disabled:opacity-60'
           disabled={disabled}>
           {disabled ? (
             <>

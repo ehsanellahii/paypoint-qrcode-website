@@ -61,7 +61,7 @@ export default function PhoneNumberField({
       <div className='flex items-center'>
         <div className=''>
           <Select value={codeValue} onValueChange={onChangeCode} disabled={disabled}>
-            <SelectTrigger className={cn('border-r-none rounded-r-none ', error ? 'border-red-500' : '')}>
+            <SelectTrigger className={cn('h-12 rounded-r-none border-r-0 bg-surface-1', error ? 'border-brand-red' : '')}>
               <SelectValue placeholder='+49' className='' />
             </SelectTrigger>
             <SelectContent className=''>
@@ -85,10 +85,7 @@ export default function PhoneNumberField({
             const cleaned = e.target.value.replace(/[^\d\s]/g, '');
             onChangeNumber(cleaned);
           }}
-          className={cn(
-            'focus:outline-0 focus:ring-0 shadow-none  border-l-0 rounded-l-none h-9.5! focus-visible:outline-none  focus-visible:ring-0 focus-visible:outline-offset-0! focus-visible:outline-0! focus-visible:border-gray-200! focus:border-gray-200!',
-            error ? 'border-red-500' : ''
-          )}
+          className={cn('rounded-l-none border-l-0', error ? 'border-brand-red' : '')}
           disabled={disabled}
           aria-invalid={!!error}
           aria-describedby={error ? `${id}-error` : helperText ? `${id}-helper` : undefined}
@@ -97,13 +94,13 @@ export default function PhoneNumberField({
       </div>
 
       {error && (
-        <p id={`${id}-error`} className='text-sm text-red-500' role='alert'>
+        <p id={`${id}-error`} className='text-sm text-brand-red' role='alert'>
           {error}
         </p>
       )}
 
       {helperText && !error && (
-        <p id={`${id}-helper`} className='text-xs text-gray-500'>
+        <p id={`${id}-helper`} className='text-xs text-muted-foreground-2'>
           {helperText}
         </p>
       )}

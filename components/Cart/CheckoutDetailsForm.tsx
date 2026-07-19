@@ -3,9 +3,9 @@
 import { useEffect, useState } from 'react';
 import FormField from '@/components/FormField';
 import TextareaField from '../TextAreaField';
-import { storage } from '~/lib/utils';
-import { API_BASE_URL, X_API_KEY } from '~/lib/api'; // ✅ add this
-import { Loader2 } from 'lucide-react';
+import { cn, storage } from '~/lib/utils';
+import { API_BASE_URL, X_API_KEY, formatPrice } from '~/lib/api';
+import { Loader2, Bell, Zap, Check, Clock } from 'lucide-react';
 import { useUser } from '~/contexts/user-context';
 import { useAddress } from '~/contexts/address-context';
 
@@ -15,21 +15,29 @@ export interface CheckoutFormData {
   phoneNumber: string;
   deliveryNotes: string;
   pickupTime: string;
+  bellName: string;
+  deliverySpeed: 'standard' | 'priority';
 }
 
 type Props = {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   t: any;
   isSubmitting: boolean;
-
+  isDelivery?: boolean;
+  /** Priority delivery is only offered when the postal rate defines a charge. */
+  priorityAvailable?: boolean;
+  priorityCharge?: number;
+  priorityTime?: number;
+  standardTime?: number;
+  /** Set when a pre-order slot was chosen on the menu. */
+  preorderLabel?: string;
   showDeliveryNotes: boolean;
   showScheduledTime: boolean;
   scheduledLabel: string;
   timeSlots: string[];
   isDineIn?: boolean;
-
   initialData?: Partial<CheckoutFormData>;
   onBack?: () => void;
-
   onValidNext: (data: CheckoutFormData) => void;
 };
 
@@ -38,6 +46,12 @@ const STORAGE_KEY = 'persisted';
 export default function CheckoutDetailsForm({
   t,
   isSubmitting,
+  isDelivery = false,
+  priorityAvailable = false,
+  priorityCharge = 0,
+  priorityTime = 0,
+  standardTime = 0,
+  preorderLabel,
   showDeliveryNotes,
   showScheduledTime,
   scheduledLabel,
@@ -54,6 +68,8 @@ export default function CheckoutDetailsForm({
     phoneNumber: '',
     deliveryNotes: '',
     pickupTime: 'asap',
+    bellName: '',
+    deliverySpeed: 'standard',
   });
 
   const [errors, setErrors] = useState<Partial<CheckoutFormData>>({});
@@ -61,29 +77,18 @@ export default function CheckoutDetailsForm({
   const [loginError, setLoginError] = useState<string | undefined>(undefined);
 
   useEffect(() => {
-    const savedInfo = storage.get<{
-      customerName: string;
-      email: string;
-      phoneNumber: string;
-      deliveryNotes: string;
-      pickupTime?: string;
-    }>(STORAGE_KEY, {
+    const savedInfo = storage.get<Partial<CheckoutFormData>>(STORAGE_KEY, {
       customerName: '',
       email: '',
       phoneNumber: '',
       deliveryNotes: '',
       pickupTime: 'asap',
     });
-
     if (isDineIn) {
       savedInfo.deliveryNotes = '';
       savedInfo.pickupTime = 'asap';
     }
-
-    setFormData((prev) => ({
-      ...prev,
-      ...savedInfo,
-    }));
+    setFormData((prev) => ({ ...prev, ...savedInfo }));
   }, [isDineIn]);
 
   const handleInputChange = (field: keyof CheckoutFormData, value: string) => {
@@ -94,21 +99,18 @@ export default function CheckoutDetailsForm({
 
   const validateForm = (): boolean => {
     const newErrors: Partial<CheckoutFormData> = {};
-
     if (!formData.customerName.trim()) newErrors.customerName = t.nameRequired;
-
     if (!formData.email.trim()) newErrors.email = t.emailRequired;
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) newErrors.email = t.invalidEmail;
-
     if (!formData.phoneNumber.trim()) newErrors.phoneNumber = t.phoneRequired;
-    else if (!/^[\d\s\+\-\(\)]+$/.test(formData.phoneNumber)) newErrors.phoneNumber = t.invalidPhone;
-
+    else if (!/^[\d\s+\-()]+$/.test(formData.phoneNumber)) newErrors.phoneNumber = t.invalidPhone;
+    if (isDelivery && !formData.bellName.trim()) newErrors.bellName = t.bellNameRequired ?? t.nameRequired;
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  // ✅ NEW: login mutation
   const loginBeforeNext = async () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const payload: any = {
       email: formData.email.trim(),
       phoneNumber: formData.phoneNumber.trim(),
@@ -118,54 +120,37 @@ export default function CheckoutDetailsForm({
     };
     if (orderType === 'delivery' && deliveryAddress) {
       payload.address = deliveryAddress.formattedAddress;
-      payload.coordinates = {
-        latitude: deliveryAddress.lat,
-        longitude: deliveryAddress.lng,
-      };
+      payload.coordinates = { latitude: deliveryAddress.lat, longitude: deliveryAddress.lng };
       payload.postalCode = deliveryAddress.postalCode;
       payload.street = deliveryAddress.streetNumber;
       payload.houseNumber = deliveryAddress.route;
       payload.city = deliveryAddress.locality;
       payload.country = deliveryAddress.country;
     }
-
     const res = await fetch(`${API_BASE_URL}/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'x-api-key': X_API_KEY },
       body: JSON.stringify(payload),
     });
-
-    // if backend sometimes returns {message: "..."} on error:
     const json = await res.json();
-
     if (!res.ok) {
       const msg = json?.message || t.loginFailed || 'Login failed';
       setLoginError(msg);
       throw new Error(msg);
     }
-
-    // ✅ success: response is the user object
     const user = json?.data;
-
-    // (optional sanity check)
-    if (!user?.email && !user?.userId && !user?.uid) {
-      throw new Error('Login succeeded but response did not look like a user object.');
-    }
-
+    if (!user?.email && !user?.userId && !user?.uid) throw new Error('Login succeeded but response did not look like a user object.');
     setUser(user);
     return user;
   };
 
   const handleNext = async () => {
     if (!validateForm()) return;
-
     setIsLoggingIn(true);
     try {
-      await loginBeforeNext(); // ✅ must succeed
-      onValidNext(formData); // ✅ go to payment step
+      await loginBeforeNext();
+      onValidNext(formData);
     } catch (e) {
-      // optional: if you want an alert too
-      // alert(e instanceof Error ? e.message : 'Login failed');
       console.error('Login before next failed:', e);
     } finally {
       setIsLoggingIn(false);
@@ -174,94 +159,105 @@ export default function CheckoutDetailsForm({
 
   const disabled = isSubmitting || isLoggingIn;
 
+  const speedCard = (key: 'standard' | 'priority', title: string, sub: string, priceLabel: string) => {
+    const active = formData.deliverySpeed === key;
+    return (
+      <button
+        type='button'
+        onClick={() => setFormData((p) => ({ ...p, deliverySpeed: key }))}
+        className={cn('flex items-center gap-3.5 rounded-[14px] border-2 p-4 text-left transition', active ? 'border-white bg-surface-3' : 'border-border bg-surface-1')}>
+        <span className={cn('flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2', active ? 'border-white bg-white' : 'border-[#55575c]')}>
+          {active && <Check className='h-[13px] w-[13px] text-black' strokeWidth={2.8} />}
+        </span>
+        <span className='flex-1'>
+          <span className='flex items-center gap-1.5 text-[14.5px] font-extrabold'>
+            {title}
+            {key === 'priority' && <Zap className='h-3.5 w-3.5 fill-white' />}
+          </span>
+          <span className='mt-0.5 block text-[12.5px] font-medium text-muted-foreground'>{sub}</span>
+        </span>
+        <span className='text-[13px] font-bold text-muted-foreground'>{priceLabel}</span>
+      </button>
+    );
+  };
+
   return (
-    <div className='flex flex-col h-full'>
-      <div className='flex-1 overflow-y-auto px-6 py-4'>
-        <div className='bg-gray-100 rounded-lg p-6'>
-          <h2 className='text-xl font-bold mb-6'>{t.yourData}</h2>
-
+    <div className='flex h-full flex-col'>
+      <div className='min-h-0 flex-1 overflow-y-auto scrollbar-hide px-6 py-4'>
+        <div className='rounded-[16px] bg-surface-1 p-6'>
+          <h2 className='mb-6 text-xl font-extrabold'>{t.yourData}</h2>
           <div className='space-y-4'>
-            <FormField
-              id='customerName'
-              label={t.name}
-              type='text'
-              value={formData.customerName}
-              onChange={(v) => handleInputChange('customerName', v)}
-              error={errors.customerName}
-              required
-              disabled={disabled}
-            />
+            <FormField id='customerName' label={t.name} type='text' value={formData.customerName} onChange={(v) => handleInputChange('customerName', v)} error={errors.customerName} required disabled={disabled} />
+            <FormField id='email' label={t.email} type='email' value={formData.email} onChange={(v) => handleInputChange('email', v)} error={errors.email} required disabled={disabled} />
+            <FormField id='phoneNumber' label={t.phoneNumber} type='tel' value={formData.phoneNumber} onChange={(v) => handleInputChange('phoneNumber', v)} error={errors.phoneNumber} required disabled={disabled} />
 
-            <FormField
-              id='email'
-              label={t.email}
-              type='email'
-              value={formData.email}
-              onChange={(v) => handleInputChange('email', v)}
-              error={errors.email}
-              required
-              disabled={disabled}
-            />
-
-            <FormField
-              id='phoneNumber'
-              label={t.phoneNumber}
-              type='tel'
-              value={formData.phoneNumber}
-              onChange={(v) => handleInputChange('phoneNumber', v)}
-              error={errors.phoneNumber}
-              required
-              disabled={disabled}
-            />
-
-            {showDeliveryNotes && (
-              <TextareaField
-                id='deliveryNotes'
-                label={t.deliveryNotes}
-                placeholder={t.enterDeliveryNotes}
-                value={formData.deliveryNotes}
-                onChange={(v) => handleInputChange('deliveryNotes', v)}
-                disabled={disabled}
-              />
+            {isDelivery && (
+              <FormField id='bellName' label={t.bellName ?? 'Bell name'} type='text' value={formData.bellName} onChange={(v) => handleInputChange('bellName', v)} error={errors.bellName} required disabled={disabled} />
             )}
 
-            {showScheduledTime && (
-              <div>
-                <label htmlFor='pickupTime' className='block font-semibold mb-2'>
-                  {scheduledLabel}
-                </label>
-                <select
-                  id='pickupTime'
-                  value={formData.pickupTime}
-                  onChange={(e) => handleInputChange('pickupTime', e.target.value)}
-                  className='w-full px-4 py-3 rounded-lg border-2 border-gray-200 bg-white focus:border-primary focus:outline-none transition-colors'
-                  disabled={disabled}>
-                  {timeSlots.map((slot, index) => (
-                    <option key={index} value={index === 0 ? 'asap' : slot}>
-                      {index === 0 ? t.asapTime : slot}
-                    </option>
-                  ))}
-                </select>
-              </div>
+            {showDeliveryNotes && (
+              <TextareaField id='deliveryNotes' label={t.deliveryNotes} placeholder={t.enterDeliveryNotes} value={formData.deliveryNotes} onChange={(v) => handleInputChange('deliveryNotes', v)} disabled={disabled} />
             )}
           </div>
         </div>
+
+        {/* Delivery speed — only offered when the store defines a priority charge */}
+        {isDelivery && priorityAvailable && (
+          <div className='mt-4'>
+            <div className='mb-2.5 flex items-center gap-2 text-[12.5px] font-bold uppercase tracking-[0.04em] text-white'>
+              <Bell className='h-3.5 w-3.5' /> {t.deliverySpeedLabel ?? 'Delivery time'}
+            </div>
+            <div className='flex flex-col gap-2.5'>
+              {speedCard('standard', t.standard ?? 'Standard', standardTime ? `${standardTime} Min` : '', t.free ?? 'Free')}
+              {speedCard('priority', t.priority ?? 'Priority', priorityTime ? `${priorityTime} Min` : '', `+ ${formatPrice(priorityCharge)}`)}
+            </div>
+          </div>
+        )}
+
+        {/* Pre-order slot chosen on the menu */}
+        {preorderLabel && (
+          <div className='mt-4 flex items-center gap-3 rounded-[14px] border border-border bg-surface-1 px-4 py-3.5'>
+            <Clock className='h-5 w-5 shrink-0 text-muted-foreground' />
+            <div className='min-w-0 flex-1'>
+              <div className='text-[12.5px] font-bold uppercase tracking-[0.04em] text-muted-foreground'>{t.preorder ?? 'Pre-order'}</div>
+              <div className='mt-0.5 text-[14.5px] font-extrabold'>{preorderLabel}</div>
+            </div>
+          </div>
+        )}
+
+        {/* Scheduled time */}
+        {showScheduledTime && (
+          <div className='mt-4'>
+            <label htmlFor='pickupTime' className='mb-2 block text-[12.5px] font-bold uppercase tracking-[0.04em] text-white'>
+              {scheduledLabel}
+            </label>
+            <select
+              id='pickupTime'
+              value={formData.pickupTime}
+              onChange={(e) => handleInputChange('pickupTime', e.target.value)}
+              className='h-12 w-full rounded-[14px] border border-border bg-surface-1 px-4 text-white outline-none transition-colors focus:border-white/60'
+              disabled={disabled}>
+              {timeSlots.map((slot, index) => (
+                <option key={index} value={index === 0 ? 'asap' : slot} className='bg-card'>
+                  {index === 0 ? t.asapTime : slot}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
       </div>
-      {loginError && <div className='px-6 pb-4 text-red-600 font-medium'>{loginError}</div>}
-      <div className='border-t border-gray-300 px-6 py-4'>
+
+      {loginError && <div className='px-6 pb-4 font-medium text-brand-red'>{loginError}</div>}
+
+      <div className='border-t border-border px-6 py-4'>
         <div className='grid grid-cols-2 gap-3'>
-          <button
-            type='button'
-            onClick={onBack}
-            className='py-3 px-4 rounded bg-gray-200 text-black font-medium hover:bg-gray-300 transition-colors'
-            disabled={disabled || !onBack}>
+          <button type='button' onClick={onBack} className='rounded-[14px] bg-surface-3 px-4 py-3.5 font-bold text-white transition hover:bg-elevated disabled:opacity-50' disabled={disabled || !onBack}>
             {t.back}
           </button>
-
           <button
             type='button'
             onClick={handleNext}
-            className='py-3 px-4 rounded bg-primary text-(--selected-text) font-medium hover:bg-primary transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center'
+            className='flex items-center justify-center rounded-[14px] bg-primary px-4 py-3.5 font-extrabold text-selected-text transition active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50'
             disabled={disabled}>
             {isLoggingIn ? (
               <>

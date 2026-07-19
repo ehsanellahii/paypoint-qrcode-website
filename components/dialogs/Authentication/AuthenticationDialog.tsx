@@ -118,7 +118,6 @@ export default function AuthenticationDialog({ isOpen, handleOpenChange, isRegis
       confirmationResultRef.current = confirmationResult;
       setStep('otp');
     } catch (e: any) {
-      console.log('Error sending OTP:', e);
       // common firebase errors: auth/invalid-phone-number, auth/too-many-requests, etc.
       const msg = e?.message || t?.otpSendFailed || 'Failed to send OTP. Please try again.';
       setOtpError(msg);

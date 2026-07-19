@@ -1,97 +1,36 @@
-/* eslint-disable react-hooks/set-state-in-effect */
 'use client';
 
-import { useEffect, useState } from 'react';
-import Image from 'next/image';
 import { useCart } from '~/contexts/cart-context';
 import { useLanguage } from '@/contexts/language-context';
 import { formatPrice } from '@/lib/api';
-import Cart from './Cart';
 import { isRestaurantOpen } from '~/lib/restaurantTimings';
-import { getImageURL } from '~/lib/utils';
-import DeliveryAddressModal from '../dialogs/DeliveryAddressModal';
-import { useAddress } from '~/contexts/address-context';
-import OrdersDialog from '../Header/OrdersDialog';
 import { useStore } from '~/contexts/store-context';
 
-export default function BottomBar() {
+/**
+ * Mobile-only floating cart bar (prototype `.wzcartbar`).
+ * Pure trigger — the Cart dialog itself is hosted centrally in HomeScreen.
+ */
+export default function BottomBar({ onOpenCart }: { onOpenCart: () => void }) {
   const storeInfo = useStore();
-  const { cart, totalItems, totalPrice } = useCart();
+  const { totalItems, totalPrice } = useCart();
   const { t } = useLanguage();
-  const [isCartOpen, setIsCartOpen] = useState(false);
-  const [isDeliveryModalOpen, setIsDeliveryModalOpen] = useState(false);
-  const { deliveryAddress, setDeliveryAddress, orderType, setOrderType } = useAddress();
-  // const isClosed = isRestaurantClosed();
-  const isOpen = isRestaurantOpen(storeInfo?.timings || {});
-  const isClosed = !isOpen;
-  // if (totalItems === 0) return null;
-  useEffect(() => {
-    if (totalItems === 0) setIsCartOpen(false);
-  }, [totalItems]);
-  const [ordersOpen, setOrdersOpen] = useState(false);
+  const isClosed = !isRestaurantOpen(storeInfo?.timings || {});
+
+  if (totalItems === 0) return null;
 
   return (
-    <>
-      {totalItems !== 0 && (
-        <button
-          onClick={() => {
-            if (!isClosed) {
-              if (storeInfo?.tableInfo?.token) {
-                setIsCartOpen(true);
-              } else if (orderType === 'delivery' && !deliveryAddress) {
-                setIsDeliveryModalOpen(true);
-              } else {
-                setIsCartOpen(true);
-              }
-            }
-          }}
-          className='fixed bottom-4 left-4 right-4 bg-white rounded-lg p-4 border border-gray-100 shadow-md flex items-stretch cursor-pointer z-40'
-          aria-label={`Open cart with ${totalItems} item${totalItems !== 1 ? 's' : ''}, total ${formatPrice(totalPrice)}`}
-          disabled={isClosed}>
-          <div className='grow flex items-center overflow-x-scroll scrollbar-hide'>
-            {cart.map((item) => (
-              <div key={item.id} className='inline-flex h-full items-center bg-gray-100 rounded pl-3 pr-5 mr-3'>
-                <div className='relative w-14 aspect-square mr-2'>
-                  <Image
-                    src={item.product.images?.length ? getImageURL(item.product.images[0]) : ''}
-                    alt={`${item.product.name} image`}
-                    fill
-                    className='object-cover'
-                    sizes='56px'
-                  />
-                  {item.quantity > 1 && (
-                    <div className='absolute bottom-0 right-0 bg-primary text-(--selected-text) text-xs font-bold rounded-tl px-1'>{item.quantity}</div>
-                  )}
-                </div>
-                <h3 className='font-medium'>{item.product.name}</h3>
-              </div>
-            ))}
-          </div>
-
-          <div className='ml-4'>
-            <div
-              className={`w-full font-medium h-full rounded py-2 px-5 inline-flex items-center justify-center ${
-                isClosed ? 'bg-gray-200 text-gray-500' : 'bg-primary text-(--selected-text)'
-              }`}>
-              {isClosed ? t.closed : t.checkout}
-            </div>
-          </div>
-        </button>
-      )}
-      <DeliveryAddressModal
-        open={isDeliveryModalOpen}
-        onClose={() => setIsDeliveryModalOpen(false)}
-        onSelect={(addr) => {
-          setDeliveryAddress(addr); // ✅ persisted + global
-          setIsDeliveryModalOpen(false);
-        }}
-        googleApiKey={storeInfo?.posGoogleApiKey || ''}
-        onSuccess={() => {
-          if (orderType !== 'delivery') setOrderType('delivery');
-        }}
-      />
-      <Cart isOpen={isCartOpen} onOpenChange={setIsCartOpen} openOrdersDialog={() => setOrdersOpen(true)} />
-      <OrdersDialog open={ordersOpen} onOpenChange={setOrdersOpen} />
-    </>
+    <div
+      className='fixed inset-x-0 bottom-0 z-50 bg-gradient-to-t from-[rgba(20,20,22,0.98)] to-transparent px-3.5 pt-2.5 lg:hidden'
+      style={{ paddingBottom: 'calc(0.625rem + env(safe-area-inset-bottom))' }}>
+      <button
+        onClick={() => !isClosed && onOpenCart()}
+        disabled={isClosed}
+        data-cart-target='1'
+        className='flex h-14 w-full items-center gap-3 rounded-2xl bg-primary px-2.5 text-selected-text shadow-[0_12px_30px_-8px_rgba(0,0,0,0.6)] transition active:scale-[0.98] disabled:opacity-60'>
+        <span className='flex h-8 min-w-[30px] items-center justify-center rounded-[10px] bg-black px-2.5 text-sm font-extrabold text-white'>{totalItems}</span>
+        <span className='flex-1 text-left text-[15.5px] font-extrabold'>{isClosed ? (t.closed ?? 'Closed') : (t.order ?? 'View order')}</span>
+        <span className='pr-2 text-[15.5px] font-extrabold'>{formatPrice(totalPrice)}</span>
+      </button>
+    </div>
   );
 }

@@ -146,7 +146,7 @@ function getStatusMeta(status?: string, t?: any) {
     case 'sentToStore':
       return { label: labelMap[st], className: cn(base, 'bg-yellow-100 text-yellow-800') };
     default:
-      return { label: status || 'Unknown', className: cn(base, 'bg-gray-100 text-gray-700') };
+      return { label: status || 'Unknown', className: cn(base, 'bg-gray-100 text-foreground') };
   }
 }
 
@@ -159,7 +159,6 @@ export default function OrdersDialog({ open, onOpenChange }: Props) {
   const { user } = useUser(); // adjust if your context differs
   const storeInfo = useStore();
   const logoURL = storeInfo?.settings?.logo || '';
-  console.log('User in OrdersDialog:', user);
   const userId = user?.id ?? user?._id; // safe fallbacks
   const [didAutoExpand, setDidAutoExpand] = useState(false);
 
@@ -195,7 +194,6 @@ export default function OrdersDialog({ open, onOpenChange }: Props) {
         }
 
         const data = (await res.json()) as OrdersResponse | Order[]; // some APIs return array directly
-        console.log('Fetched orders data:', data);
         const list = Array.isArray(data) ? data : (data?.data ?? []);
 
         if (cancelled) return;
@@ -236,10 +234,10 @@ export default function OrdersDialog({ open, onOpenChange }: Props) {
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className='max-w-5xl w-[calc(100vw-2rem)] h-[calc(100dvh-2rem)] max-h-[calc(100dvh-2rem)] flex flex-col p-0'>
+      <DialogContent className='flex h-[calc(100dvh-2rem)] max-h-[calc(100dvh-2rem)] w-[calc(100vw-2rem)] max-w-5xl flex-col rounded-3xl border border-border bg-card p-0 text-foreground'>
         <DialogHeader className='p-6 pb-0 border-b-0'>
           <div className='flex items-center justify-between'>
-            <DialogTitle className='text-xl md:text-3xl border-b py-2 sm:py-4 md:py-8 border-gray-300 font-bold text-center w-full'>{title}</DialogTitle>
+            <DialogTitle className='w-full border-b border-border py-2 text-center font-display text-xl font-extrabold sm:py-4 md:py-8 md:text-3xl'>{title}</DialogTitle>
 
             {/* optional close icon (Dialog already supports outside click/esc)
             <button className='ml-3 shrink-0 rounded-md p-2 hover:bg-gray-100' onClick={() => handleOpenChange(false)} aria-label={t?.close ?? 'Close'}>
@@ -258,7 +256,7 @@ export default function OrdersDialog({ open, onOpenChange }: Props) {
             />
           ) : loading ? (
             <div className='h-[60vh] flex items-center justify-center'>
-              <div className='flex items-center gap-2 text-gray-600'>
+              <div className='flex items-center gap-2 text-muted-foreground'>
                 <Loader2 className='h-5 w-5 animate-spin' />
                 <span>{t?.loading ?? 'Loading...'}</span>
               </div>
@@ -298,14 +296,14 @@ export default function OrdersDialog({ open, onOpenChange }: Props) {
                   const itemsCount = o.items?.reduce((sum, it) => sum + (it.quantity || 0), 0) ?? 0;
                   const meta = getStatusMeta(o.status, t);
                   return (
-                    <div key={o.id} className='bg-gray-100 rounded-lg overflow-hidden'>
+                    <div key={o.id} className='bg-surface-1 rounded-lg overflow-hidden'>
                       {/* summary header */}
                       <button
                         onClick={() => setExpanded((p) => ({ ...p, [o.id]: !p[o.id] }))}
-                        className='w-full text-left p-4 hover:bg-gray-200/60 transition flex items-center gap-3'>
+                        className='w-full text-left p-4 hover:bg-surface-2 transition flex items-center gap-3'>
                         <div className='flex-1 min-w-0'>
                           <div className='flex items-center justify-between gap-3 flex-wrap'>
-                            <div className='font-semibold text-gray-900 truncate'>
+                            <div className='font-semibold text-foreground truncate'>
                               {t?.order ?? 'Order'} - {o.collectionCode}
                             </div>
                             <div className='flex justify-end w-full'>
@@ -313,37 +311,37 @@ export default function OrdersDialog({ open, onOpenChange }: Props) {
                             </div>
                           </div>
 
-                          <div className='mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-gray-600'>
+                          <div className='mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted-foreground'>
                             <span className='whitespace-nowrap'>{formatDateTime(o.orderDate)}</span>
-                            <span className='text-gray-400'>•</span>
+                            <span className='text-muted-foreground-2'>•</span>
                             <span className='whitespace-nowrap'>{getOrderTypeMeta(o.orderType, t)}</span>
-                            <span className='text-gray-400'>•</span>
+                            <span className='text-muted-foreground-2'>•</span>
                             <span className='whitespace-nowrap'>
                               {itemsCount} {t?.items ?? 'items'}
                             </span>
-                            <span className='text-gray-400'>•</span>
-                            <span className='whitespace-nowrap font-semibold text-gray-900'>{apiFormatPrice(o.totalOrderPrice)}</span>
+                            <span className='text-muted-foreground-2'>•</span>
+                            <span className='whitespace-nowrap font-semibold text-foreground'>{apiFormatPrice(o.totalOrderPrice)}</span>
                           </div>
 
-                          <div className='mt-1 text-sm text-gray-600 truncate'>
+                          <div className='mt-1 text-sm text-muted-foreground truncate'>
                             {o.storeDetails?.name}
                             {o.storeDetails?.address ? ` — ${o.storeDetails.address}` : ''}
                           </div>
                         </div>
 
-                        <ChevronDown className={cn('h-5 w-5 text-gray-500 transition', isExpanded && 'rotate-180')} />
+                        <ChevronDown className={cn('h-5 w-5 text-muted-foreground transition', isExpanded && 'rotate-180')} />
                       </button>
 
                       {/* expanded details */}
                       {isExpanded && (
-                        <div className='border-t border-gray-200 bg-white p-4'>
+                        <div className='border-t border-border bg-card p-4'>
                           {/* Items */}
-                          <div className='text-sm font-semibold text-gray-900 mb-2'>{t?.items ?? 'Items'}</div>
+                          <div className='text-sm font-semibold text-foreground mb-2'>{t?.items ?? 'Items'}</div>
 
                           <div className='space-y-2'>
                             {o.items?.map((it) => (
                               <>
-                                <div key={it.id} className='md:flex gap-3 rounded-lg bg-gray-50 p-3'>
+                                <div key={it.id} className='md:flex gap-3 rounded-lg bg-surface-3 p-3'>
                                   <div className='relative h-14 w-14 shrink-0 overflow-hidden rounded-md bg-white hidden md:block'>
                                     {it.image ? (
                                       <SmartImage fallbackSrc={logoURL} src={getImageURL(it.image)} alt={it.name} fill className='object-cover' sizes='56px' />
@@ -357,12 +355,12 @@ export default function OrdersDialog({ open, onOpenChange }: Props) {
                                   <div className='flex-1 min-w-0'>
                                     <div className='flex items-start justify-between gap-2'>
                                       <div className='min-w-0'>
-                                        <div className='font-semibold text-gray-900 truncate'>
+                                        <div className='font-semibold text-foreground truncate'>
                                           {it.quantity}× {it.name}
                                         </div>
 
                                         {!!it.addOns?.length && (
-                                          <div className='mt-1 text-xs text-gray-600 space-y-0.5'>
+                                          <div className='mt-1 text-xs text-muted-foreground space-y-0.5'>
                                             {it.addOns.map((a) => (
                                               <div key={a.id} className='flex items-center justify-between gap-2'>
                                                 <span className='truncate'>
@@ -377,15 +375,15 @@ export default function OrdersDialog({ open, onOpenChange }: Props) {
                                       </div>
 
                                       <div className='text-right shrink-0'>
-                                        <div className='font-semibold text-gray-900'>{apiFormatPrice(it.totalPrice)}</div>
+                                        <div className='font-semibold text-foreground'>{apiFormatPrice(it.totalPrice)}</div>
                                         {(it.discount || 0) > 0 && (
-                                          <div className='text-xs text-gray-600 line-through'>{apiFormatPrice((it.originalPrice || 0) * (it.quantity || 1))}</div>
+                                          <div className='text-xs text-muted-foreground line-through'>{apiFormatPrice((it.originalPrice || 0) * (it.quantity || 1))}</div>
                                         )}
                                       </div>
                                     </div>
                                   </div>
                                 </div>
-                                {/* <div key={it.id} className='rounded-lg bg-gray-50 p-3 md:hidden'>
+                                {/* <div key={it.id} className='rounded-lg bg-surface-3 p-3 md:hidden'>
                                   <div className='grid grid-cols-[56px_1fr] gap-3'>
                                     <div className='relative h-14 w-14 shrink-0 overflow-hidden rounded-md bg-white'>
                                       <Image src={it.image ? getImageURL(it.image) : '/'} alt={it.name} fill className='object-cover' sizes='56px' />
@@ -394,16 +392,16 @@ export default function OrdersDialog({ open, onOpenChange }: Props) {
                                     <div className='min-w-0'>
                                       <div className='flex items-start justify-between gap-2'>
                                         <div className='min-w-0'>
-                                          <div className='font-semibold text-gray-900 leading-snug break-words'>
+                                          <div className='font-semibold text-foreground leading-snug break-words'>
                                             <span className='mr-1'>{it.quantity}×</span>
                                             {it.name}
                                           </div>
                                         </div>
 
                                         <div className='shrink-0 text-right'>
-                                          <div className='font-semibold text-gray-900 whitespace-nowrap'>{apiFormatPrice(it.totalPrice)}</div>
+                                          <div className='font-semibold text-foreground whitespace-nowrap'>{apiFormatPrice(it.totalPrice)}</div>
                                           {(it.discount || 0) > 0 && (
-                                            <div className='text-xs text-gray-600 line-through whitespace-nowrap'>
+                                            <div className='text-xs text-muted-foreground line-through whitespace-nowrap'>
                                               {apiFormatPrice((it.originalPrice || 0) * (it.quantity || 1))}
                                             </div>
                                           )}
@@ -413,7 +411,7 @@ export default function OrdersDialog({ open, onOpenChange }: Props) {
                                       {!!it.addOns?.length && (
                                         <div className='mt-2 space-y-1'>
                                           {it.addOns.map((a) => (
-                                            <div key={a.id} className='flex items-start justify-between gap-2 text-xs text-gray-600'>
+                                            <div key={a.id} className='flex items-start justify-between gap-2 text-xs text-muted-foreground'>
                                               <div className='min-w-0 pr-2'>
                                                 <div className='break-words leading-snug'>
                                                   {a.name}
@@ -444,33 +442,33 @@ export default function OrdersDialog({ open, onOpenChange }: Props) {
                             )}
 
                             <Row label={`${t?.tax ?? 'Tax'} (${o.taxRate}%)`} value={apiFormatPrice(o.taxAmount)} />
-                            <div className='border-t border-gray-200 my-1' />
+                            <div className='border-t border-border my-1' />
                             <Row
                               label={t?.totalIncludingVAT ?? 'Total'}
                               value={apiFormatPrice(o.totalOrderPrice)}
                               labelClassName='font-bold'
-                              valueClassName='font-bold text-gray-900'
+                              valueClassName='font-bold text-foreground'
                             />
                           </div>
 
                           {/* Meta */}
                           <div className='mt-4 grid grid-cols-1 md:grid-cols-2 gap-3'>
                             <InfoCard title={t?.paymentMethod ?? 'Payment'}>
-                              <div className='text-sm text-gray-700'>
+                              <div className='text-sm text-foreground'>
                                 {o.paymentMethod === 'cash' ? t.cash : o.paymentMethod === 'ec-card reader' ? t.posCardPayment : o.paymentMethod}
                               </div>
                             </InfoCard>
 
                             <InfoCard title={t?.customer ?? 'Customer'}>
-                              <div className='text-sm text-gray-700'>{o.customerDetails?.name}</div>
-                              {o.customerDetails?.phoneNumber && <div className='text-sm text-gray-600'>{o.customerDetails.phoneNumber}</div>}
-                              {o.customerDetails?.email && <div className='text-sm text-gray-600'>{o.customerDetails.email}</div>}
+                              <div className='text-sm text-foreground'>{o.customerDetails?.name}</div>
+                              {o.customerDetails?.phoneNumber && <div className='text-sm text-muted-foreground'>{o.customerDetails.phoneNumber}</div>}
+                              {o.customerDetails?.email && <div className='text-sm text-muted-foreground'>{o.customerDetails.email}</div>}
                             </InfoCard>
 
                             {o.addressDetails?.address && (
                               <InfoCard title={t?.address ?? 'Address'}>
-                                <div className='text-sm text-gray-700'>{o.addressDetails.address}</div>
-                                {o.addressDetails.postalCode && <div className='text-sm text-gray-600'>{o.addressDetails.postalCode}</div>}
+                                <div className='text-sm text-foreground'>{o.addressDetails.address}</div>
+                                {o.addressDetails.postalCode && <div className='text-sm text-muted-foreground'>{o.addressDetails.postalCode}</div>}
                               </InfoCard>
                             )}
 
@@ -478,9 +476,9 @@ export default function OrdersDialog({ open, onOpenChange }: Props) {
                               <InfoCard title={t?.vouchers ?? 'Vouchers'}>
                                 <div className='space-y-1'>
                                   {o.vouchers.map((v) => (
-                                    <div key={v.id} className='text-sm text-gray-700'>
+                                    <div key={v.id} className='text-sm text-foreground'>
                                       <span className='font-semibold'>{v.title || v.code || 'Voucher'}</span>
-                                      {v.code ? <span className='text-gray-600'> — {v.code}</span> : null}
+                                      {v.code ? <span className='text-muted-foreground'> — {v.code}</span> : null}
                                     </div>
                                   ))}
                                 </div>
@@ -497,18 +495,18 @@ export default function OrdersDialog({ open, onOpenChange }: Props) {
         </div>
 
         {/* FOOTER (same vibe as Cart footer) */}
-        <div className='border-t border-gray-300 px-6 py-4 bg-white flex items-center justify-between'>
-          <div className='text-sm text-gray-600'>
+        <div className='flex items-center justify-between border-t border-border bg-card px-6 py-4'>
+          <div className='text-sm text-muted-foreground'>
             {userId ? (
               <span>
-                {t?.totalOrders ?? 'Total orders'}: <span className='font-semibold text-gray-900'>{orders.length}</span>
+                {t?.totalOrders ?? 'Total orders'}: <span className='font-bold text-foreground'>{orders.length}</span>
               </span>
             ) : (
               <span>{t?.notLoggedIn ?? 'Not logged in'}</span>
             )}
           </div>
 
-          <button onClick={() => handleOpenChange(false)} className='py-3 px-4 rounded bg-gray-200 font-medium'>
+          <button onClick={() => handleOpenChange(false)} className='rounded-[12px] bg-surface-3 px-4 py-3 font-bold text-white transition hover:bg-elevated'>
             {t?.close ?? 'Close'}
           </button>
         </div>
@@ -521,16 +519,16 @@ export default function OrdersDialog({ open, onOpenChange }: Props) {
 function Row({ label, value, labelClassName, valueClassName }: { label: string; value: string; labelClassName?: string; valueClassName?: string }) {
   return (
     <div className='flex items-center justify-between gap-3'>
-      <div className={cn('text-gray-700', labelClassName)}>{label}</div>
-      <div className={cn('text-gray-900', valueClassName)}>{value}</div>
+      <div className={cn('text-foreground', labelClassName)}>{label}</div>
+      <div className={cn('text-foreground', valueClassName)}>{value}</div>
     </div>
   );
 }
 
 function InfoCard({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className='rounded-lg border border-gray-200 bg-gray-50 p-3'>
-      <div className='text-xs font-semibold text-gray-500'>{title}</div>
+    <div className='rounded-lg border border-border bg-surface-3 p-3'>
+      <div className='text-xs font-semibold text-muted-foreground'>{title}</div>
       <div className='mt-1'>{children}</div>
     </div>
   );
@@ -539,9 +537,9 @@ function InfoCard({ title, children }: { title: string; children: React.ReactNod
 function EmptyState({ icon, title, subtitle }: { icon: React.ReactNode; title: string; subtitle: string }) {
   return (
     <div className='h-[60vh] flex flex-col items-center justify-center text-center'>
-      <div className='mb-3 text-gray-500'>{icon}</div>
-      <div className='text-lg font-bold text-gray-900'>{title}</div>
-      <div className='mt-1 text-sm text-gray-600 max-w-md'>{subtitle}</div>
+      <div className='mb-3 text-muted-foreground'>{icon}</div>
+      <div className='text-lg font-bold text-foreground'>{title}</div>
+      <div className='mt-1 text-sm text-muted-foreground max-w-md'>{subtitle}</div>
     </div>
   );
 }

@@ -34,7 +34,6 @@ export default function RegistrationDetailsStep({ t, loading, values, errors, on
           error={errors.customerName}
           required
           disabled={loading}
-          inputClassName='focus:outline-0 focus:ring-0 shadow-none  h-9.5! focus-visible:outline-none  focus-visible:ring-0 focus-visible:outline-offset-0! focus-visible:outline-0! focus-visible:border-gray-200! focus:border-gray-200! focus:border-2!'
         />
 
         <PhoneNumberField
@@ -51,12 +50,12 @@ export default function RegistrationDetailsStep({ t, loading, values, errors, on
         />
       </div>
 
-      <div className='border-t border-gray-300 px-6 py-4 bg-white flex items-center justify-between gap-2'>
-        <button onClick={onClose} className='py-3 px-4 rounded bg-gray-200 font-medium' disabled={loading}>
+      <div className='flex items-center justify-between gap-2 border-t border-border bg-card px-6 py-4'>
+        <button onClick={onClose} className='rounded-[12px] bg-surface-3 px-4 py-3 font-bold text-white transition hover:bg-elevated' disabled={loading}>
           {t.close}
         </button>
 
-        <button onClick={onSendOtp} className='py-3 px-4 rounded bg-primary text-(--selected-text) font-medium disabled:opacity-60 flex justify-center items-center' disabled={loading}>
+        <button onClick={onSendOtp} className='flex items-center justify-center rounded-[12px] bg-primary px-4 py-3 font-extrabold text-selected-text disabled:opacity-60' disabled={loading}>
           {loading ? (
             <>
               <Loader2 className='mr-2 h-4 w-4 animate-spin' />

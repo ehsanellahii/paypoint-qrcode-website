@@ -71,33 +71,31 @@ export const getPostalRateInfo = (
   deliveryCharges: number | null;
   minimumOrderAmount: number | null;
   deliveryTime: number | null;
+  priorityDeliveryCharges: number | null;
+  priorityDeliveryTime: number | null;
 } => {
-  if (!postalRates || postalRates.length === 0) {
-    return {
-      isAvailable: false,
-      deliveryCharges: null,
-      minimumOrderAmount: null,
-      deliveryTime: null,
-    };
-  }
+  const empty = {
+    isAvailable: false,
+    deliveryCharges: null,
+    minimumOrderAmount: null,
+    deliveryTime: null,
+    priorityDeliveryCharges: null,
+    priorityDeliveryTime: null,
+  };
+
+  if (!postalRates || postalRates.length === 0) return empty;
 
   const rate = postalRates.find((rate) => rate.postalCode === postalCode);
+  if (!rate) return empty;
 
-  if (rate) {
-    return {
-      isAvailable: true,
-      deliveryCharges: rate.deliveryCharges,
-      minimumOrderAmount: rate.minimumOrderAmount,
-      deliveryTime: rate.deliveryTime,
-    };
-  } else {
-    return {
-      isAvailable: false,
-      deliveryCharges: null,
-      minimumOrderAmount: null,
-      deliveryTime: null,
-    };
-  }
+  return {
+    isAvailable: true,
+    deliveryCharges: rate.deliveryCharges,
+    minimumOrderAmount: rate.minimumOrderAmount,
+    deliveryTime: rate.deliveryTime,
+    priorityDeliveryCharges: rate.priorityDeliveryCharges ?? null,
+    priorityDeliveryTime: rate.priorityDeliveryTime ?? null,
+  };
 };
 
 // ✅ Generic helpers

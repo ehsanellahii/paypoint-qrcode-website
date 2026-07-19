@@ -14,6 +14,7 @@ import { API_BASE_URL } from '~/lib/api';
 import CheckoutDetailsForm from './CheckoutDetailsForm';
 import { useUser } from '~/contexts/user-context';
 import { useStore } from '~/contexts/store-context';
+import type { PreorderSlot } from '~/components/menu/PreorderModal';
 
 const TZ = 'Europe/Berlin';
 
@@ -21,6 +22,10 @@ interface CheckoutFormProps {
   onSuccess: () => void;
   onBack?: () => void;
   onStepChange?: (s: 'details' | 'payment' | 'success') => void;
+  /** Free-text note for the restaurant, captured in the cart. */
+  orderMessage?: string;
+  /** Pre-order slot chosen on the menu (day + time), if any. */
+  scheduledSlot?: PreorderSlot | null;
 }
 
 interface CheckoutFormData {
@@ -29,11 +34,13 @@ interface CheckoutFormData {
   phoneNumber: string;
   deliveryNotes: string;
   pickupTime: string; // keep name to avoid more refactors (this is now "scheduledTime")
+  bellName: string;
+  deliverySpeed: 'standard' | 'priority';
 }
 
 const STORAGE_KEY = 'persisted';
 
-export default function CheckoutForm({ onSuccess, onBack, onStepChange }: CheckoutFormProps) {
+export default function CheckoutForm({ onSuccess, onBack, onStepChange, orderMessage, scheduledSlot = null }: CheckoutFormProps) {
   const storeInfo = useStore();
   const { user } = useUser();
   const { cart, totalPrice, clearCart, totalItems, discountAmount, appliedVoucher } = useCart();
@@ -58,9 +65,20 @@ export default function CheckoutForm({ onSuccess, onBack, onStepChange }: Checko
     phoneNumber: '',
     deliveryNotes: '',
     pickupTime: 'asap', // now used as scheduled time for delivery/pickup
+    bellName: '',
+    deliverySpeed: 'standard',
   });
+  const [tip, setTip] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [orderId, setOrderId] = useState<string | null>(null);
+  const [placed, setPlaced] = useState<{ paymentName: string; total: number; etaLo: number; etaHi: number; etaLabel?: string } | null>(null);
+
+  // Priority surcharge comes from the store's postal rate (the server re-resolves
+  // and re-validates this value; the client figure is display-only).
+  const priorityDeliveryCharge = postalRateInfo?.priorityDeliveryCharges ?? 0;
+  const priorityDeliveryTime = postalRateInfo?.priorityDeliveryTime ?? 0;
+  const priorityAvailable = isDelivery && priorityDeliveryCharge > 0;
+  const priorityFee = priorityAvailable && formData.deliverySpeed === 'priority' ? priorityDeliveryCharge : 0;
 
   useEffect(() => {
     onStepChange?.(step);
@@ -98,11 +116,16 @@ export default function CheckoutForm({ onSuccess, onBack, onStepChange }: Checko
 
         items: formatCartItemsForOrder(cart),
 
-        totalOrderPrice: totalPrice - discountAmount + (deliveryCharges ?? 0),
+        totalOrderPrice: totalPrice - discountAmount + (deliveryCharges ?? 0) + priorityFee + tip,
         totalItems: totalItems,
         totalItemsPrice: totalPrice,
         deliveryCharges: deliveryCharges,
         deliveryTime: deliveryTime,
+        tip: tip,
+        deliverySpeed: isDelivery ? formData.deliverySpeed : undefined,
+        priorityFee: priorityFee,
+        // Free-text note for the restaurant (maps to Order.instructions)
+        instructions: (orderMessage || '').trim(),
         orderSource: 'web',
         platform: 'WebShop',
       };
@@ -118,37 +141,51 @@ export default function CheckoutForm({ onSuccess, onBack, onStepChange }: Checko
             longitude: deliveryAddress?.lng || 0,
           },
           deliveryNotes: formData.deliveryNotes,
+          bellName: formData.bellName,
         };
       }
-      if (formData.pickupTime && formData.pickupTime !== 'asap') {
-        // Create Berlin datetime for selected time (today)
-        const todayBerlin = moment.tz(TZ).format('YYYY-MM-DD');
+      // Shown on the confirmation screen when the order is scheduled.
+      let scheduledEtaLabel: string | undefined;
 
-        let startBerlin = moment.tz(`${todayBerlin} ${formData.pickupTime}`, 'YYYY-MM-DD HH:mm', TZ);
-        console.log('Initial startBerlin:', startBerlin.format());
-        // IMPORTANT: handle overnight times (e.g. 01:30 when restaurant closes after midnight)
-        // If your opening window is overnight and selected time is "after midnight",
-        // you usually want next-day. Simple rule:
-        // if selected time is earlier than "nowBerlin - 6 hours", push to next day.
-        // (Or do it properly by returning dayOffset from generator; but this works decently.)
-        const nowBerlin = moment.tz(TZ);
-        if (startBerlin.isBefore(nowBerlin.clone().subtract(6, 'hours'))) {
-          startBerlin = startBerlin.add(1, 'day');
+      // A pre-order slot chosen on the menu wins over the same-day time select.
+      const effectiveSlot: { dayOffset: number; time: string } | null = scheduledSlot
+        ? { dayOffset: scheduledSlot.dayOffset, time: scheduledSlot.time }
+        : formData.pickupTime && formData.pickupTime !== 'asap'
+          ? { dayOffset: 0, time: formData.pickupTime }
+          : null;
+
+      if (effectiveSlot) {
+        const dayBerlin = moment
+          .tz(TZ)
+          .add(effectiveSlot.dayOffset, 'days')
+          .format('YYYY-MM-DD');
+
+        let startBerlin = moment.tz(`${dayBerlin} ${effectiveSlot.time}`, 'YYYY-MM-DD HH:mm', TZ);
+
+        // Only for same-day selections: handle overnight windows (e.g. 01:30 when
+        // the restaurant closes after midnight) by pushing to the next day.
+        // Future-dated pre-orders already carry an explicit day, so leave them alone.
+        if (effectiveSlot.dayOffset === 0) {
+          const nowBerlin = moment.tz(TZ);
+          if (startBerlin.isBefore(nowBerlin.clone().subtract(6, 'hours'))) {
+            startBerlin = startBerlin.add(1, 'day');
+          }
         }
 
-        // Duration: delivery => deliveryTime minutes, pickup => choose a default (15)
+        // Duration: delivery => deliveryTime minutes, pickup => default 15
         const durationMins = isDelivery ? deliveryTime : 15;
-
         const endBerlin = startBerlin.clone().add(durationMins, 'minutes');
 
         orderData.deliverySchedule = {
           timezone: TZ,
-          scheduledDate: startBerlin.toDate(), // Berlin date
+          scheduledDate: startBerlin.toDate(),
           timeSlot: {
-            startTime: startBerlin.format('HH:mm'), // ✅ UTC ISO
-            endTime: endBerlin.format('HH:mm'), // ✅ UTC ISO (+deliveryTime)
+            startTime: startBerlin.format('HH:mm'),
+            endTime: endBerlin.format('HH:mm'),
           },
         };
+
+        scheduledEtaLabel = `${startBerlin.format('HH:mm')} – ${endBerlin.format('HH:mm')}`;
       }
       if (isHaveTableInfo) {
         orderData.bookedTable = {
@@ -175,7 +212,6 @@ export default function CheckoutForm({ onSuccess, onBack, onStepChange }: Checko
           },
         ];
       }
-      console.log('Submitting order data:', orderData);
       const response = await fetch(apiUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -195,12 +231,19 @@ export default function CheckoutForm({ onSuccess, onBack, onStepChange }: Checko
         email: formData.email,
         phoneNumber: formData.phoneNumber,
       });
-      console.log('Order submission result:', result);
 
+      const etaLo = isDelivery ? (formData.deliverySpeed === 'priority' ? 20 : 30) : 5;
+      const etaHi = isDelivery ? (formData.deliverySpeed === 'priority' ? 30 : 40) : 15;
+      setPlaced({
+        paymentName: paymentMethod === 'card' ? t.posCardPayment : t.cash,
+        total: totalPrice - discountAmount + (deliveryCharges ?? 0) + priorityFee + tip,
+        etaLo,
+        etaHi,
+        etaLabel: scheduledEtaLabel,
+      });
       setStep('success');
       setOrderId(result?.data?.collectionCode);
 
-      console.log('Order submitted successfully:', result);
     } catch (error) {
       console.error('Error submitting order:', error);
       alert(error instanceof Error ? error.message : 'An unknown error occurred while submitting your order.');
@@ -211,7 +254,9 @@ export default function CheckoutForm({ onSuccess, onBack, onStepChange }: Checko
 
   const scheduledLabel = isDelivery ? (t.deliveryTime ?? 'Delivery time') : (t.pickupTime ?? 'Pickup time');
   const showDeliveryNotes = isDelivery;
-  const showScheduledTime = !isDineIn && (isDelivery || isPickup);
+  // When a pre-order slot is already chosen on the menu, the same-day time
+  // select is redundant — we show the chosen slot instead.
+  const showScheduledTime = !isDineIn && (isDelivery || isPickup) && !scheduledSlot;
   const timeSlots = generateTimeSlots({
     weeklyHours: storeInfo?.timings, // <-- put your dynamic weekly hours object here
     intervalMinutes: 15,
@@ -223,8 +268,8 @@ export default function CheckoutForm({ onSuccess, onBack, onStepChange }: Checko
   return (
     <>
       {step != 'success' && (
-        <DialogHeader className='p-6 pb-0 border-b-0'>
-          <DialogTitle className='text-3xl border-b py-8 border-gray-300 font-bold text-center'>{step === 'details' ? t.enterDetails : t.paymentMethod}</DialogTitle>
+        <DialogHeader className='border-b-0 p-6 pb-0'>
+          <DialogTitle className='border-b border-border py-8 text-center font-display text-3xl font-extrabold'>{step === 'details' ? t.enterDetails : t.paymentMethod}</DialogTitle>
         </DialogHeader>
       )}
 
@@ -236,19 +281,34 @@ export default function CheckoutForm({ onSuccess, onBack, onStepChange }: Checko
             onSuccess();
           }}
           step={step}
+          isDelivery={isDelivery}
+          paymentName={placed?.paymentName}
+          total={placed?.total}
+          etaLo={placed?.etaLo}
+          etaHi={placed?.etaHi}
+          etaLabel={placed?.etaLabel}
         />
       ) : step === 'payment' ? (
         <PaymentMethodForm
           onBack={() => setStep('details')}
           onSuccess={(paymentMethod) => handleSubmit(paymentMethod!)}
           deliveryCharges={deliveryCharges}
+          priorityFee={priorityFee}
+          tip={tip}
+          onTipChange={setTip}
           isSubmitting={isSubmitting}
         />
       ) : (
         <CheckoutDetailsForm
           t={t}
           isSubmitting={isSubmitting}
+          isDelivery={isDelivery}
+          priorityAvailable={priorityAvailable}
+          priorityCharge={priorityDeliveryCharge}
+          priorityTime={priorityDeliveryTime}
+          standardTime={deliveryTime}
           showDeliveryNotes={showDeliveryNotes}
+          preorderLabel={scheduledSlot?.label}
           showScheduledTime={showScheduledTime}
           scheduledLabel={scheduledLabel}
           timeSlots={timeSlots}

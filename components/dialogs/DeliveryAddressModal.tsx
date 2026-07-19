@@ -205,15 +205,15 @@ export default function DeliveryAddressModal({ open, onClose, onSelect, googleAp
       <Dialog.Root open={open} onOpenChange={(o) => !o && onClose()}>
         {/* same ProductModal styling */}
         <Dialog.Portal>
-          <Dialog.Backdrop className='fixed inset-0 z-50 bg-black/30' />
+          <Dialog.Backdrop className='fixed inset-0 z-50 bg-black/74' />
           <Dialog.Viewport className='fixed inset-0 z-50 flex items-center justify-center p-4'>
-            <Dialog.Popup className='max-w-2xl w-[calc(100vw-2rem)] bg-white rounded-lg shadow-lg px-4'>
-              <div className='py-6 px-5 text-center'>
-                <div className='font-semibold text-lg'>{t.deliveryAddress}</div>
-                <div className='mt-2 text-sm text-red-600'>{error}</div>
+            <Dialog.Popup className='w-[calc(100vw-2rem)] max-w-2xl rounded-3xl border border-border bg-card px-4 text-foreground shadow-lg'>
+              <div className='px-5 py-6 text-center'>
+                <div className='text-lg font-bold'>{t.deliveryAddress}</div>
+                <div className='mt-2 text-sm text-brand-red'>{error}</div>
               </div>
-              <div className='border-t border-gray-200 px-5 pb-4 pt-4'>
-                <button onClick={onClose} className='w-full bg-gray-200 py-2 px-3 rounded' type='button'>
+              <div className='border-t border-border px-5 pb-4 pt-4'>
+                <button onClick={onClose} className='w-full rounded-[12px] bg-surface-3 px-3 py-3 font-bold text-white transition hover:bg-elevated' type='button'>
                   {t.close}
                 </button>
               </div>
@@ -228,12 +228,12 @@ export default function DeliveryAddressModal({ open, onClose, onSelect, googleAp
     return (
       <Dialog.Root open={open} onOpenChange={(o) => !o && onClose()}>
         <Dialog.Portal>
-          <Dialog.Backdrop className='fixed inset-0 z-50 bg-black/30' />
+          <Dialog.Backdrop className='fixed inset-0 z-50 bg-black/74' />
           <Dialog.Viewport className='fixed inset-0 z-50 flex items-center justify-center p-4'>
-            <Dialog.Popup className='max-w-2xl w-[calc(100vw-2rem)] bg-white rounded-lg shadow-lg px-4'>
-              <div className='py-8 px-5 text-center'>
-                <div className='font-semibold text-lg'>{t.loadingMaps}…</div>
-                <div className='mt-2 text-sm text-gray-500'>{t.pleaseWait}</div>
+            <Dialog.Popup className='w-[calc(100vw-2rem)] max-w-2xl rounded-3xl border border-border bg-card px-4 text-foreground shadow-lg'>
+              <div className='px-5 py-8 text-center'>
+                <div className='text-lg font-bold'>{t.loadingMaps}…</div>
+                <div className='mt-2 text-sm text-muted-foreground'>{t.pleaseWait}</div>
               </div>
             </Dialog.Popup>
           </Dialog.Viewport>
@@ -245,19 +245,19 @@ export default function DeliveryAddressModal({ open, onClose, onSelect, googleAp
   return (
     <Dialog.Root open={open} onOpenChange={(o) => !o && onClose()}>
       <Dialog.Portal>
-        <Dialog.Backdrop className='fixed inset-0 z-50 bg-black/30 data-open:animate-in data-closed:animate-out data-closed:fade-out-0 data-open:fade-in-0' />
+        <Dialog.Backdrop className='fixed inset-0 z-50 bg-black/74 data-open:animate-in data-closed:animate-out data-closed:fade-out-0 data-open:fade-in-0' />
         <Dialog.Viewport className='fixed inset-0 z-50 flex items-center justify-center p-4'>
-          <Dialog.Popup className='max-w-2xl w-[calc(100vw-2rem)] max-h-[calc(100dvh-2rem)] flex flex-col bg-white rounded-lg shadow-lg p-0 px-4 data-open:animate-in data-closed:animate-out data-closed:fade-out-0 data-open:fade-in-0 data-closed:zoom-out-95 data-open:zoom-in-95'>
+          <Dialog.Popup className='flex max-h-[calc(100dvh-2rem)] w-[calc(100vw-2rem)] max-w-2xl flex-col rounded-3xl border border-border bg-card px-4 text-foreground shadow-lg data-open:animate-in data-closed:animate-out data-closed:fade-out-0 data-open:fade-in-0 data-closed:zoom-out-95 data-open:zoom-in-95'>
             <Dialog.Title className='sr-only'>{t.deliveryAddress}</Dialog.Title>
 
             {/* Header */}
-            <div className='shrink-0 pt-5 px-5'>
-              <h2 className='text-xl font-semibold text-center'>{t.deliveryAddress}</h2>
-              <p className='text-gray-500 text-sm text-center mt-1'>{t.startTypeAndChooseAddress}</p>
+            <div className='shrink-0 px-5 pt-5'>
+              <h2 className='text-center font-display text-xl font-extrabold'>{t.deliveryAddress}</h2>
+              <p className='mt-1 text-center text-sm text-muted-foreground'>{t.startTypeAndChooseAddress}</p>
             </div>
 
             {/* Body */}
-            <div className='grow overflow-y-auto scrollbar-hide py-4 px-5'>
+            <div className='grow overflow-y-auto scrollbar-hide px-5 py-4'>
               {/* Input */}
               <div className='mt-2'>
                 <label className='sr-only' htmlFor='delivery-address'>
@@ -270,49 +270,42 @@ export default function DeliveryAddressModal({ open, onClose, onSelect, googleAp
                   onChange={(e) => setQuery(e.target.value)}
                   onKeyDown={onKeyDown}
                   placeholder={t.addressSearchPlaceholder}
-                  className={cn(
-                    'w-full rounded-lg border px-4 py-3 text-base outline-none focus:no-ring focus:border-none',
-                    'border-gray-200 focus:border-primary focus:ring-0 focus:ring-primary/30'
-                  )}
+                  className='h-[52px] w-full rounded-[14px] border border-border bg-surface-1 px-4 text-base text-white outline-none transition-colors placeholder:text-muted-foreground focus:border-white/60'
                 />
 
                 {/* Typing helper / Loading */}
-                <div className='min-h-5.5 mt-2 text-sm'>
-                  {loading ? <span className='text-gray-500'>{t.searching}…</span> : typingError ? <span className='text-gray-500'>{typingError}</span> : null}
+                <div className='mt-2 min-h-5.5 text-sm'>
+                  {loading ? <span className='text-muted-foreground'>{t.searching}…</span> : typingError ? <span className='text-muted-foreground'>{typingError}</span> : null}
                 </div>
 
                 {/* Selection error */}
-                {selectionError && <div className='mt-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700'>{selectionError}</div>}
+                {selectionError && <div className='mt-2 rounded-[12px] border border-brand-red/40 bg-brand-red/10 px-3 py-2 text-sm text-brand-red'>{selectionError}</div>}
               </div>
 
               {/* Suggestions */}
               {predictions.length > 0 && (
-                <div className='mt-3 rounded-lg border border-gray-200 overflow-hidden'>
+                <div className='mt-3 overflow-hidden rounded-[15px] border border-border bg-surface-2'>
                   {predictions.map((p, idx) => (
                     <button
                       key={p.place_id}
                       type='button'
                       onClick={() => fetchPlaceDetails(p.place_id)}
                       onMouseEnter={() => setActiveIndex(idx)}
-                      className={cn(
-                        'w-full text-left px-4 py-3 border-b border-gray-100 last:border-b-0',
-                        'hover:bg-gray-50 transition',
-                        idx === activeIndex && 'bg-gray-50'
-                      )}>
-                      <div className='font-medium text-gray-900'>{p.structured_formatting?.main_text ?? p.description}</div>
-                      <div className='text-sm text-gray-500'>{p.structured_formatting?.secondary_text ?? ''}</div>
+                      className={cn('w-full border-b border-white/5 px-4 py-3 text-left transition last:border-b-0 hover:bg-[#303034]', idx === activeIndex && 'bg-[#303034]')}>
+                      <div className='font-bold text-foreground'>{p.structured_formatting?.main_text ?? p.description}</div>
+                      <div className='text-sm text-muted-foreground'>{p.structured_formatting?.secondary_text ?? ''}</div>
                     </button>
                   ))}
                 </div>
               )}
 
               {/* Empty state */}
-              {!loading && query.trim().length > 0 && predictions.length === 0 && <div className='mt-3 text-sm text-gray-500'>{t.noSuggestionsFoundAddPostalCode}</div>}
+              {!loading && query.trim().length > 0 && predictions.length === 0 && <div className='mt-3 text-sm text-muted-foreground'>{t.noSuggestionsFoundAddPostalCode}</div>}
             </div>
 
             {/* Footer */}
-            <div className='shrink-0 grid grid-cols-1 gap-4 pt-4 border-t border-gray-200 px-5 pb-4'>
-              <Dialog.Close className='bg-gray-200 py-2 px-3 rounded' type='button'>
+            <div className='grid shrink-0 grid-cols-1 gap-4 border-t border-border px-5 pb-4 pt-4'>
+              <Dialog.Close className='rounded-[12px] bg-surface-3 px-3 py-3 font-bold text-white transition hover:bg-elevated' type='button'>
                 {t.close}
               </Dialog.Close>
             </div>

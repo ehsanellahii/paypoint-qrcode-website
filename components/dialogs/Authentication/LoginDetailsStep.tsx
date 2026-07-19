@@ -38,14 +38,14 @@ export default function LoginDetailsStep({ t, loading, values, errors, onChange,
         />
       </div>
 
-      <div className='border-t border-gray-300 px-6 py-4 bg-white flex items-center justify-between gap-2'>
-        <button onClick={onClose} className='py-3 px-4 rounded bg-gray-200 font-medium' disabled={loading}>
+      <div className='flex items-center justify-between gap-2 border-t border-border bg-card px-6 py-4'>
+        <button onClick={onClose} className='rounded-[12px] bg-surface-3 px-4 py-3 font-bold text-white transition hover:bg-elevated' disabled={loading}>
           {t?.close ?? 'Close'}
         </button>
 
         <button
           onClick={onSendOtp}
-          className='py-3 px-4 rounded bg-primary text-(--selected-text) font-medium disabled:opacity-60 flex justify-center items-center'
+          className='flex items-center justify-center rounded-[12px] bg-primary px-4 py-3 font-extrabold text-selected-text disabled:opacity-60'
           disabled={loading}>
           {loading ? (
             <>

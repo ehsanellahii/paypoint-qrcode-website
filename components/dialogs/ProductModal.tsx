@@ -1,14 +1,11 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import Image from 'next/image';
+import { X, Info, Plus, Minus, Check, Pencil } from 'lucide-react';
 import { useCart } from '~/contexts/cart-context';
 import { formatPrice } from '@/lib/api';
-import { ChevronUp, ChevronDown } from 'lucide-react';
-import { useScrollDetection, useSmoothScroll } from '@/hooks/useScrollDetection';
 import { Dialog } from '@base-ui/react/dialog';
 import { AddOnGroup, cn, getImageURL, MenuProduct } from '~/lib/utils';
-import QuantityControl from '../QuantityControl';
 import { useLanguage } from '~/contexts/language-context';
 import SmartImage from '~/lib/SmartImage';
 import { useStore } from '~/contexts/store-context';
@@ -25,67 +22,23 @@ export default function ProductModal({ product, isOpen, onClose }: ProductModalP
   const { t, language } = useLanguage();
   const { addToCart } = useCart();
   const storeInfo = useStore();
-  const logo = storeInfo?.settings?.logo || '';
-  const logoURL = logo;
+  const logoURL = storeInfo?.settings?.logo || '';
+
   const [quantity, setQuantity] = useState(1);
   const [selectedOptions, setSelectedOptions] = useState<CartItemCustomization>({});
   const [notes, setNotes] = useState('');
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   const scrollRef = useRef<HTMLDivElement>(null);
-  const [containerElement, setContainerElement] = useState<HTMLDivElement | null>(null);
-  const scroll = useScrollDetection({ current: containerElement }, 'vertical');
-  const { scrollBy } = useSmoothScroll({ current: containerElement });
-
-  const [errors, setErrors] = useState<Record<string, string>>({});
   const sectionRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
-  // callback ref
-  const setScrollRef = (element: HTMLDivElement | null) => {
-    scrollRef.current = element;
-    setContainerElement(element);
-  };
-
-  // Reset modal state when opened
   useEffect(() => {
     if (!isOpen || !product) return;
-
     setQuantity(1);
     setNotes('');
     setSelectedOptions({});
     setErrors({});
   }, [isOpen, product]);
-
-  // (Keep your existing scroll-check effect as-is if you want)
-  useEffect(() => {
-    if (!isOpen) return;
-
-    const checkScroll = () => {
-      const container = containerElement || scrollRef.current;
-      if (!container) return;
-      if (container.clientHeight === 0 || container.clientWidth === 0) return;
-      container.dispatchEvent(new Event('scroll', { bubbles: true }));
-    };
-
-    const rafIds: number[] = [];
-    const scheduleCheck = () => {
-      const id1 = requestAnimationFrame(() => {
-        checkScroll();
-        const id2 = requestAnimationFrame(() => {
-          checkScroll();
-          const id3 = requestAnimationFrame(() => checkScroll());
-          rafIds.push(id3);
-        });
-        rafIds.push(id2);
-      });
-      rafIds.push(id1);
-    };
-
-    scheduleCheck();
-
-    return () => {
-      rafIds.forEach((id) => cancelAnimationFrame(id));
-    };
-  }, [isOpen, containerElement]);
 
   if (!product) return null;
 
@@ -93,53 +46,41 @@ export default function ProductModal({ product, isOpen, onClose }: ProductModalP
     const group = map[sectionId] || {};
     return Object.values(group).reduce((a, b) => a + b, 0);
   };
-
   const getOptionQty = (sectionId: string, optionId: string) => selectedOptions?.[sectionId]?.[optionId] ?? 0;
 
   const setOptionQty = (section: AddOnGroup, optionId: string, nextQty: number) => {
     const sectionId = section._id;
-
     setSelectedOptions((prev) => {
       const currentGroup = prev[sectionId] || {};
       nextQty = Math.max(0, Math.floor(nextQty));
 
-      // ✅ Single-choice (radio-like): if multiple selection is NOT allowed,
-      // always replace the selection with the clicked option.
+      // Single-choice (radio): replace whatever was selected.
       if (!section.isMultipleSelectionAllowed) {
-        // turning off (unselect)
         if (nextQty <= 0) {
-          const { [sectionId]: _, ...rest } = prev;
+          const { [sectionId]: _omit, ...rest } = prev;
           return rest;
         }
-
-        // turning on (select) -> replace whatever was selected before
         return { ...prev, [sectionId]: { [optionId]: 1 } };
       }
 
-      // ✅ Multi-qty mode (your existing logic)
+      // Multi-qty mode
       const currentQty = currentGroup[optionId] ?? 0;
-
       const groupTotal = Object.values(currentGroup).reduce((a, b) => a + b, 0);
       const delta = nextQty - currentQty;
       const nextTotal = groupTotal + delta;
-
-      if (section.maximumQuantity > 0 && nextTotal > section.maximumQuantity) {
-        return prev; // reject
-      }
+      if (section.maximumQuantity > 0 && nextTotal > section.maximumQuantity) return prev;
 
       const nextGroup: Record<string, number> = { ...currentGroup };
       if (nextQty === 0) delete nextGroup[optionId];
       else nextGroup[optionId] = nextQty;
 
       if (Object.keys(nextGroup).length === 0) {
-        const { [sectionId]: _, ...rest } = prev;
+        const { [sectionId]: _omit, ...rest } = prev;
         return rest;
       }
-
       return { ...prev, [sectionId]: nextGroup };
     });
 
-    // clear error for that section (your existing part)
     setErrors((prev) => {
       if (!prev[sectionId]) return prev;
       const copy = { ...prev };
@@ -150,32 +91,19 @@ export default function ProductModal({ product, isOpen, onClose }: ProductModalP
 
   const validateCustomizations = () => {
     const nextErrors: Record<string, string> = {};
-
     for (const section of product.addOns || []) {
       const total = getGroupTotal(section._id, selectedOptions);
-
       const min = section.minimumQuantity ?? 0;
       const max = section.maximumQuantity ?? 0;
-
-      if (min > 0 && total < min) {
-        nextErrors[section._id] = `${section.name}: choose at least ${min}`;
-      } else if (max > 0 && total > max) {
-        nextErrors[section._id] = `${section.name}: choose up to ${max}`;
-      }
+      if (min > 0 && total < min) nextErrors[section._id] = `${section.name}: choose at least ${min}`;
+      else if (max > 0 && total > max) nextErrors[section._id] = `${section.name}: choose up to ${max}`;
     }
-
     const firstInvalidSectionId = Object.keys(nextErrors)[0] || null;
-
     return { ok: firstInvalidSectionId === null, errors: nextErrors, firstInvalidSectionId };
-  };
-
-  const scrollContent = (direction: 'up' | 'down') => {
-    scrollBy(direction === 'up' ? -200 : 200, 'vertical');
   };
 
   const calculateTotalPrice = () => {
     let total = product.currentPrice;
-
     (product.addOns || []).forEach((section) => {
       const group = selectedOptions[section._id] || {};
       Object.entries(group).forEach(([optionId, qty]) => {
@@ -183,235 +111,207 @@ export default function ProductModal({ product, isOpen, onClose }: ProductModalP
         if (opt && qty > 0) total += opt.price * qty;
       });
     });
-
     return total * quantity;
   };
+
   const scrollToSection = (sectionId: string) => {
-    const container = containerElement || scrollRef.current;
+    const container = scrollRef.current;
     const el = sectionRefs.current[sectionId];
     if (!container || !el) return;
-
-    // Scroll within the modal container (not window)
-    const top = el.offsetTop - 24; // small padding
-    container.scrollTo({ top, behavior: 'smooth' });
+    container.scrollTo({ top: el.offsetTop - 24, behavior: 'smooth' });
   };
 
   const handleAddToCart = () => {
     const v = validateCustomizations();
-
     if (!v.ok) {
       setErrors(v.errors);
-
-      if (v.firstInvalidSectionId) {
-        // make sure DOM has the red text before scrolling (nice UX)
-        requestAnimationFrame(() => scrollToSection(v.firstInvalidSectionId!));
-      }
-
+      if (v.firstInvalidSectionId) requestAnimationFrame(() => scrollToSection(v.firstInvalidSectionId!));
       return;
     }
-
     setErrors({});
     addToCart(product, quantity, selectedOptions, notes);
     onClose();
   };
 
+  const hasPhoto = !!product.images?.length;
+
   return (
     <Dialog.Root open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <Dialog.Portal>
-        <Dialog.Backdrop className='fixed inset-0 z-60 bg-black/30 data-open:animate-in data-closed:animate-out data-closed:fade-out-0 data-open:fade-in-0' />
+        <Dialog.Backdrop className='fixed inset-0 z-60 bg-black/74 data-open:animate-in data-closed:animate-out data-closed:fade-out-0 data-open:fade-in-0' />
         <Dialog.Viewport className='fixed inset-0 z-60 flex items-center justify-center p-4'>
-          <Dialog.Popup className='max-w-5xl w-[calc(100vw-2rem)] h-[calc(100dvh-2rem)] max-h-[calc(100dvh-2rem)] flex flex-col bg-white rounded-lg shadow-lg p-0 px-4 data-open:animate-in data-closed:animate-out data-closed:fade-out-0 data-open:fade-in-0 data-closed:zoom-out-95 data-open:zoom-in-95'>
+          <Dialog.Popup className='anim-scalein flex max-h-[88vh] w-[560px] max-w-full flex-col overflow-hidden rounded-3xl border border-border bg-card shadow-[0_40px_90px_-20px_rgba(0,0,0,0.8)]'>
             <Dialog.Title className='sr-only'>{product.name}</Dialog.Title>
 
-            {/* Up Arrow */}
-            {scroll.canScrollUp && (
-              <button
-                onClick={() => scrollContent('up')}
-                className='absolute top-8 left-1/2 -translate-x-1/2 z-10 rounded-full p-2 shadow-lg mx-4'
-                style={{ backgroundColor: 'var(--primary)' }}
-                aria-label='Scroll up'>
-                <ChevronUp className='h-5 w-5 text-(--selected-text)' />
-              </button>
-            )}
+            {/* Close */}
+            <Dialog.Close
+              aria-label={t.close}
+              className='absolute right-4 top-4 z-[4] flex h-[38px] w-[38px] items-center justify-center rounded-full bg-black/55 text-white transition active:scale-90'>
+              <X className='h-[17px] w-[17px]' strokeWidth={2.2} />
+            </Dialog.Close>
 
-            {/* Scrollable Content */}
-            <div ref={setScrollRef} className='grow overflow-y-scroll scrollbar-hide py-4 px-5'>
-              {/* Product Image */}
-              <div className='relative w-full max-w-md h-96 mx-auto overflow-hidden rounded-lg'>
-              <SmartImage
-                fallbackSrc={logoURL}
-                  src={product.images?.length ? getImageURL(product.images[0]) : '/'}
-                  alt={`${product.name} image`}
-                  fill
-                  className='object-contain'
-                  sizes='(max-width: 768px) 100vw, 448px'
-                />
-              </div>
+            {/* Scrollable content */}
+            <div ref={scrollRef} className='min-h-0 grow overflow-y-auto scrollbar-hide'>
+              {hasPhoto ? (
+                <div className='relative h-[340px] w-full bg-white'>
+                  <SmartImage fallbackSrc={logoURL} src={getImageURL(product.images[0])} alt={product.name} fill className='object-contain' sizes='560px' />
+                </div>
+              ) : (
+                <div className='h-4' />
+              )}
 
-              {/* Product Details */}
-              <div className='text-center mt-4'>
-                <h1 className='font-semibold text-2xl'>{product.name}</h1>
-                <div className='text-gray-500 text-xl'>{formatPrice(product.currentPrice)}</div>
-                {product.description && <div className='py-4 text-gray-500'>{product.description}</div>}
-              </div>
+              <div className='p-6'>
+                <h2 className='m-0 font-display text-[28px] font-extrabold leading-[1.05] tracking-tight'>{product.name}</h2>
+                <div className='mt-2.5 flex items-center gap-3'>
+                  <span className='text-[15px] font-semibold text-[#c4c6ca]'>{formatPrice(product.currentPrice)}</span>
+                </div>
 
-              {/* Sections (Customizations) */}
-              <div className='flex flex-col items-stretch w-full'>
-                {product.haveCustomizations && product.addOns?.length > 0 && (
-                  <>
-                    {product.addOns.map((section) => {
-                      const groupTotal = getGroupTotal(section._id, selectedOptions);
-                      const min = section.minimumQuantity ?? 0;
-                      const max = section.maximumQuantity ?? 0;
-
-                      return (
-                        <div
-                          key={section._id}
-                          className='mt-4'
-                          ref={(el) => {
-                            sectionRefs.current[section._id] = el;
-                          }}>
-                          {/* Section Header */}
-                          <div className='mb-4 flex flex-col items-center justify-center'>
-                            <h2 className='font-semibold my-4 text-center text-lg mb-2'>{section.name}</h2>
-
-                            {min > 0 && (!max || max === 0) && (
-                              <span className={cn('text-gray-500 font-normal text-sm italic', errors[section._id] ? 'text-red-600' : 'text-gray-500')}>
-                                {t.chooseMin} {min}
-                              </span>
-                            )}
-                            {min > 0 && max > 0 && min != max && (
-                              <span className={cn('text-gray-500 font-normal text-sm italic', errors[section._id] ? 'text-red-600' : 'text-gray-500')}>
-                                {language === 'de' ? `Wähle min ${min} bis zu ${max}` : `Choose min ${min} up to ${max}`}
-                              </span>
-                            )}
-                            {min === 0 && max > 0 && (
-                              <span className='text-gray-500 font-normal text-sm italic'>
-                                {t.chooseUpTo} {max}
-                              </span>
-                            )}
-                            {min === max && min > 0 && (
-                              <span className={cn('text-gray-500 font-normal text-sm italic', errors[section._id] ? 'text-red-600' : 'text-gray-500')}>
-                                {language === 'de' ? `Wähle genau ${min}` : `Choose exactly ${min}`}
-                              </span>
-                            )}
-
-                            {/* {max > 0 && (
-                              <span className='text-gray-500 font-normal text-sm italic'>
-                                {t.chooseUpTo} {max} ({t.selected} {groupTotal})
-                              </span>
-                            )} */}
-                          </div>
-
-                          {/* Options Grid */}
-                          <div className='grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4'>
-                            {section.options.map((item) => {
-                              const displayName = item.name || '';
-                              const itemPrice = item.price;
-                              const itemImage = ''; // if you add images later
-                              const isAvailable = true;
-
-                              const qty = getOptionQty(section._id, item._id);
-                              const isSelected = qty > 0;
-
-                              const maxReached = section.isMultipleSelectionAllowed && max > 0 && groupTotal >= max && qty === 0;
-
-                              // allow increasing up to remaining capacity
-                              const optionMax = max > 0 ? qty + (max - groupTotal) : (section.maxMultipleSelection ?? 99);
-
-                              return (
-                                <div
-                                  key={item._id}
-                                  className={cn(
-                                    'rounded text-center border overflow-hidden select-none flex flex-col bg-gray-100 border-gray-200',
-                                    isSelected && 'bg-primary border-primary text-(--selected-text)',
-                                    !isAvailable && 'opacity-30'
-                                  )}>
-                                  {/* click-to-toggle for non-multi-qty mode */}
-                                  {!section.isMultipleSelectionAllowed && (
-                                    <button
-                                      type='button'
-                                      onClick={() => {
-                                        if (!isAvailable) return;
-                                        if (maxReached) return;
-                                        setOptionQty(section, item._id, isSelected ? 0 : 1);
-                                      }}
-                                      className='w-full grow'>
-                                      {itemImage && (
-                                        <div className='relative w-full h-48'>
-                                          <Image src={itemImage} alt={`${displayName} image`} fill className='object-contain' sizes='(max-width: 768px) 50vw, 200px' />
-                                        </div>
-                                      )}
-
-                                      <div className='py-4 px-2 flex flex-col items-center justify-center'>
-                                        <span className='font-semibold'>{displayName}</span>
-                                        <div className='text-gray-500 text-center'>{!isAvailable ? 'Out of stock' : itemPrice > 0 ? formatPrice(itemPrice) : ''}</div>
-                                      </div>
-                                    </button>
-                                  )}
-
-                                  {/* multi-qty mode */}
-                                  {section.isMultipleSelectionAllowed && (
-                                    <>
-                                      <div className='py-4 px-2 grow flex flex-col items-center justify-center'>
-                                        <span className='font-semibold'>{displayName}</span>
-                                        <div className='text-gray-500 text-center'>{!isAvailable ? 'Out of stock' : itemPrice > 0 ? formatPrice(itemPrice) : ''}</div>
-                                      </div>
-
-                                      <div className='flex items-center justify-center py-3'>
-                                        <QuantityControl
-                                          value={qty}
-                                          onChange={(val) => {
-                                            if (!isAvailable) return;
-                                            if (val > qty && max > 0 && groupTotal >= max) return;
-                                            setOptionQty(section, item._id, val);
-                                          }}
-                                          min={0}
-                                          max={optionMax}
-                                          size='md'
-                                          variant='compact'
-                                        />
-                                      </div>
-
-                                      {maxReached && <div className='pb-3 text-xs text-gray-600'>{t.maxReached}</div>}
-                                    </>
-                                  )}
-                                </div>
-                              );
-                            })}
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </>
+                {product.description && (
+                  <div className='mt-4 flex items-center gap-3 rounded-[14px] bg-white/5 px-4 py-3.5'>
+                    <span className='flex h-[34px] w-[34px] shrink-0 items-center justify-center rounded-full bg-white/10'>
+                      <Info className='h-[18px] w-[18px]' />
+                    </span>
+                    <span className='text-[13.5px] font-semibold text-[#d6d8dc]'>{product.description}</span>
+                  </div>
                 )}
-              </div>
-              {/* Notes (optional) */}
-              <div className='mt-6'>
-                <h2 className='font-semibold mt-6 mb-2 text-lg'>{t.specialInstructions}</h2>
-                <textarea className='w-full h-20 p-2 border rounded focus:border-none' value={notes} onChange={(e) => setNotes(e.target.value)} />
+
+                {/* Customization groups */}
+                {product.haveCustomizations &&
+                  (product.addOns || []).map((section) => {
+                    const min = section.minimumQuantity ?? 0;
+                    const max = section.maximumQuantity ?? 0;
+                    const groupTotal = getGroupTotal(section._id, selectedOptions);
+                    const hasError = !!errors[section._id];
+                    const required = min > 0;
+
+                    return (
+                      <div
+                        key={section._id}
+                        className='mt-6'
+                        ref={(el) => {
+                          sectionRefs.current[section._id] = el;
+                        }}>
+                        <div className='flex items-baseline justify-between'>
+                          <h3 className='m-0 text-base font-extrabold'>
+                            {section.name}
+                            {!required && <span className='ml-2 text-[12.5px] font-semibold text-muted-foreground'>· {t.optional ?? 'optional'}</span>}
+                          </h3>
+                          {required && (
+                            <span className='rounded-full bg-primary px-2.5 py-[3px] text-[10.5px] font-extrabold uppercase tracking-[0.04em] text-selected-text'>{t.required ?? 'Required'}</span>
+                          )}
+                        </div>
+                        {(min > 0 || max > 0) && (
+                          <div className={cn('mt-1 text-[12.5px] font-medium italic', hasError ? 'text-brand-red' : 'text-muted-foreground')}>
+                            {min === max && min > 0
+                              ? language === 'de'
+                                ? `Wähle genau ${min}`
+                                : `Choose exactly ${min}`
+                              : min > 0 && max > 0
+                                ? language === 'de'
+                                  ? `Wähle min ${min} bis ${max}`
+                                  : `Choose ${min}–${max}`
+                                : min > 0
+                                  ? `${t.chooseMin ?? 'Choose at least'} ${min}`
+                                  : `${t.chooseUpTo ?? 'Choose up to'} ${max}`}
+                          </div>
+                        )}
+
+                        <div className='mt-3 flex flex-col gap-2.5'>
+                          {section.options.map((item) => {
+                            const qty = getOptionQty(section._id, item._id);
+                            const isSelected = qty > 0;
+                            const priceLabel = item.price > 0 ? `+ ${formatPrice(item.price)}` : t.free ?? 'Free';
+
+                            if (!section.isMultipleSelectionAllowed) {
+                              // radio row
+                              return (
+                                <button
+                                  key={item._id}
+                                  type='button'
+                                  onClick={() => setOptionQty(section, item._id, isSelected ? 0 : 1)}
+                                  className={cn(
+                                    'flex items-center gap-3 rounded-[14px] border-2 px-[15px] py-3.5 text-left transition',
+                                    isSelected ? 'border-white bg-surface-3' : 'border-transparent bg-surface-3'
+                                  )}>
+                                  <span className={cn('flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2', isSelected ? 'border-white bg-white' : 'border-[#55575c]')}>
+                                    {isSelected && <Check className='h-[13px] w-[13px] text-black' strokeWidth={2.8} />}
+                                  </span>
+                                  <span className='min-w-0 flex-1'>
+                                    <span className='block text-[14.5px] font-bold'>{item.name}</span>
+                                  </span>
+                                  <span className='text-[13.5px] font-bold text-muted-foreground'>{priceLabel}</span>
+                                </button>
+                              );
+                            }
+
+                            // multi-qty (stepper) row
+                            const maxReached = max > 0 && groupTotal >= max && qty === 0;
+                            return (
+                              <div key={item._id} className='flex items-center rounded-[14px] bg-surface-3 py-2.5 pl-[15px] pr-3'>
+                                <span className='flex-1 text-[14.5px] font-semibold'>{item.name}</span>
+                                <span className='mr-3 text-[13.5px] font-bold text-muted-foreground'>{priceLabel}</span>
+                                {qty === 0 ? (
+                                  <button
+                                    type='button'
+                                    disabled={maxReached}
+                                    onClick={() => setOptionQty(section, item._id, 1)}
+                                    aria-label='add'
+                                    className='flex h-8 w-8 items-center justify-center rounded-[10px] bg-primary text-selected-text transition active:scale-[0.85] disabled:opacity-40'>
+                                    <Plus className='h-4 w-4' strokeWidth={2.6} />
+                                  </button>
+                                ) : (
+                                  <div className='flex items-center gap-1 rounded-[11px] bg-card p-1'>
+                                    <button type='button' onClick={() => setOptionQty(section, item._id, qty - 1)} aria-label='less' className='flex h-[30px] w-[30px] items-center justify-center rounded-lg bg-[#3a3a3e] text-white transition active:scale-[0.85]'>
+                                      <Minus className='h-4 w-4' strokeWidth={2.6} />
+                                    </button>
+                                    <span className='min-w-5 text-center text-[14.5px] font-extrabold'>{qty}</span>
+                                    <button type='button' disabled={max > 0 && groupTotal >= max} onClick={() => setOptionQty(section, item._id, qty + 1)} aria-label='more' className='flex h-[30px] w-[30px] items-center justify-center rounded-lg bg-primary text-selected-text transition active:scale-[0.85] disabled:opacity-40'>
+                                      <Plus className='h-4 w-4' strokeWidth={2.6} />
+                                    </button>
+                                  </div>
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    );
+                  })}
+
+                {/* Note */}
+                <h3 className='mt-6 text-base font-extrabold'>
+                  {t.specialInstructions}
+                  <span className='ml-2 text-[12.5px] font-semibold text-muted-foreground'>· {t.optional ?? 'optional'}</span>
+                </h3>
+                <div className='mt-3 flex items-start gap-3 rounded-[14px] border border-border bg-surface-1 px-4 py-3.5'>
+                  <Pencil className='mt-0.5 h-5 w-5 shrink-0 text-muted-foreground' />
+                  <textarea
+                    value={notes}
+                    onChange={(e) => setNotes(e.target.value)}
+                    placeholder={t.enterDeliveryNotes ?? ''}
+                    rows={2}
+                    className='min-w-0 flex-1 resize-none border-none bg-transparent text-sm font-medium leading-relaxed text-white outline-none'
+                  />
+                </div>
               </div>
             </div>
 
-            {/* Down Arrow */}
-            {scroll.canScrollDown && (
-              <button
-                onClick={() => scrollContent('down')}
-                className='absolute bottom-24 left-1/2 -translate-x-1/2 z-10 rounded-full p-2 shadow-lg mx-4'
-                style={{ backgroundColor: 'var(--primary)' }}
-                aria-label='Scroll down'>
-                <ChevronDown className='h-5 w-5 text-[--selected-text]' />
-              </button>
-            )}
-
             {/* Footer */}
-            <div className='shrink-0 grid grid-cols-2 gap-4 pt-4 border-t border-gray-200 px-5 pb-4'>
-              <Dialog.Close className='bg-gray-200 py-2 px-3 rounded' type='button'>
-                {t.close}
-              </Dialog.Close>
-
-              <button onClick={handleAddToCart} className='bg-primary text-(--selected-text) py-2 px-3 rounded font-medium' type='button'>
-                {t.add} ({formatPrice(calculateTotalPrice())})
+            <div className='flex shrink-0 items-center gap-4 border-t border-border px-6 py-4'>
+              <div className='flex shrink-0 items-center gap-1 rounded-[13px] bg-surface-3 p-[5px]'>
+                <button onClick={() => setQuantity((q) => Math.max(1, q - 1))} aria-label='less' className='flex h-[34px] w-[34px] items-center justify-center rounded-[9px] text-white transition active:scale-[0.85]'>
+                  <Minus className='h-[18px] w-[18px]' strokeWidth={2.4} />
+                </button>
+                <span className='min-w-6 text-center text-[15px] font-extrabold'>{quantity}</span>
+                <button onClick={() => setQuantity((q) => Math.min(20, q + 1))} aria-label='more' className='flex h-[34px] w-[34px] items-center justify-center rounded-[9px] text-white transition active:scale-[0.85]'>
+                  <Plus className='h-[18px] w-[18px]' strokeWidth={2.4} />
+                </button>
+              </div>
+              <button
+                onClick={handleAddToCart}
+                type='button'
+                className='flex h-[52px] flex-1 items-center justify-center gap-2.5 rounded-[15px] bg-primary text-[15px] font-extrabold text-selected-text transition active:scale-[0.98]'>
+                {t.add} · {formatPrice(calculateTotalPrice())}
               </button>
             </div>
           </Dialog.Popup>

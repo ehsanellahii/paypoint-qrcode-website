@@ -26,13 +26,13 @@ const FavoriteItemsDialog = ({
 
   return (
     <DialogWrapper isOpen={isOpen} handleOpenChange={handleOpenChange} title='Favorite Items' isWithCrossIcon>
-      <div className='flex-1 overflow-y-auto'>
+      <div className='flex-1 overflow-y-auto scrollbar-hide px-6 py-4'>
         {loading ? (
-          <div className='py-6 text-center'>{t.loading}</div>
+          <div className='py-6 text-center text-muted-foreground'>{t.loading}</div>
         ) : products.length === 0 ? (
-          <div className='py-6 text-center text-gray-500'>{t.noFavoriteItemsYet}</div>
+          <div className='py-6 text-center text-muted-foreground'>{t.noFavoriteItemsYet}</div>
         ) : (
-          <div className='space-y-3 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3'>
+          <div className='grid grid-cols-1 gap-4 sm:grid-cols-2'>
             {products.map((p) => (
               <ProductCard
                 key={p._id}
@@ -46,14 +46,14 @@ const FavoriteItemsDialog = ({
           </div>
         )}
       </div>
-      <div className='border-t border-gray-300 px-6 py-4 bg-white flex items-center justify-between'>
-        <div className='text-sm text-gray-600'>
+      <div className='flex items-center justify-between border-t border-border bg-card px-6 py-4'>
+        <div className='text-sm text-muted-foreground'>
           <span>
-            {t.totalFavItems} <span className='font-semibold text-gray-900'>{products.length}</span>
+            {t.totalFavItems} <span className='font-bold text-foreground'>{products.length}</span>
           </span>
         </div>
 
-        <button onClick={() => handleOpenChange(false)} className='py-3 px-4 rounded bg-gray-200 font-medium'>
+        <button onClick={() => handleOpenChange(false)} className='rounded-[12px] bg-surface-3 px-4 py-3 font-bold text-white transition hover:bg-elevated'>
           {t?.close ?? 'Close'}
         </button>
       </div>

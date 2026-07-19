@@ -211,7 +211,15 @@ export interface IStoreInfo {
   } | null;
   adminGoogleApiKey: string;
   posGoogleApiKey: string;
-  postalRates: { postalCode: number; deliveryCharges: number; minimumOrderAmount: number; deliveryTime: number; priorityDeliveryTime: number; _id: string }[];
+  postalRates: {
+    postalCode: number;
+    deliveryCharges: number;
+    minimumOrderAmount: number;
+    deliveryTime: number;
+    priorityDeliveryTime: number;
+    priorityDeliveryCharges?: number;
+    _id: string;
+  }[];
   storeId: string;
   adminId: string;
   tableInfo: {

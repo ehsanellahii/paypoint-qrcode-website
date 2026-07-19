@@ -40,7 +40,6 @@ const page = async ({ params, searchParams }: { params: Promise<{ slug: string }
   if (BLOCKEDSLUGS.has(slug)) notFound();
   const { t: token } = await searchParams;
   const storeInfo = await getStoreData(slug, token as string);
-  console.log('Formatted Store Info:', storeInfo);
   const primaryColor = storeInfo?.settings?.themeColors?.primaryColor;
   const selectedColor = storeInfo?.settings?.themeColors?.selectedTextColor;
   return (
