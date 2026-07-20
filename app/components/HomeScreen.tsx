@@ -19,6 +19,7 @@ import CartToast from '~/components/menu/CartToast';
 import PreorderModal, { type PreorderSlot } from '~/components/menu/PreorderModal';
 import RestaurantInfoModal from '~/components/menu/RestaurantInfoModal';
 import ZoneCheckGate from '~/components/onboarding/ZoneCheckGate';
+import { savePreorderSlot } from '~/lib/preorderSlot';
 import { fetchMenuData, getCategories, getAllProducts } from '@/lib/api';
 import { IMenuData, MenuProduct, storage } from '~/lib/utils';
 import LoadingSkeleton from './LoadingSkeleton';
@@ -230,14 +231,7 @@ export default function HomeScreen() {
 
       {/* Modals / overlays (centralized) */}
       <ProductModal product={selectedProduct} isOpen={isModalOpen} onClose={handleCloseModal} />
-      <Cart
-        isOpen={cartOpen}
-        onOpenChange={setCartOpen}
-        openOrdersDialog={() => setOrdersOpen(true)}
-        recommendations={allProducts}
-        scheduledSlot={scheduledSlot}
-        onOpenProduct={handleProductClick}
-      />
+      <Cart isOpen={cartOpen} onOpenChange={setCartOpen} recommendations={allProducts} onOpenProduct={handleProductClick} />
       <OrdersDialog open={ordersOpen} onOpenChange={setOrdersOpen} />
       <UserDrawer open={accountOpen} onClose={() => setAccountOpen(false)} onOpenOrders={() => setOrdersOpen(true)} storeSlug={storeInfo?.slug} />
       <DeliveryAddressModal
@@ -264,7 +258,15 @@ export default function HomeScreen() {
 
       {/* Restaurant info + pre-order modals */}
       <RestaurantInfoModal open={infoOpen} onClose={() => setInfoOpen(false)} />
-      <PreorderModal open={preorderOpen} onClose={() => setPreorderOpen(false)} onConfirm={(label) => setScheduledSlot(label)} />
+      <PreorderModal
+        open={preorderOpen}
+        onClose={() => setPreorderOpen(false)}
+        onConfirm={(slot) => {
+          setScheduledSlot(slot);
+          // Persisted so the checkout route picks it up after navigation.
+          savePreorderSlot(storeInfo?.slug || 'default', slot);
+        }}
+      />
     </div>
   );
 }

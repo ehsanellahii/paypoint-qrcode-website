@@ -47,6 +47,10 @@ export const getStoreData = cache(async (slug: string, token?: string) => {
           logo: data?.data?.webShopSettings?.logo ? `${getImageURL(data?.data?.webShopSettings?.logo)}` : null,
         }
       : null,
+    coordinates:
+      data?.data?.coordinates?.latitude != null && data?.data?.coordinates?.longitude != null
+        ? { latitude: data.data.coordinates.latitude, longitude: data.data.coordinates.longitude }
+        : null,
     adminGoogleApiKey: data?.data?.adminGoogleApiKey || '',
     posGoogleApiKey: data?.data?.posGoogleApiKey || '',
     postalRates: data?.data?.postalRates || [],

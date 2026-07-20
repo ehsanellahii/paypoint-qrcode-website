@@ -6,12 +6,14 @@ import { X, Heart, ShoppingBag, Ticket, MessageSquare, Globe, Shield, FileText, 
 import { useUser } from '~/contexts/user-context';
 import AuthenticationDialog from '../dialogs/Authentication/AuthenticationDialog';
 import ProfileDialog from '../dialogs/ProfileDialog';
-import FavoriteItemsDialog from '../dialogs/FavoriteItems/FavoriteItemsDialog';
-import OrdersDialog from './OrdersDialog';
+import FavoritesPanel from '../dialogs/FavoriteItems/FavoritesPanel';
+import OrdersPanel from './OrdersPanel';
 import ProductModal from '../dialogs/ProductModal';
 import { MenuProduct } from '~/lib/utils';
 import { useLanguage } from '~/contexts/language-context';
 import { useStore } from '~/contexts/store-context';
+import { useStoreNavigation } from '~/hooks/useStoreNavigation';
+import { getPlacedOrder } from '~/lib/lastOrder';
 
 type Props = {
   open: boolean;
@@ -20,7 +22,12 @@ type Props = {
   storeSlug?: string;
 };
 
-type View = 'home' | 'invite';
+type View = 'home' | 'invite' | 'lang' | 'orders' | 'favorites';
+
+const LANGUAGES: { code: 'de' | 'en'; name: string; sub: string; flag: string }[] = [
+  { code: 'de', name: 'Deutsch', sub: 'Deutschland', flag: '🇩🇪' },
+  { code: 'en', name: 'English', sub: 'Englisch', flag: '🇬🇧' },
+];
 
 export default function UserDrawer({ open, onClose }: Props) {
   const { t, language, setLanguage } = useLanguage();
@@ -31,12 +38,16 @@ export default function UserDrawer({ open, onClose }: Props) {
 
   const [view, setView] = useState<View>('home');
   const [copied, setCopied] = useState(false);
-  const [dialogs, setDialogs] = useState({ login: false, register: false, favoriteItems: false, profile: false, orders: false, singleProductDetails: false });
+  const [liveOrder, setLiveOrder] = useState(false);
+  const { toMenu } = useStoreNavigation();
+  const [dialogs, setDialogs] = useState({ login: false, register: false, profile: false, singleProductDetails: false });
   const [selectedProduct, setSelectedProduct] = useState<MenuProduct | null>(null);
 
   useEffect(() => {
     if (!open) return;
     setView('home');
+    // A recently placed order (this session) is treated as "live".
+    setLiveOrder(!!getPlacedOrder(storeInfo?.slug || 'default'));
     const onKeyDown = (e: KeyboardEvent) => e.key === 'Escape' && onClose();
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
@@ -63,8 +74,14 @@ export default function UserDrawer({ open, onClose }: Props) {
     setTimeout(() => setCopied(false), 1600);
   };
 
-  const QuickAction = ({ icon: Icon, label, onClick }: { icon: typeof Heart; label: string; onClick: () => void }) => (
-    <button onClick={onClick} className='flex flex-1 flex-col items-center gap-3 rounded-2xl bg-surface-3 px-2 pb-3 pt-4 transition hover:bg-elevated'>
+  const QuickAction = ({ icon: Icon, label, onClick, live }: { icon: typeof Heart; label: string; onClick: () => void; live?: boolean }) => (
+    <button onClick={onClick} className='relative flex flex-1 flex-col items-center gap-3 rounded-2xl bg-surface-3 px-2 pb-3 pt-4 transition hover:bg-elevated'>
+      {live && (
+        <span className='absolute right-2 top-2 inline-flex items-center gap-1 rounded-full bg-[#ef4444] px-1.5 py-[3px]' style={{ animation: 'wzpulse 1.6s ease-in-out infinite' }}>
+          <span className='h-[5px] w-[5px] rounded-full bg-white' />
+          <span className='text-[8px] font-extrabold tracking-[0.06em] text-white'>LIVE</span>
+        </span>
+      )}
       <Icon className='h-6 w-6' />
       <span className='text-xs font-bold'>{label}</span>
     </button>
@@ -142,13 +159,63 @@ export default function UserDrawer({ open, onClose }: Props) {
                 </div>
               )}
             </>
+          ) : view === 'favorites' ? (
+            <>
+              <button onClick={() => setView('home')} className='mb-3.5 inline-flex h-9 items-center gap-1.5 rounded-[11px] bg-surface-3 px-3 text-[13px] font-bold'>
+                <ArrowLeft className='h-4 w-4' /> {t.favoriteProducts ?? 'Favorites'}
+              </button>
+              <FavoritesPanel
+                active={view === 'favorites'}
+                onOpenProduct={(product) => {
+                  setSelectedProduct(product);
+                  setDialogs((p) => ({ ...p, singleProductDetails: true }));
+                }}
+                onBrowse={() => {
+                  onClose();
+                  toMenu();
+                }}
+              />
+            </>
+          ) : view === 'orders' ? (
+            <>
+              <button onClick={() => setView('home')} className='mb-3.5 inline-flex h-9 items-center gap-1.5 rounded-[11px] bg-surface-3 px-3 text-[13px] font-bold'>
+                <ArrowLeft className='h-4 w-4' /> {t.orders ?? 'Orders'}
+              </button>
+              <OrdersPanel active={view === 'orders'} wrapperClassName='px-0' compact onReordered={onClose} />
+            </>
+          ) : view === 'lang' ? (
+            <>
+              <button onClick={() => setView('home')} className='mb-3.5 inline-flex h-9 items-center gap-1.5 rounded-[11px] bg-surface-3 px-3 text-[13px] font-bold'>
+                <ArrowLeft className='h-4 w-4' /> {t.changeLanguage ?? 'Change language'}
+              </button>
+              <div className='flex flex-col gap-2.5'>
+                {LANGUAGES.map((l) => {
+                  const active = language === l.code;
+                  return (
+                    <button
+                      key={l.code}
+                      onClick={() => setLanguage(l.code)}
+                      className={`flex w-full items-center gap-3.5 rounded-[14px] border-2 p-[15px] text-left transition ${active ? 'border-white bg-elevated' : 'border-transparent bg-surface-3'}`}>
+                      <span className='text-2xl leading-none'>{l.flag}</span>
+                      <span className='min-w-0 flex-1'>
+                        <span className='block text-[15px] font-bold'>{l.name}</span>
+                        <span className='mt-0.5 block text-xs font-medium text-muted-foreground'>{l.sub}</span>
+                      </span>
+                      <span className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 ${active ? 'border-white bg-white' : 'border-[#55575c]'}`}>
+                        {active && <Check className='h-3 w-3 text-black' strokeWidth={3} />}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </>
           ) : (
             <>
               {/* Guest / member top */}
               {isLoggedIn ? (
                 <div className='flex gap-2.5'>
-                  <QuickAction icon={Heart} label={t.favoriteProducts ?? 'Favorites'} onClick={() => setDialogs((p) => ({ ...p, favoriteItems: true }))} />
-                  <QuickAction icon={ShoppingBag} label={t.orders ?? 'Orders'} onClick={() => setDialogs((p) => ({ ...p, orders: true }))} />
+                  <QuickAction icon={Heart} label={t.favoriteProducts ?? 'Favorites'} onClick={() => setView('favorites')} />
+                  <QuickAction icon={ShoppingBag} label={t.orders ?? 'Orders'} live={liveOrder} onClick={() => setView('orders')} />
                   <QuickAction icon={Ticket} label={t.invite ?? 'Invite'} onClick={() => setView('invite')} />
                 </div>
               ) : (
@@ -173,7 +240,7 @@ export default function UserDrawer({ open, onClose }: Props) {
               <div className='overflow-hidden rounded-2xl bg-surface-3'>
                 <Row icon={MessageSquare} label={t.contactSupport ?? 'Contact support'} onClick={() => (storeInfo?.phone ? window.open(`tel:${storeInfo.phone}`) : undefined)} />
                 <div className='ml-[51px] h-px bg-white/[0.06]' />
-                <Row icon={Globe} label={t.changeLanguage ?? 'Change language'} value={language.toUpperCase()} onClick={() => setLanguage(language === 'de' ? 'en' : 'de')} />
+                <Row icon={Globe} label={t.changeLanguage ?? 'Change language'} value={language.toUpperCase()} onClick={() => setView('lang')} />
               </div>
 
               {/* Legal */}
@@ -212,17 +279,6 @@ export default function UserDrawer({ open, onClose }: Props) {
       {dialogs.login && <AuthenticationDialog isOpen={dialogs.login} handleOpenChange={(o) => setDialogs((p) => ({ ...p, login: o }))} />}
       {dialogs.register && <AuthenticationDialog isOpen={dialogs.register} handleOpenChange={(o) => setDialogs((p) => ({ ...p, register: o }))} isRegistration />}
       {dialogs.profile && <ProfileDialog isOpen={dialogs.profile} handleOpenChange={(o) => setDialogs((p) => ({ ...p, profile: o }))} />}
-      {dialogs.favoriteItems && (
-        <FavoriteItemsDialog
-          isOpen={dialogs.favoriteItems}
-          handleOpenChange={(o) => setDialogs((p) => ({ ...p, favoriteItems: o }))}
-          openProductDetailsCallback={(product: MenuProduct) => {
-            setSelectedProduct(product);
-            setDialogs((p) => ({ ...p, singleProductDetails: true }));
-          }}
-        />
-      )}
-      {dialogs.orders && <OrdersDialog onOpenChange={(o) => setDialogs((p) => ({ ...p, orders: o }))} open={dialogs.orders} />}
       {dialogs.singleProductDetails && <ProductModal product={selectedProduct} isOpen={dialogs.singleProductDetails} onClose={() => setDialogs((p) => ({ ...p, singleProductDetails: false }))} />}
     </div>
   );

@@ -206,6 +206,25 @@ export interface Translations {
   copied: string;
   noReferralCode: string;
   cartItemsRemoved: string;
+  checkoutTitle: string;
+  completeOrder: string;
+  orderSummary: string;
+  subtotal: string;
+  stillMissing: string;
+  pleaseComplete: string;
+  loginFailed: string;
+  choosePaymentMethod: string;
+  addVoucher: string;
+  redeemCodeAndSave: string;
+  preorderPlanLater: string;
+  emailUs: string;
+  directions: string;
+  supportHours: string;
+  orderDetails: string;
+  deliveredTo: string;
+  viewOrder: string;
+  reorder: string;
+  status: string;
   day: string;
   time: string;
   today: string;
@@ -466,6 +485,25 @@ export const translations: Record<Language, Translations> = {
     copied: 'Copied!',
     noReferralCode: 'No referral code available for your account yet.',
     cartItemsRemoved: 'Some items are no longer available and were removed from your cart.',
+    checkoutTitle: 'Checkout',
+    completeOrder: 'Complete your order',
+    orderSummary: 'Order summary',
+    subtotal: 'Subtotal',
+    stillMissing: 'Still missing',
+    pleaseComplete: 'Please complete',
+    loginFailed: 'Login failed',
+    choosePaymentMethod: 'Choose a payment method',
+    addVoucher: 'Add a voucher',
+    redeemCodeAndSave: 'Redeem a code and save',
+    preorderPlanLater: 'Plan for later',
+    emailUs: 'Email',
+    directions: 'Directions',
+    supportHours: 'We’re here for you daily 10 AM – 11 PM',
+    orderDetails: 'Order details',
+    deliveredTo: 'Delivered to',
+    viewOrder: 'View',
+    reorder: 'Reorder',
+    status: 'Status',
     day: 'Day',
     time: 'Time',
     today: 'Today',
@@ -724,6 +762,25 @@ export const translations: Record<Language, Translations> = {
     copied: 'Kopiert!',
     noReferralCode: 'Für dein Konto ist noch kein Empfehlungscode verfügbar.',
     cartItemsRemoved: 'Einige Artikel sind nicht mehr verfügbar und wurden aus deinem Warenkorb entfernt.',
+    checkoutTitle: 'Zur Kasse',
+    completeOrder: 'Bestellung abschließen',
+    orderSummary: 'Bestellübersicht',
+    subtotal: 'Zwischensumme',
+    stillMissing: 'Noch offen',
+    pleaseComplete: 'Bitte noch ausfüllen',
+    loginFailed: 'Anmeldung fehlgeschlagen',
+    choosePaymentMethod: 'Zahlungsmethode wählen',
+    addVoucher: 'Gutschein hinzufügen',
+    redeemCodeAndSave: 'Code einlösen und sparen',
+    preorderPlanLater: 'Für später planen',
+    emailUs: 'E-Mail',
+    directions: 'Route',
+    supportHours: 'Wir sind täglich 10–23 Uhr für dich da',
+    orderDetails: 'Bestelldetails',
+    deliveredTo: 'Geliefert an',
+    viewOrder: 'Ansehen',
+    reorder: 'Erneut bestellen',
+    status: 'Status',
     day: 'Tag',
     time: 'Uhrzeit',
     today: 'Heute',

@@ -209,6 +209,7 @@ export interface IStoreInfo {
     paymentMethods: { cash: boolean; ecCardReader: boolean };
     orderTypes: { dineIn: boolean; takeaway: boolean; delivery: boolean };
   } | null;
+  coordinates: { latitude: number; longitude: number } | null;
   adminGoogleApiKey: string;
   posGoogleApiKey: string;
   postalRates: {

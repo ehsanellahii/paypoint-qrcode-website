@@ -1,18 +1,17 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { X, Plus, Minus, MessageSquare } from 'lucide-react';
+import { X, Plus, Minus } from 'lucide-react';
 import { useCart } from '~/contexts/cart-context';
 import { formatPrice as apiFormatPrice, fetchCartRecommendations } from '@/lib/api';
 import { useLanguage } from '@/contexts/language-context';
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
-import CheckoutForm from './CheckoutForm';
-import { cn, getImageURL, getPostalRateInfo, MenuProduct } from '~/lib/utils';
+import { getImageURL, getPostalRateInfo, MenuProduct } from '~/lib/utils';
 import { useAddress } from '~/contexts/address-context';
 import { useStore } from '~/contexts/store-context';
 import SmartImage from '~/lib/SmartImage';
 import { flyToCart } from '~/lib/flyToCart';
-import type { PreorderSlot } from '~/components/menu/PreorderModal';
+import { useStoreNavigation } from '~/hooks/useStoreNavigation';
 
 interface CartProps {
   isOpen?: boolean;
@@ -20,52 +19,27 @@ interface CartProps {
   openOrdersDialog?: () => void;
   /** Fallback pool used when the server has no pairings yet. */
   recommendations?: MenuProduct[];
-  scheduledSlot?: PreorderSlot | null;
   /** Opens the product modal — used for recommendations that require options. */
   onOpenProduct?: (product: MenuProduct) => void;
 }
 
-export default function Cart({
-  isOpen: controlledIsOpen,
-  onOpenChange,
-  openOrdersDialog,
-  recommendations = [],
-  scheduledSlot = null,
-  onOpenProduct,
-}: CartProps = {}) {
+export default function Cart({ isOpen: controlledIsOpen, onOpenChange, recommendations = [], onOpenProduct }: CartProps = {}) {
   const storeInfo = useStore();
   const logoURL = storeInfo?.settings?.logo || '';
-  const { cart, updateQuantity, totalPrice, totalItems, clearCart, discountAmount, addToCart } = useCart();
+  const { cart, updateQuantity, totalPrice, totalItems, discountAmount, addToCart } = useCart();
   const { orderType, deliveryAddress } = useAddress();
   const { t } = useLanguage();
+  const { toCheckout } = useStoreNavigation();
 
-  const [checkoutStep, setCheckoutStep] = useState<'details' | 'payment' | 'success'>('details');
   const [internalIsOpen, setInternalIsOpen] = useState(false);
-  const [showCheckout, setShowCheckout] = useState(false);
-  const [orderMsg, setOrderMsg] = useState('');
-  const [msgOpen, setMsgOpen] = useState(false);
 
   const isOpen = controlledIsOpen ?? internalIsOpen;
   const setIsOpen = onOpenChange ?? setInternalIsOpen;
   const postalRateInfo = getPostalRateInfo(Number(deliveryAddress?.postalCode || 0), storeInfo?.postalRates || []);
   const isDeliveryAvailable = postalRateInfo.isAvailable;
   const deliveryCharges = postalRateInfo.deliveryCharges;
-  const minimumOrderAmount = postalRateInfo.minimumOrderAmount;
 
-  const handleCheckoutSuccess = () => {
-    setShowCheckout(false);
-    setIsOpen(false);
-    openOrdersDialog?.();
-  };
-  const handleBackToCart = () => setShowCheckout(false);
-  const handleOpenChange = (open: boolean) => {
-    setIsOpen(open);
-    if (!open && checkoutStep === 'success') {
-      clearCart();
-      openOrdersDialog?.();
-    }
-    if (!open) setShowCheckout(false);
-  };
+  const handleOpenChange = (open: boolean) => setIsOpen(open);
 
   // Server-backed recommendations (co-purchase pairings), refreshed when the
   // cart opens or its contents change. Falls back to a menu slice when the
@@ -91,32 +65,17 @@ export default function Cart({
   const subtotalAfterDiscount = totalPrice - discountAmount;
   const grandTotal = deliveryCharges != null && isDeliveryAvailable && orderType === 'delivery' ? subtotalAfterDiscount + deliveryCharges : subtotalAfterDiscount;
 
+  // Checkout is its own route now; validation lives there (inline, not alerts).
   const proceed = () => {
-    if (!isDeliveryAvailable && orderType === 'delivery') {
-      alert(t.weAreNotAvailableInYourArea);
-      return;
-    }
-    if (minimumOrderAmount != null && totalPrice < minimumOrderAmount) {
-      alert(t.minimumOrderAmountIs + ' ' + apiFormatPrice(minimumOrderAmount));
-      return;
-    }
-    setShowCheckout(true);
+    setIsOpen(false);
+    toCheckout();
   };
 
   return (
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <DialogContent className='flex h-[90dvh] max-h-[90dvh] w-[calc(100vw-2rem)] max-w-[600px] flex-col overflow-hidden rounded-3xl border border-border bg-card p-0'>
-        {showCheckout ? (
-          <CheckoutForm
-            onSuccess={handleCheckoutSuccess}
-            onBack={handleBackToCart}
-            onStepChange={setCheckoutStep}
-            orderMessage={orderMsg}
-            scheduledSlot={scheduledSlot}
-          />
-        ) : (
-          <>
-            <button
+        <>
+          <button
               onClick={() => setIsOpen(false)}
               aria-label={t.close}
               className='absolute right-[18px] top-[18px] z-[4] flex h-10 w-10 items-center justify-center rounded-full bg-surface-3 text-white transition active:scale-90'>
@@ -221,65 +180,26 @@ export default function Cart({
               )}
             </div>
 
-            {/* Order message */}
-            <div className='shrink-0 border-t border-border px-7 py-4'>
-              {msgOpen ? (
-                <div>
-                  <div className='mb-2.5 flex items-center gap-2.5'>
-                    <MessageSquare className='h-5 w-5 text-muted-foreground' />
-                    <span className='flex-1 text-sm font-bold'>{t.messageForRestaurant ?? 'Message for the restaurant'}</span>
-                  </div>
-                  <textarea
-                    value={orderMsg}
-                    onChange={(e) => setOrderMsg(e.target.value)}
-                    rows={3}
-                    placeholder={t.messageForRestaurantPlaceholder ?? 'Special requests, allergies…'}
-                    className='w-full resize-none rounded-[14px] border border-border-strong bg-surface-3 px-4 py-3 text-sm font-medium leading-relaxed text-white outline-none'
-                  />
-                  <div className='mt-2.5 flex justify-end'>
-                    <button onClick={() => setMsgOpen(false)} className='h-10 rounded-xl bg-primary px-[18px] text-[13.5px] font-extrabold text-selected-text active:scale-95'>
-                      {t.save ?? 'Save'}
-                    </button>
-                  </div>
-                </div>
-              ) : (
-                <button onClick={() => setMsgOpen(true)} className='flex w-full items-center gap-3.5 text-left'>
-                  <MessageSquare className='h-[22px] w-[22px] text-muted-foreground' />
-                  <div className='min-w-0 flex-1'>
-                    <div className='text-sm font-bold'>{t.messageForRestaurant ?? 'Message for the restaurant'}</div>
-                    <div className='mt-0.5 truncate text-[12.5px] font-medium text-muted-foreground'>{orderMsg || (t.messageForRestaurantPlaceholder ?? 'Special requests, allergies…')}</div>
-                  </div>
-                  <span className='flex h-[38px] items-center rounded-xl bg-surface-3 px-4 text-[13px] font-bold text-white'>{orderMsg ? (t.edit ?? 'Edit') : (t.add ?? 'Add')}</span>
-                </button>
-              )}
-            </div>
-
-            {/* Totals + checkout */}
-            <div className='shrink-0 space-y-3 border-t border-border px-7 pb-6 pt-4'>
-              {orderType === 'delivery' && !storeInfo?.tableInfo?.token && (
-                <div className='flex justify-between text-sm font-semibold text-muted-foreground'>
-                  <span>{t.deliveryCharges}</span>
-                  <span>{deliveryCharges != null && isDeliveryAvailable ? apiFormatPrice(deliveryCharges) : t.notAvailable}</span>
-                </div>
-              )}
-              <div className='flex items-baseline justify-between text-lg font-extrabold'>
-                <span>{t.totalIncludingVAT}</span>
-                <span>{apiFormatPrice(grandTotal)}</span>
+          {/* Totals + checkout */}
+          <div className='shrink-0 space-y-3 border-t border-border px-7 pb-6 pt-4'>
+            {orderType === 'delivery' && !storeInfo?.tableInfo?.token && (
+              <div className='flex justify-between text-sm font-semibold text-muted-foreground'>
+                <span>{t.deliveryCharges}</span>
+                <span>{deliveryCharges != null && isDeliveryAvailable ? apiFormatPrice(deliveryCharges) : t.notAvailable}</span>
               </div>
-
-              <button
-                onClick={proceed}
-                className={cn(
-                  'flex h-14 w-full items-center gap-3.5 rounded-2xl bg-primary px-2.5 text-selected-text transition active:scale-[0.99]',
-                  !isDeliveryAvailable && orderType === 'delivery' && 'cursor-not-allowed opacity-50'
-                )}>
-                <span className='flex h-8 min-w-[30px] items-center justify-center rounded-[10px] bg-black px-2.5 text-sm font-extrabold text-white'>{totalItems}</span>
-                <span className='flex-1 text-left text-base font-extrabold'>{t.checkout}</span>
-                <span className='pr-2 text-base font-extrabold'>{apiFormatPrice(grandTotal)}</span>
-              </button>
+            )}
+            <div className='flex items-baseline justify-between text-lg font-extrabold'>
+              <span>{t.totalIncludingVAT}</span>
+              <span>{apiFormatPrice(grandTotal)}</span>
             </div>
-          </>
-        )}
+
+            <button onClick={proceed} className='flex h-14 w-full items-center gap-3.5 rounded-2xl bg-primary px-2.5 text-selected-text transition active:scale-[0.99]'>
+              <span className='flex h-8 min-w-[30px] items-center justify-center rounded-[10px] bg-black px-2.5 text-sm font-extrabold text-white'>{totalItems}</span>
+              <span className='flex-1 text-left text-base font-extrabold'>{t.checkout}</span>
+              <span className='pr-2 text-base font-extrabold'>{apiFormatPrice(grandTotal)}</span>
+            </button>
+          </div>
+        </>
       </DialogContent>
     </Dialog>
   );
