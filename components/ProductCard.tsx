@@ -15,6 +15,27 @@ interface ProductCardProps {
 }
 
 const POPULAR = /margherita|salami|hawaii|cheeseburger|bestseller/i;
+const Stepper = ({
+  className,
+  qty,
+  inc,
+  dec,
+}: {
+  className?: string;
+  qty: number;
+  inc: (e: React.MouseEvent<HTMLButtonElement>) => void;
+  dec: (e: React.MouseEvent<HTMLButtonElement>) => void;
+}) => (
+  <div className={cn('flex items-center gap-2 rounded-[15px] bg-white/95 px-2 py-1 shadow-[0_6px_18px_-6px_rgba(0,0,0,0.45)] backdrop-blur anim-heartin', className)}>
+    <button onClick={dec} aria-label='less' className='flex h-8 w-8 items-center justify-center rounded-full bg-[#f0f0f2] transition active:scale-[0.82]'>
+      <Minus className='h-4 w-4 text-black' strokeWidth={2.8} />
+    </button>
+    <span className='min-w-5 text-center text-[17px] font-extrabold tabular-nums text-black'>{qty}</span>
+    <button onClick={inc} aria-label='more' className='flex h-8 w-8 items-center justify-center rounded-full bg-black transition active:scale-[0.82]'>
+      <Plus className='h-4 w-4 text-white' strokeWidth={2.8} />
+    </button>
+  </div>
+);
 
 export default function ProductCard({ product, onClick }: ProductCardProps) {
   const storeInfo = useStore();
@@ -52,21 +73,10 @@ export default function ProductCard({ product, onClick }: ProductCardProps) {
     if (simpleLine) updateQuantity(simpleLine.id, simpleLine.quantity - 1);
   };
 
-  const Stepper = ({ className }: { className?: string }) => (
-    <div className={cn('flex items-center gap-2 rounded-[15px] bg-white/95 px-2 py-1 shadow-[0_6px_18px_-6px_rgba(0,0,0,0.45)] backdrop-blur anim-heartin', className)}>
-      <button onClick={dec} aria-label='less' className='flex h-8 w-8 items-center justify-center rounded-full bg-[#f0f0f2] transition active:scale-[0.82]'>
-        <Minus className='h-4 w-4 text-black' strokeWidth={2.8} />
-      </button>
-      <span className='min-w-5 text-center text-[17px] font-extrabold tabular-nums text-black'>{qty}</span>
-      <button onClick={inc} aria-label='more' className='flex h-8 w-8 items-center justify-center rounded-full bg-black transition active:scale-[0.82]'>
-        <Plus className='h-4 w-4 text-white' strokeWidth={2.8} />
-      </button>
-    </div>
-  );
-
   return (
     <div
-      onClick={onClick}
+      //@ts-expect-error Wrong type error
+      onClick={quickAdd}
       className='wzcard group relative flex cursor-pointer gap-4 rounded-[18px] border border-border bg-surface-1 p-4 transition hover:-translate-y-[3px] hover:border-border-strong hover:bg-surface-2 hover:shadow-[0_12px_28px_rgba(0,0,0,0.38)]'>
       {/* Left: text */}
       <div className='flex min-w-0 flex-1 flex-col'>
@@ -90,9 +100,12 @@ export default function ProductCard({ product, onClick }: ProductCardProps) {
         {!hasPhoto && (
           <div className='mt-3 self-end' onClick={(e) => e.stopPropagation()}>
             {qty > 0 ? (
-              <Stepper />
+              <Stepper qty={qty} inc={inc} dec={dec} />
             ) : (
-              <button onClick={quickAdd} aria-label='Add' className='flex h-10 w-10 items-center justify-center rounded-full bg-primary text-selected-text shadow-[0_4px_10px_rgba(0,0,0,0.4)] transition hover:scale-[1.08] active:scale-[0.85]'>
+              <button
+                onClick={quickAdd}
+                aria-label='Add'
+                className='flex h-10 w-10 items-center justify-center rounded-full bg-primary text-selected-text shadow-[0_4px_10px_rgba(0,0,0,0.4)] transition hover:scale-[1.08] active:scale-[0.85]'>
                 <Plus className='h-[18px] w-[18px]' strokeWidth={2.6} />
               </button>
             )}
@@ -115,14 +128,13 @@ export default function ProductCard({ product, onClick }: ProductCardProps) {
           </div>
           {qty > 0 ? (
             <div className='absolute right-1 top-1' onClick={(e) => e.stopPropagation()}>
-              <Stepper />
+              <Stepper qty={qty} inc={inc} dec={dec} />
             </div>
           ) : (
             <button
               onClick={quickAdd}
               aria-label='Add'
-              className='absolute -bottom-2 -right-2 flex h-9 w-9 items-center justify-center rounded-full border-[3px] border-surface-1 bg-primary text-selected-text shadow-[0_4px_10px_rgba(0,0,0,0.5)] transition hover:scale-[1.08] active:scale-[0.85]'
-              onClickCapture={(e) => e.stopPropagation()}>
+              className='absolute -bottom-2 -right-2 flex h-9 w-9 items-center justify-center rounded-full border-[3px] border-surface-1 bg-primary text-selected-text shadow-[0_4px_10px_rgba(0,0,0,0.5)] transition hover:scale-[1.08] active:scale-[0.85]'>
               <Plus className='h-[17px] w-[17px]' strokeWidth={2.6} />
             </button>
           )}
